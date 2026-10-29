@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   content: { padding: space.md, gap: space.md, width: '100%', maxWidth: size.maxContent, alignSelf: 'center' },
   list: { gap: space.sm },
   card: { borderRadius: radius.lg, padding: space.md, gap: space.ms },
-  sub: { gap: 2 },
+  sub: { gap: space.xxs },
   loopLine: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   more: { width: size.touch, height: size.touch, alignItems: 'center', justifyContent: 'center' },
   headline: { ...font.headline },

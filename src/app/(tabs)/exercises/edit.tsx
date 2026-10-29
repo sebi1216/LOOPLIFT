@@ -71,9 +71,9 @@ export default function EditExercise() {
 const styles = StyleSheet.create({
   content: { padding: space.md, gap: space.md, width: '100%', maxWidth: size.maxContent, alignSelf: 'center' },
   title: { ...font.titleSmall, paddingTop: space.sm },
-  field: { borderRadius: radius.md, paddingHorizontal: space.md, paddingVertical: space.sm, gap: 2 },
+  field: { borderRadius: radius.md, paddingHorizontal: space.md, paddingVertical: space.sm, gap: space.xxs },
   input: { ...font.body, minHeight: space.xl, paddingVertical: 0 },
-  section: { ...font.label, letterSpacing: 0.5 },
+  section: { ...font.section },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   caption: { ...font.caption },
 });

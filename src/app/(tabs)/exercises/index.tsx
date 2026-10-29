@@ -1,14 +1,13 @@
 import { router, Stack } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
-import { muscleGroups } from '@/data/demo';
 import { actions, ops, useAppData } from '@/data/store';
 import { t, type StringKey } from '@/i18n';
 import { confirmDelete } from '@/ui/confirm';
 import { HeaderButton } from '@/ui/header-button';
-import { Icon } from '@/ui/icon';
+import { SearchField } from '@/ui/search-field';
 import { SwipeAction } from '@/ui/swipe-action';
 import { font, radius, size, space } from '@/ui/tokens';
 import { useColors } from '@/ui/use-colors';
@@ -19,10 +18,7 @@ export default function Exercises() {
   const c = useColors();
   const d = useAppData();
   const [q, setQ] = useState('');
-  const query = q.trim().toLowerCase();
-  const groups = muscleGroups
-    .map((g) => ({ g, items: d.exercises.filter((e) => e.muscleGroup === g && e.name.toLowerCase().includes(query)) }))
-    .filter((x) => x.items.length > 0);
+  const groups = ops.groupByMuscle(d, q);
 
   const remove = (id: string, name: string) => {
     const used = ops.usedIn(d, id);
@@ -48,18 +44,7 @@ export default function Exercises() {
         style={{ backgroundColor: c.bg }}
         contentContainerStyle={styles.content}
         testID="exercise-list">
-        <View style={[styles.search, { backgroundColor: c.bgRaised }]}>
-          <Icon name="search" size={17} color={c.textMuted} />
-          <TextInput
-            value={q}
-            onChangeText={setQ}
-            placeholder={t('exercises.search')}
-            placeholderTextColor={c.textMuted}
-            accessibilityLabel={t('exercises.search')}
-            style={[styles.input, { color: c.text }]}
-            testID="exercise-search"
-          />
-        </View>
+        <SearchField value={q} onChange={setQ} placeholder={t('exercises.search')} testID="exercise-search" />
 
         {groups.length === 0 ? (
           <Text style={[styles.callout, { color: c.textMuted }]} testID="no-match">
@@ -67,7 +52,7 @@ export default function Exercises() {
           </Text>
         ) : null}
 
-        {groups.map(({ g, items }) => (
+        {groups.map(({ group: g, items }) => (
           <View key={g} style={styles.group}>
             <Text style={[styles.section, { color: c.textMuted }]}>{t(`muscle.${g}` as StringKey).toUpperCase()}</Text>
             <View style={[styles.list, { backgroundColor: c.bgRaised }]}>
@@ -120,10 +105,8 @@ export default function Exercises() {
 
 const styles = StyleSheet.create({
   content: { padding: space.md, gap: space.md, width: '100%', maxWidth: size.maxContent, alignSelf: 'center' },
-  search: { flexDirection: 'row', alignItems: 'center', gap: space.sm, borderRadius: radius.md, paddingHorizontal: space.md, minHeight: size.touch },
-  input: { ...font.body, flex: 1, minHeight: size.touch },
   group: { gap: space.sm },
-  section: { ...font.label, letterSpacing: 0.5 },
+  section: { ...font.section },
   list: { borderRadius: radius.md, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: size.touch, paddingHorizontal: space.md },
   flex: { flex: 1 },

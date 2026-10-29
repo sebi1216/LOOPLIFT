@@ -74,7 +74,7 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
       <Header over={greeting(d.userName)} date={today} />
 
       <View style={styles.ringWrap} accessible accessibilityLabel={`${ringLabel} ${name}`} testID="today-ring">
-        <LoopRing slots={rotation.slots} current={day.source === 'loop' ? (day.slotIndex ?? 0) : null} diameter={size.ring} stroke={22}>
+        <LoopRing slots={rotation.slots} current={day.source === 'loop' ? (day.slotIndex ?? 0) : null} diameter={size.ring} stroke={size.ringStroke}>
           {ringLabel ? (
             <View style={styles.ringSub}>
               {day.source === 'manual' ? <Icon name="pin" size={11} color={c.accent} /> : null}
@@ -184,7 +184,7 @@ function TodayEmpty({ d, today }: { d: AppData; today: string }) {
     <Screen>
       <Header over={t('today.welcome', { name: d.userName })} date={today} />
       <View style={styles.ringWrap} testID="empty-state">
-        <LoopRing slots={[]} current={null} diameter={size.ring} stroke={22}>
+        <LoopRing slots={[]} current={null} diameter={size.ring} stroke={size.ringStroke}>
           <Text style={[styles.headline, { color: c.text }]}>{t('today.noLoop')}</Text>
           <Text style={[styles.caption, { color: c.textMuted }]}>{t('today.noLoopSub')}</Text>
         </LoopRing>
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   steps: { gap: space.md },
   step: { flexDirection: 'row', alignItems: 'center', gap: space.ms },
   exRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  pill: { borderRadius: radius.full, paddingHorizontal: space.sm, paddingVertical: 2 },
+  pill: { borderRadius: radius.full, paddingHorizontal: space.sm, paddingVertical: space.xxs },
   pillText: { ...font.caption, fontWeight: '600' },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.ms },
   flex: { flex: 1 },

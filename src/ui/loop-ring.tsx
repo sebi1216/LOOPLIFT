@@ -4,6 +4,7 @@ import Svg, { Circle, Path } from 'react-native-svg';
 
 import type { Slot } from '@/data/schedule';
 
+import { space } from './tokens';
 import { useColors } from './use-colors';
 
 type Props = {
@@ -61,7 +62,7 @@ export function LoopRing({ slots, current, diameter, stroke, children }: Props) 
         )}
       </Svg>
       </View>
-      <View style={[StyleSheet.absoluteFill, styles.center, { padding: stroke + 8 }]}>{children}</View>
+      <View style={[StyleSheet.absoluteFill, styles.center, { padding: stroke + space.sm }]}>{children}</View>
     </View>
   );
 }

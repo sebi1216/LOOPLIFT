@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     paddingVertical: space.xs,
   },
   loopChips: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: space.xs },
-  loopChip: { borderRadius: radius.full, paddingHorizontal: space.sm, paddingVertical: 2 },
+  loopChip: { borderRadius: radius.full, paddingHorizontal: space.sm, paddingVertical: space.xxs },
   chipText: { ...font.caption, fontWeight: '600' },
   edit: { paddingHorizontal: space.md },
   emptyCard: { borderRadius: radius.lg, padding: space.md, gap: space.ms },

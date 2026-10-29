@@ -19,7 +19,6 @@ Slice: slice 1 · hours logged 3 h + 2026-10-29 not given (a record, sum of docs
 Open the 8 screens on the iPhone in Expo Go (taps in the /build-screen report), set `checked-device` in `docs/design/screens.md`, then decide storage for must-have 5.
 
 ## Open questions (Claude adds here, never invents answers)
-- Deferred from the 29 Oct code review: VoiceOver does not read "Starts on" on the native date picker; exercise search list duplicated in Exercises and the picker; a few raw 2 pt spacings outside tokens.
 - Another dev server in this folder overwrote `.expo/types` (route types) mid-session; CLAUDE.md says one session per repo.
 - Should a loop also support weekday plans (Mon Push, Wed Pull every week), or is the N-day loop enough for v1? (from the concept PDF)
 - "Mark as done": parked in the toy box at kickoff; confirm it stays out of v1? (from the concept PDF)

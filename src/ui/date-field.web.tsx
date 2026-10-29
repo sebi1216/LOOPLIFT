@@ -7,10 +7,10 @@ import { Icon } from './icon';
 import { font, size, space } from './tokens';
 import { useColors } from './use-colors';
 
-type Props = { value: string; onChange: (iso: string) => void; accessibilityLabel: string; testID?: string };
+type Props = { value: string; onChange: (iso: string) => void; testID?: string };
 
 // Web preview only: one day earlier / later around the date. iPhone uses the native picker.
-export function DateField({ value, onChange, accessibilityLabel, testID }: Props) {
+export function DateField({ value, onChange, testID }: Props) {
   const c = useColors();
   const step = (n: number, label: string, icon: 'chevronLeft' | 'chevronRight') => (
     <Pressable
@@ -22,7 +22,7 @@ export function DateField({ value, onChange, accessibilityLabel, testID }: Props
     </Pressable>
   );
   return (
-    <View style={styles.row} testID={testID} accessibilityLabel={accessibilityLabel}>
+    <View style={styles.row} testID={testID}>
       {step(-1, t('loop.earlier'), 'chevronLeft')}
       <Text style={[styles.value, { color: c.accent }]}>{fullDate(value)}</Text>
       {step(1, t('loop.later'), 'chevronRight')}

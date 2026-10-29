@@ -61,12 +61,12 @@ export default function RotationEditor() {
             </Text>
             <Text style={[styles.callout, { color: c.textMuted }]}>{slots.length === 0 ? t('loop.subEmpty') : t('loop.sub', { n: slots.length })}</Text>
           </View>
-          <LoopRing slots={slots.map((s) => s.slot)} current={current} diameter={size.ringSmall} stroke={10} />
+          <LoopRing slots={slots.map((s) => s.slot)} current={current} diameter={size.ringSmall} stroke={size.ringStrokeSmall} />
         </View>
 
         <View style={[styles.field, { backgroundColor: c.bgRaised }]}>
           <Text style={[styles.body, { color: c.text }]}>{t('loop.startsOn')}</Text>
-          <DateField value={startDate} onChange={setStartDate} accessibilityLabel={t('loop.startsOn')} testID="start-date" />
+          <DateField value={startDate} onChange={setStartDate} testID="start-date" />
         </View>
 
         <Text style={[styles.section, { color: c.textMuted }]}>{t('loop.days').toUpperCase()}</Text>
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     paddingRight: space.xs,
     minHeight: size.touch + space.sm,
   },
-  section: { ...font.label, letterSpacing: 0.5 },
+  section: { ...font.section },
   leading: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   iconButton: { width: size.touch, height: size.touch, alignItems: 'center', justifyContent: 'center' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },

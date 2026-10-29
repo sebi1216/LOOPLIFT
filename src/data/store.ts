@@ -8,7 +8,7 @@ import { useSyncExternalStore } from 'react';
 
 import { getLocale, t, type Locale, type StringKey } from '@/i18n';
 
-import { cast, demoSchedule, demoToday, demoWorkouts, starterLifts, type Exercise, type MuscleGroup, type Workout, type WorkoutExercise } from './demo';
+import { cast, demoSchedule, demoToday, demoWorkouts, muscleGroups, starterLifts, type Exercise, type MuscleGroup, type Workout, type WorkoutExercise } from './demo';
 import { clearDay, isIsoDate, pushBack, replaceDay, toIsoDate, type Plan, type Rotation, type Schedule } from './schedule';
 
 export type AppData = {
@@ -108,6 +108,14 @@ export const ops = {
       exercises: d.exercises.filter((e) => e.id !== id),
       workouts: d.workouts.map((w) => ({ ...w, exercises: w.exercises.filter((e) => e.exerciseId !== id) })),
     };
+  },
+
+  // The library by muscle group, filtered by a search text; groups with no match are left out.
+  groupByMuscle(d: AppData, query: string): { group: MuscleGroup; items: Exercise[] }[] {
+    const q = query.trim().toLowerCase();
+    return muscleGroups
+      .map((group) => ({ group, items: d.exercises.filter((e) => e.muscleGroup === group && e.name.toLowerCase().includes(q)) }))
+      .filter((g) => g.items.length > 0);
   },
 
   // Names of the workouts that use an exercise ("In Push").

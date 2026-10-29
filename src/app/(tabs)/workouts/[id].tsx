@@ -147,9 +147,9 @@ export default function WorkoutEditor() {
 const styles = StyleSheet.create({
   content: { padding: space.md, gap: space.md, width: '100%', maxWidth: size.maxContent, alignSelf: 'center' },
   missing: { flex: 1, padding: space.md },
-  field: { borderRadius: radius.md, paddingHorizontal: space.md, paddingVertical: space.sm, gap: 2 },
+  field: { borderRadius: radius.md, paddingHorizontal: space.md, paddingVertical: space.sm, gap: space.xxs },
   input: { ...font.body, minHeight: space.xl, paddingVertical: 0 },
-  section: { ...font.label, letterSpacing: 0.5 },
+  section: { ...font.section },
   steppers: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, paddingTop: space.xs },
   body: { ...font.body },
   callout: { ...font.callout },

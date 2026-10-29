@@ -70,3 +70,10 @@ test('a workout name is never saved empty', () => {
   expect(d.workouts[0].name).toBe('Push');
   expect(ops.updateWorkout(d, 'w1', { name: 'Push A' }).workouts[0].name).toBe('Push A');
 });
+
+test('groupByMuscle: groups in library order, search ignores case, empty groups dropped', () => {
+  const all = ops.groupByMuscle(lena(), '');
+  expect(all.map((g) => g.group)).toEqual(['arms', 'back', 'chest', 'core', 'legs', 'shoulders']);
+  const curl = ops.groupByMuscle(lena(), '  CURL ');
+  expect(curl).toEqual([{ group: 'arms', items: [expect.objectContaining({ id: 'e8' }), expect.objectContaining({ id: 'e19' })] }]);
+});

@@ -44,11 +44,21 @@ export type ColorName = keyof typeof light;
 export const palette = { light, dark } as const;
 
 // 4 pt grid. Side padding of a screen is space.md (16).
-export const space = { xs: 4, sm: 8, ms: 12, md: 16, lg: 24, xl: 32, xxl: 48 } as const;
+// xxs (2) is the one exception: inside pills and between a label and its line under it.
+export const space = { xxs: 2, xs: 4, sm: 8, ms: 12, md: 16, lg: 24, xl: 32, xxl: 48 } as const;
 
 // House rule: every tappable is at least 48 x 48 (covers 44 pt iOS and 48 dp Android).
-// ring: diameter of the loop ring on Today (the small one in the rotation editor is ringSmall).
-export const size = { touch: 48, maxContent: 640, ring: 200, ringSmall: 84, dayBubble: 44 } as const;
+// ring: diameter of the loop ring on Today (the small one in the rotation editor is ringSmall);
+// ringStroke and ringStrokeSmall are their arc widths.
+export const size = {
+  touch: 48,
+  maxContent: 640,
+  ring: 200,
+  ringSmall: 84,
+  ringStroke: 22,
+  ringStrokeSmall: 10,
+  dayBubble: 44,
+} as const;
 
 // sm: calendar day cells, md: inputs and grouped lists, lg: cards and list rows, full: pills and buttons.
 export const radius = { sm: 12, md: 16, lg: 22, full: 999 } as const;
@@ -64,4 +74,6 @@ export const font = {
   callout: { fontSize: 15, lineHeight: 20 },
   caption: { fontSize: 13, lineHeight: 18 },
   label: { fontSize: 11, lineHeight: 14, fontWeight: '500' },
+  // Uppercase section headers ("EXERCISES · DRAG TO REORDER").
+  section: { fontSize: 11, lineHeight: 14, fontWeight: '500', letterSpacing: 0.5 },
 } as const;

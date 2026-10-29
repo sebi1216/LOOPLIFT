@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   },
   dashed: { borderWidth: 1.5, borderStyle: 'dashed' },
   manual: { borderWidth: 2 },
-  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 2, maxWidth: '100%' },
+  labelRow: { flexDirection: 'row', alignItems: 'center', gap: space.xxs, maxWidth: '100%' },
   num: { ...font.headline },
   small: { ...font.label },
   label: { ...font.label },
