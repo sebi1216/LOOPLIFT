@@ -38,11 +38,12 @@
 ## 4. Toy box (ideas parked with a date)
 | Date | Idea | Played with? |
 |---|---|---|
-| 2026-10-28 | Mark as done, completed days with a check on the Calendar (PDF P1) | no |
+| 2026-10-28 | Mark as done, completed days with a check on the Calendar (PDF P1) | yes: part of spec 001 (decision #9) |
 | 2026-10-28 | Workout colors in Calendar and 7-day strip (PDF P1) | no |
 | 2026-10-28 | Daily reminder naming today's workout (PDF P1) | no |
 | 2026-10-28 | Rotation editor shows the next 14 days before saving (PDF P1) | no |
-| 2026-10-28 | Set logging, progress charts, sync, multiple rotations (PDF P2; data model ready for set logging) | no |
+| 2026-10-28 | Set logging, progress charts, sync, multiple rotations (PDF P2; data model ready for set logging) | set logging and charts: spec 001 (decision #7); sync and multiple rotations still parked |
+| 2026-10-29 | Estimated 1-rep max and volume graphs per exercise | no |
 
 ## 5. Business mode only (evidence log: `docs/evidence.md`)
 - Assumptions in this order: Reach: people at my gym or uni sport who are not close friends; 10 of them try it · Want: they train on a fixed split and plan it today in their head, notes or a spreadsheet · Build: `resolveDay` handles loops and overrides correctly.
