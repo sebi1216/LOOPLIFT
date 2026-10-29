@@ -1,0 +1,19 @@
+{
+  // Claude desktop app (Code tab): the dev server for the Browser pane (Ctrl+Shift+B on Windows).
+  // Fields per https://code.claude.com/docs/en/desktop.md (comments are allowed in this file).
+  // "npm" is the documented runtimeExecutable; "npx" is a .cmd file on Windows and may not start.
+  // "url" may only be the server origin, never a path. For the layout wall ask Claude:
+  // "open /layout-wall.html in the preview".
+  // Auto-verify (Claude screenshots the preview after edits) is on by default and uses tokens.
+  // To turn it off, add "autoVerify": false next to "version".
+  // No secrets in "env": this file is committed.
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "app (web preview)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start", "--", "--port", "8081"],
+      "port": 8081
+    }
+  ]
+}

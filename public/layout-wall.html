@@ -1,0 +1,100 @@
+<!doctype html>
+<!--
+  Layout wall: the running web app at several screen sizes side by side.
+  Lives in public/layout-wall.html (Expo serves public/ at the site root).
+  With the dev server running, open http://localhost:8081/layout-wall.html
+  Every save updates all frames (each frame has its own live reload).
+
+  It shows SIZES, NOT PLATFORMS. It is the web build in your browser, so it does not show:
+  iOS safe areas (insets are 0 on web), iOS fonts (Windows has no San Francisco), the native
+  tab bar, native modules (camera, video, haptics), touch, gestures or real performance.
+  Check those on the iPhone and the Android emulator (docs/design/screens.md: checked-device).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Layout wall</title>
+<style>
+  :root { --bg: #f3f4f6; --fg: #111827; --muted: #4b5563; --frame: #111; --note: #fff7d6; --note-fg: #4a3b00; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0b0d12; --fg: #e5e7eb; --muted: #9ca3af; --frame: #2a2f3a; --note: #2b2410; --note-fg: #f3e2a6; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.4 system-ui, sans-serif; }
+  header { display: flex; gap: 12px; align-items: center; padding: 10px 16px; flex-wrap: wrap; }
+  header label { color: var(--muted); }
+  .note { margin: 0 16px 8px; padding: 8px 12px; border-radius: 8px; background: var(--note); color: var(--note-fg); max-width: 1100px; }
+  main { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; padding: 8px 16px 32px; overflow-x: auto; }
+  figure { margin: 0; flex: none; }
+  figcaption { color: var(--muted); margin-bottom: 6px; }
+  /* content-box: the 10px frame is drawn OUTSIDE the screen. With border-box the frame ate
+     20px of every screen and cut off the right edge and the bottom tab bar. */
+  .shell { box-sizing: content-box; border: 10px solid var(--frame); border-radius: 36px; overflow: hidden; background: #000; }
+  .shell.tablet { border-radius: 24px; }
+  .shell.desktop { border-radius: 10px; }
+  iframe { border: 0; display: block; transform-origin: 0 0; background: #fff; }
+</style>
+</head>
+<body>
+<header>
+  <strong>Layout wall</strong>
+  <label>Path <input id="path" value="/" size="24" title="For example / or /profile or /?state=empty"></label>
+  <label>Scale <input id="scale" type="range" min="0.3" max="1" step="0.05" value="0.5"></label>
+  <button id="reload">Reload all</button>
+</header>
+<p class="note" id="note">
+  Sizes, not platforms. No safe areas, no iOS fonts, no native tab bar, no native modules, no touch.
+  A screen is only done after it was opened on the iPhone and the Android emulator.
+  Sizes marked (E) are estimates, not checked against Apple or Google specs.
+</p>
+<main id="wall"></main>
+<script>
+  // Logical sizes in CSS points / dp. (E) = estimate, not verified. Edit to match your devices.
+  // iPhone 17 and 16e: checked 28 Oct 2026 at https://useyourloaf.com/blog/iphone-17-screen-sizes/
+  const devices = [
+    { name: 'iPhone 17', w: 402, h: 874, kind: 'phone' },
+    { name: 'iPhone 16e', w: 390, h: 844, kind: 'phone' },
+    { name: 'Small phone (iPhone SE)', w: 375, h: 667, kind: 'phone' },
+    { name: 'Android (Pixel 9) (E)', w: 412, h: 915, kind: 'phone' },
+    { name: 'iPad 11 portrait (E)', w: 820, h: 1180, kind: 'tablet' },
+    { name: 'Tablet landscape (E)', w: 1180, h: 820, kind: 'tablet' },
+    { name: 'Desktop web', w: 1280, h: 800, kind: 'desktop' },
+  ];
+  const wall = document.getElementById('wall');
+  const pathEl = document.getElementById('path');
+  const scaleEl = document.getElementById('scale');
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('layoutwall') || '{}'); } catch (e) {}
+  if (saved.path) pathEl.value = saved.path;
+  if (saved.scale) scaleEl.value = saved.scale;
+
+  function render() {
+    const s = Number(scaleEl.value);
+    const path = pathEl.value || '/';
+    try { localStorage.setItem('layoutwall', JSON.stringify({ path, scale: s })); } catch (e) {}
+    wall.innerHTML = '';
+    for (const d of devices) {
+      const fig = document.createElement('figure');
+      const cap = document.createElement('figcaption');
+      cap.textContent = `${d.name} · ${d.w} x ${d.h}`;
+      fig.appendChild(cap);
+      const shell = document.createElement('div');
+      shell.className = 'shell ' + d.kind;
+      shell.style.width = d.w * s + 'px';
+      shell.style.height = d.h * s + 'px';
+      const f = document.createElement('iframe');
+      f.src = path;
+      f.title = d.name;
+      f.width = d.w; f.height = d.h;
+      f.style.transform = `scale(${s})`;
+      shell.appendChild(f);
+      fig.appendChild(shell);
+      wall.appendChild(fig);
+    }
+  }
+  scaleEl.addEventListener('input', render);
+  pathEl.addEventListener('change', render);
+  document.getElementById('reload').addEventListener('click', render);
+  render();
+</script>
+</body>
+</html>

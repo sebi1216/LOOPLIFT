@@ -1,0 +1,60 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+/ios
+/android
+
+# Playwright output
+e2e/.results/
+e2e/screenshots/
+playwright-report/
+coverage/
+.eslintcache
+
+# Claude Code and editor (local only)
+.claude/settings.local.json
+CLAUDE.local.md
+.claude/worktrees/
+.vscode/.chrome-preview/
+
+# Secrets (Expo's .gitignore only covers .env*.local). env.example (no dot) holds names only.
+.env
+.env.*
+
+*.keystore

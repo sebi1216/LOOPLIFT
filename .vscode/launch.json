@@ -1,0 +1,21 @@
+{
+  // Optional. VS Code is for READING code; the preview lives in the Claude desktop app
+  // (Browser pane) or in Chrome next to Claude (npm run web, then Win+Right).
+  // If you want the VS Code debugger: start `npm run web` in a terminal first, wait until the
+  // terminal shows http://localhost:8081 (or 8082 if Claude's preview has 8081: then change "url"),
+  // then press F5. No background task, so nothing can hang.
+  // Use it only while no second Claude session writes in this repo.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "preview (iPhone size)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:8081",
+      "webRoot": "${workspaceFolder}",
+      "runtimeArgs": ["--window-size=420,960"],
+      "userDataDir": "${workspaceFolder}/.vscode/.chrome-preview",
+      "sourceMaps": true
+    }
+  ]
+}

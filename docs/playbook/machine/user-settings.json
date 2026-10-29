@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "defaultMode": "default",
+    "disableBypassPermissionsMode": "disable",
+    "ask": [
+      "Bash(git push *)",
+      "PowerShell(git push *)"
+    ],
+    "deny": [
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.npmrc)",
+      "Read(~/.git-credentials)",
+      "Read(~/.config/gh/**)",
+      "Read(~/.expo/**)",
+      "Read(~/.supabase/**)",
+      "Read(~/.claude/.credentials.json)",
+      "Read(.env)",
+      "Read(.env.*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f*)",
+      "Bash(git push --mirror*)",
+      "Bash(git reset --hard*)",
+      "PowerShell(git push --force*)",
+      "PowerShell(git push -f*)",
+      "PowerShell(git push * --force*)",
+      "PowerShell(git push * -f*)",
+      "PowerShell(git push --mirror*)",
+      "PowerShell(git reset --hard*)",
+      "Bash(gh auth token*)",
+      "PowerShell(gh auth token*)",
+      "Bash(gh auth status *--show-token*)",
+      "PowerShell(gh auth status *--show-token*)",
+      "Bash(gh auth status *-t*)",
+      "PowerShell(gh auth status *-t*)",
+      "Bash(git credential*)",
+      "PowerShell(git credential*)",
+      "Bash(cmdkey*)",
+      "PowerShell(cmdkey*)"
+    ]
+  }
+}

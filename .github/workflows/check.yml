@@ -1,0 +1,55 @@
+# Same checks as on the PC, on every push to main and every pull request.
+# Node 22 LTS (Expo SDK 58 needs 22.13 or newer).
+# Actions are pinned to commit SHAs (a moved tag cannot change what runs). Looked up with
+# `git ls-remote` on 28 Oct 2026; the comment names the release. Update them by hand once a
+# quarter, or when GitHub warns about an old version.
+name: check
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run test:hooks
+      # Web smoke tests use the Google Chrome that GitHub's Ubuntu runners ship with.
+      - run: npm run test:e2e
+        env:
+          EXPO_OFFLINE: '1'
+      - if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: screenshots
+          path: e2e/screenshots/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  secrets:
+    # gitleaks looks for keys and tokens in every commit. Free for repos owned by a personal account.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: false

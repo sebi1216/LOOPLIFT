@@ -1,0 +1,233 @@
+{
+  "enabledPlugins": {
+    "expo@claude-plugins-official": true
+  },
+  "enableAllProjectMcpServers": false,
+  "permissions": {
+    "disableBypassPermissionsMode": "disable",
+    "allow": [
+      "Bash(npm run check)",
+      "PowerShell(npm run check)",
+      "Bash(npm run lint)",
+      "PowerShell(npm run lint)",
+      "Bash(npm run typecheck)",
+      "PowerShell(npm run typecheck)",
+      "Bash(npm test)",
+      "PowerShell(npm test)",
+      "Bash(npm run test:e2e)",
+      "PowerShell(npm run test:e2e)",
+      "Bash(npm run test:hooks)",
+      "PowerShell(npm run test:hooks)",
+      "Bash(git status)",
+      "PowerShell(git status)",
+      "Bash(git status --porcelain)",
+      "PowerShell(git status --porcelain)",
+      "Bash(git diff *)",
+      "PowerShell(git diff *)",
+      "Bash(git log *)",
+      "PowerShell(git log *)",
+      "Bash(git branch --show-current)",
+      "PowerShell(git branch --show-current)",
+      "Bash(git worktree list)",
+      "PowerShell(git worktree list)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "PowerShell(git push *)",
+      "Bash(git merge *)",
+      "PowerShell(git merge *)",
+      "Bash(git rebase *)",
+      "PowerShell(git rebase *)",
+      "Bash(git checkout *)",
+      "PowerShell(git checkout *)",
+      "Bash(git restore *)",
+      "PowerShell(git restore *)",
+      "Bash(git reset *)",
+      "PowerShell(git reset *)",
+      "Bash(git branch -d *)",
+      "PowerShell(git branch -d *)",
+      "Bash(git branch -D *)",
+      "PowerShell(git branch -D *)",
+      "Bash(git branch -m *)",
+      "PowerShell(git branch -m *)",
+      "Bash(git stash drop*)",
+      "PowerShell(git stash drop*)",
+      "Bash(git stash pop*)",
+      "PowerShell(git stash pop*)",
+      "Bash(git worktree add *)",
+      "PowerShell(git worktree add *)",
+      "Bash(git worktree remove *)",
+      "PowerShell(git worktree remove *)",
+      "Bash(git worktree prune*)",
+      "PowerShell(git worktree prune*)",
+      "Bash(rm *)",
+      "PowerShell(rm *)",
+      "Bash(npx *)",
+      "PowerShell(npx *)",
+      "Bash(npm install *)",
+      "PowerShell(npm install *)",
+      "Bash(npm i *)",
+      "PowerShell(npm i *)",
+      "Bash(npm add *)",
+      "PowerShell(npm add *)",
+      "Bash(npm update *)",
+      "PowerShell(npm update *)",
+      "Bash(npm uninstall *)",
+      "PowerShell(npm uninstall *)",
+      "Bash(npm exec *)",
+      "PowerShell(npm exec *)",
+      "Bash(npm audit fix *)",
+      "PowerShell(npm audit fix *)",
+      "Bash(eas *)",
+      "PowerShell(eas *)",
+      "Bash(supabase *)",
+      "PowerShell(supabase *)",
+      "Bash(gh api *)",
+      "PowerShell(gh api *)",
+      "Bash(gh repo *)",
+      "PowerShell(gh repo *)",
+      "Bash(gh secret *)",
+      "PowerShell(gh secret *)",
+      "Bash(gh workflow *)",
+      "PowerShell(gh workflow *)",
+      "Bash(gh pr merge *)",
+      "PowerShell(gh pr merge *)",
+      "Bash(gh issue *)",
+      "PowerShell(gh issue *)",
+      "Bash(curl *)",
+      "PowerShell(curl *)",
+      "Bash(wget *)",
+      "PowerShell(wget *)",
+      "PowerShell(Remove-Item *)",
+      "PowerShell(Invoke-WebRequest *)",
+      "PowerShell(Invoke-RestMethod *)",
+      "Edit(**/package.json)",
+      "Edit(**/eas.json)",
+      "Edit(**/app.json)",
+      "Edit(**/app.config.*)",
+      "Edit(.github/**)"
+    ],
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Edit(**/.env)",
+      "Edit(**/.env.*)",
+      "Read(**/*.pem)",
+      "Read(**/*.p8)",
+      "Read(**/*.p12)",
+      "Read(**/*.jks)",
+      "Read(**/*.keystore)",
+      "Read(**/*.mobileprovision)",
+      "Read(**/credentials.json)",
+      "Read(**/*service-account*.json)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.npmrc)",
+      "Read(~/.git-credentials)",
+      "Read(~/.config/gh/**)",
+      "Read(~/.expo/**)",
+      "Read(~/.supabase/**)",
+      "Read(~/.claude/.credentials.json)",
+      "Bash(git push --force*)",
+      "PowerShell(git push --force*)",
+      "Bash(git push -f*)",
+      "PowerShell(git push -f*)",
+      "Bash(git push * --force*)",
+      "PowerShell(git push * --force*)",
+      "Bash(git push * -f*)",
+      "PowerShell(git push * -f*)",
+      "Bash(git push --mirror*)",
+      "PowerShell(git push --mirror*)",
+      "Bash(git push * --mirror*)",
+      "PowerShell(git push * --mirror*)",
+      "Bash(git reset --hard*)",
+      "PowerShell(git reset --hard*)",
+      "Bash(git clean -f*)",
+      "PowerShell(git clean -f*)",
+      "Bash(git clean --force*)",
+      "PowerShell(git clean --force*)",
+      "Bash(git add -f*)",
+      "PowerShell(git add -f*)",
+      "Bash(git add --force*)",
+      "PowerShell(git add --force*)",
+      "Bash(git add * -f*)",
+      "PowerShell(git add * -f*)",
+      "Bash(git add * --force*)",
+      "PowerShell(git add * --force*)",
+      "Bash(git switch * -f*)",
+      "PowerShell(git switch * -f*)",
+      "Bash(git switch -f*)",
+      "PowerShell(git switch -f*)",
+      "Bash(git switch * --discard-changes*)",
+      "PowerShell(git switch * --discard-changes*)",
+      "Bash(git tag -f*)",
+      "PowerShell(git tag -f*)",
+      "Bash(git tag -d*)",
+      "PowerShell(git tag -d*)",
+      "Bash(git * --upload-pack*)",
+      "PowerShell(git * --upload-pack*)",
+      "Bash(git * --receive-pack*)",
+      "PowerShell(git * --receive-pack*)",
+      "Bash(npm run env*)",
+      "PowerShell(npm run env*)",
+      "Bash(npm audit fix --force*)",
+      "PowerShell(npm audit fix --force*)",
+      "Bash(supabase db push*)",
+      "PowerShell(supabase db push*)",
+      "Bash(npx supabase db push*)",
+      "PowerShell(npx supabase db push*)",
+      "Bash(npm publish*)",
+      "PowerShell(npm publish*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell|Monitor",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/guard.mjs"
+            ],
+            "timeout": 15,
+            "onFailure": "block",
+            "statusMessage": "Safety check"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/lint-edited-file.mjs"
+            ],
+            "timeout": 60,
+            "statusMessage": "ESLint on the edited file"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/typecheck-on-stop.mjs"
+            ],
+            "timeout": 120,
+            "statusMessage": "TypeScript check"
+          }
+        ]
+      }
+    ]
+  }
+}
