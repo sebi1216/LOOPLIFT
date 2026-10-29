@@ -16,7 +16,7 @@ Slice: slice 1 · hours logged 3 h + 2026-10-29 not given (a record, sum of docs
 - [ ] Local persistence: all data survives an app restart; no account
 
 ## Next step (one line)
-Build spec 001 in a fresh session: /clear, plan mode, then: build docs/specs/001-workout-tracker.md (answer its design question first). iPhone check of the 8 screens still open.
+Look at the spec 001 screenshots, merge `feat/workout-tracker` into main if OK, then the iPhone check (8 screens plus the workout and exercise screens, decimal keypad, comma in German, 200% text).
 
 ## Open questions (Claude adds here, never invents answers)
 - Another dev server in this folder overwrote `.expo/types` (route types) mid-session; CLAUDE.md says one session per repo.
@@ -28,6 +28,10 @@ Build spec 001 in a fresh session: /clear, plan mode, then: build docs/specs/001
 - Rotation editor: the native tab bar stays visible on this pushed screen (iOS default); the design frame has none. Keep the platform default?
 - `npm ci`: install scripts of `@parcel/watcher` and `unrs-resolver` are not approved (allowScripts); `npm audit` shows 3 high. Look at both before adding packages.
 - `.mcp.json` (FigCraft MCP setup) is untracked. Commit it so the design tool setup is in the repo, or keep it local?
+- A workout left open overnight stays the open one: the next day Today shows "Continue workout" (no date shown) instead of Let's go, and finishing files it under the old date. Keep, show the date, or ask to finish or discard? (spec 001 review)
+- Undo on the exercise screen covers only the last deleted workout; a second delete within 6 s drops Undo for the first. OK for v1?
+- If a workout holds the same lift twice, the graph and history use only its first block. Allow the same lift twice in a workout at all?
+- 2026-10-29: a dev server on 8081 (`expo start -c`, not started by Claude) was running next to your 8082 one; the route types in `.expo/types` came out broken (`/../data/...` paths). Stop it when you are done with it.
 - Two Expo integrations load here (the `expo` plugin and a claude.ai Expo connector); keep the plugin, turn the connector off for this folder.
 
 ## Evidence so far (Business mode; details in docs/evidence.md)

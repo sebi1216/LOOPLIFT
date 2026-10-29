@@ -38,3 +38,12 @@ Format:
 - Learned: @expo/ui MenuView and DateTimePicker do nothing on web, so both got small .web fallbacks. A screen's own ?date= param clashes with the store's ?date= switch (renamed the sheet's to ?day=).
 - Problems: a second dev server in this folder rewrote the typed routes; fixed by flat routes (workouts/[id].tsx, workouts/add). Code review: 6 fixed, 3 deferred (now.md). Teach-back and ratchet skipped at Sebastian's request.
 - Next: open all screens on the iPhone in Expo Go, set checked-device, decide storage (must-have 5).
+
+## 2026-10-29 · Ship (persistence, starter lifts, spec 001 written) · hours not given · checked-device +0
+- Added afterwards by Claude from the commits (this session had no log entry): saved data on the phone with expo-sqlite 58.0.13 (first launch empty), ?date= links are demo mode and save nothing (security review), 60 starter lifts and creating a lift inside the picker, spec 001 and decision #9.
+
+## 2026-10-29 · Ship (spec 001 workout tracker) · hours not given · checked-device +0
+- Built on branch feat/workout-tracker: workout log in saved data (tracker.ts, 15 tests red/green; store tests for old saves, broken sessions, Lena's 28 sessions), workout screen /session, exercise screen /exercises/[id] with an own react-native-svg line chart, Done on Today (ring and strip) and the Calendar, delete with Undo. Answers: code-first, ring and strip show Done, open session keeps its own copy.
+- Learned: react-native-web needs `aria-checked`, not accessibilityState, for checkboxes. A second dev server in this folder still breaks `.expo/types`.
+- Problems: one unit test was wrong (it contradicted the one-open-session rule) and was removed. The Calendar e2e test changed together with the code (2 Nov now reads Done). /code-review: 6 fixed, 4 parked as open questions; /security-review: no findings.
+- Next: Sebastian looks at the screenshots, merges, iPhone check.

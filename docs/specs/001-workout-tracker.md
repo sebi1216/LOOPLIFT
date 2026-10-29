@@ -1,4 +1,4 @@
-# Spec 001: Workout tracker   Status: draft
+# Spec 001: Workout tracker   Status: built (branch feat/workout-tracker, web-checked; device check open)
 
 Slice: 1 (decision #7, must-have added by Sebastian) · Why: targets you soon know by heart; the weight you did and its trend is what keeps you coming back.
 
@@ -41,7 +41,10 @@ Demo data: Lena gets 6 weeks of finished Push and Pull sessions (Bench Press 57.
 States: workout screen filled and open (`?state=filled`), exercise screen filled and empty (a lift without sessions); no loading or error states (local data).
 
 ## Files and interfaces (Claude fills this in during plan mode)
-- New routes to confirm in plan mode: workout screen (for example `/session`) and exercise screen (`/exercises/[id]`).
+- Routes: workout screen `/session` (root stack, over the tabs; `?start=w1` starts that workout for today or shows the open one), exercise screen `/exercises/[id]` (rename moved to its header, opens `/exercises/edit?id=`).
+- Data: `src/data/tracker.ts` (pure: parseKg, parseReps, startSession, editSet, addSet, finishSession, deleteSession, restoreSession, topSet, history, doneDates; tests in `tracker.test.ts`). `AppData.sessions` in `store.ts`; saves without it load with `[]`, broken entries are refused. Lena's 28 sessions: `demoSessions()` in `demo.ts`.
+- UI: `src/ui/set-row.tsx`, `line-chart.tsx` (react-native-svg), `undo-bar.tsx`; `DayCell` `done` prop (check plus "Done") on Today and the Calendar; the ring shows Done after finishing.
+- Answers to the open questions (Sebastian, 2026-10-29): code-first from direction C; the strip and the ring both show Done; the open session keeps its own copy.
 
 ## Open questions
 - Design: build these two screens code-first from the direction, or a short `/designs` round (2 frames in C) first?
