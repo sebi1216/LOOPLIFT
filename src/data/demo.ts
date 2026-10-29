@@ -1,5 +1,7 @@
-// Demo data and the data "service" for slice 1. Screens call these functions, never a backend.
-// When a real backend comes (for example Supabase), only this folder changes, not the screens.
+// Demo data for slice 1. Screens read it through the store (src/data/store.ts), never a backend.
+// When persistence or a backend comes, only this folder changes, not the screens.
+
+import type { Schedule } from './schedule';
 
 // CAST (story bible light): the same few made-up people and things on every screen, test and
 // screenshot, so screens tell one consistent story. Rules: invented names only, no real people,
@@ -10,24 +12,40 @@ export const cast = {
   newcomer: { id: 'u3', name: 'Mia', role: 'just installed the app, sees empty states' },
 } as const;
 
-// HERO CONTENT SET: Lena's split. Plain data only; the scheduling logic (resolveDay) comes later.
-export type DemoExercise = { id: string; name: string; muscleGroup: string };
-export type DemoWorkoutExercise = { exerciseId: string; targetSets: number; targetReps: number };
-export type DemoWorkout = { id: string; name: string; exercises: DemoWorkoutExercise[] };
-export type DemoRotation = { id: string; startDate: string; slots: (string | 'rest')[] };
+export const muscleGroups = ['arms', 'back', 'chest', 'core', 'legs', 'shoulders'] as const;
+export type MuscleGroup = (typeof muscleGroups)[number];
 
-export const demoExercises: DemoExercise[] = [
-  { id: 'e1', name: 'Bench Press', muscleGroup: 'Chest' },
-  { id: 'e2', name: 'Incline DB Press', muscleGroup: 'Chest' },
-  { id: 'e3', name: 'Overhead Press', muscleGroup: 'Shoulders' },
-  { id: 'e4', name: 'Triceps Pushdown', muscleGroup: 'Arms' },
-  { id: 'e5', name: 'Pull-up', muscleGroup: 'Back' },
-  { id: 'e6', name: 'Barbell Row', muscleGroup: 'Back' },
-  { id: 'e7', name: 'Face Pull', muscleGroup: 'Shoulders' },
-  { id: 'e8', name: 'Biceps Curl', muscleGroup: 'Arms' },
+export type Exercise = { id: string; name: string; muscleGroup: MuscleGroup };
+export type WorkoutExercise = { exerciseId: string; targetSets: number; targetReps: number };
+export type Workout = { id: string; name: string; exercises: WorkoutExercise[] };
+
+// The starter library: about 20 common lifts. Names are translated (src/i18n, key lift.<id>)
+// when the library is first created; after that they are the user's own text.
+export const starterLifts: { id: string; muscleGroup: MuscleGroup }[] = [
+  { id: 'e1', muscleGroup: 'chest' }, // Bench Press
+  { id: 'e2', muscleGroup: 'chest' }, // Incline DB Press
+  { id: 'e3', muscleGroup: 'shoulders' }, // Overhead Press
+  { id: 'e4', muscleGroup: 'arms' }, // Triceps Pushdown
+  { id: 'e5', muscleGroup: 'back' }, // Pull-up
+  { id: 'e6', muscleGroup: 'back' }, // Barbell Row
+  { id: 'e7', muscleGroup: 'shoulders' }, // Face Pull
+  { id: 'e8', muscleGroup: 'arms' }, // Biceps Curl
+  { id: 'e9', muscleGroup: 'legs' }, // Back Squat
+  { id: 'e10', muscleGroup: 'legs' }, // Deadlift
+  { id: 'e11', muscleGroup: 'legs' }, // Romanian Deadlift
+  { id: 'e12', muscleGroup: 'legs' }, // Leg Press
+  { id: 'e13', muscleGroup: 'legs' }, // Walking Lunge
+  { id: 'e14', muscleGroup: 'legs' }, // Calf Raise
+  { id: 'e15', muscleGroup: 'back' }, // Lat Pulldown
+  { id: 'e16', muscleGroup: 'back' }, // Seated Cable Row
+  { id: 'e17', muscleGroup: 'shoulders' }, // Lateral Raise
+  { id: 'e18', muscleGroup: 'chest' }, // Dips
+  { id: 'e19', muscleGroup: 'arms' }, // Hammer Curl
+  { id: 'e20', muscleGroup: 'core' }, // Plank
 ];
 
-export const demoWorkouts: DemoWorkout[] = [
+// HERO CONTENT SET: Lena's split.
+export const demoWorkouts: Workout[] = [
   {
     id: 'w1',
     name: 'Push',
@@ -51,18 +69,12 @@ export const demoWorkouts: DemoWorkout[] = [
 ];
 
 // The example loop from the concept: Push, Pull, Rest starting Monday 2 Nov 2026.
-export const demoRotation: DemoRotation = { id: 'r1', startDate: '2026-11-02', slots: ['w1', 'w2', 'rest'] };
-
-export type DemoItem = {
-  id: string;
-  title: string;
-  subtitle: string;
+// One day set by hand (Fri 20 Nov: Rest) so the Calendar shows the "set by you" look.
+export const demoSchedule: Schedule = {
+  rotation: { startDate: '2026-11-02', slots: ['w1', 'w2', 'rest'] },
+  entries: { '2026-11-20': { kind: 'rest' } },
+  shifts: [],
 };
 
-export function getDemoItems(): DemoItem[] {
-  return demoWorkouts.map((w) => ({
-    id: w.id,
-    title: `${cast.hero.name}'s ${w.name}`,
-    subtitle: `${w.exercises.length} exercises`,
-  }));
-}
+// The day the designs show (Thursday 5 Nov). Open any screen with ?date=2026-11-05 to see it.
+export const demoToday = '2026-11-05';
