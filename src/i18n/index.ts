@@ -132,7 +132,7 @@ const en = {
   'exercises.add': 'New exercise',
   'exercises.inWorkouts': 'In {names}',
   'exercises.noMatch': 'No exercise matches "{q}".',
-  'exercises.hint': 'Tap an exercise to rename it. Swipe left to delete.',
+  'exercises.hint': 'Tap an exercise to see its progress. Swipe left to delete.',
   'exercises.deleteTitle': 'Delete {name}?',
   'exercises.deleteUsed': 'It is in {names} and will be removed there too.',
   'exercises.deleteBody': 'This cannot be undone.',
@@ -210,6 +210,38 @@ const en = {
   'lift.e58': 'Hanging Leg Raise',
   'lift.e59': 'Cable Crunch',
   'lift.e60': 'Ab Wheel Rollout',
+
+  'common.undo': 'Undo',
+  'today.continue': 'Continue workout',
+  'today.startOther': 'Start a workout',
+  'session.title': 'Workout',
+  'session.target': 'Target {sets} × {reps}',
+  'session.set': 'Set',
+  'session.kg': 'kg',
+  'session.reps': 'Reps',
+  'session.kgA11y': 'Set {n}, kg',
+  'session.repsA11y': 'Set {n}, reps',
+  'session.tickA11y': 'Set {n} done',
+  'session.addSet': 'Add set',
+  'session.finish': 'Finish workout',
+  'session.discard': 'Discard workout',
+  'session.discardTitle': 'Discard this workout?',
+  'session.discardBody': 'The sets you logged today are not kept.',
+  'session.none': 'No workout running.',
+  'session.hint': 'Tick each set you did. Unticked sets are not kept.',
+  'session.more': 'More options',
+  'exercise.rename': 'Rename',
+  'exercise.missing': 'This exercise no longer exists.',
+  'exercise.chartTitle': 'Heaviest set',
+  'exercise.chartA11y': 'Heaviest set from {from} on {fromDate} to {to} on {toDate}',
+  'exercise.chartOne': 'Heaviest set {kg} on {date}',
+  'exercise.empty': 'Log a workout to see your progress',
+  'exercise.emptySub': 'Each finished workout adds a point.',
+  'exercise.history': 'Past workouts',
+  'exercise.edit': 'Edit',
+  'exercise.deleteSession': 'Delete workout',
+  'exercise.deleted': 'Workout deleted',
+  'exercise.kg': '{kg} kg',
 } as const;
 
 export type StringKey = keyof typeof en;
@@ -346,7 +378,7 @@ const de: Record<StringKey, string> = {
   'exercises.add': 'Neue Übung',
   'exercises.inWorkouts': 'In {names}',
   'exercises.noMatch': 'Keine Übung passt zu „{q}“.',
-  'exercises.hint': 'Tippe auf eine Übung, um sie umzubenennen. Nach links wischen zum Löschen.',
+  'exercises.hint': 'Tippe auf eine Übung, um deinen Fortschritt zu sehen. Nach links wischen zum Löschen.',
   'exercises.deleteTitle': '{name} löschen?',
   'exercises.deleteUsed': 'Sie steckt in {names} und wird dort auch entfernt.',
   'exercises.deleteBody': 'Das lässt sich nicht rückgängig machen.',
@@ -424,6 +456,38 @@ const de: Record<StringKey, string> = {
   'lift.e58': 'Beinheben hängend',
   'lift.e59': 'Kabelcrunch',
   'lift.e60': 'Ab Wheel',
+
+  'common.undo': 'Rückgängig',
+  'today.continue': 'Training fortsetzen',
+  'today.startOther': 'Training starten',
+  'session.title': 'Training',
+  'session.target': 'Ziel {sets} × {reps}',
+  'session.set': 'Satz',
+  'session.kg': 'kg',
+  'session.reps': 'Wdh.',
+  'session.kgA11y': 'Satz {n}, kg',
+  'session.repsA11y': 'Satz {n}, Wiederholungen',
+  'session.tickA11y': 'Satz {n} geschafft',
+  'session.addSet': 'Satz hinzufügen',
+  'session.finish': 'Training beenden',
+  'session.discard': 'Training verwerfen',
+  'session.discardTitle': 'Dieses Training verwerfen?',
+  'session.discardBody': 'Die heute eingetragenen Sätze werden nicht gespeichert.',
+  'session.none': 'Kein Training läuft.',
+  'session.hint': 'Hake jeden Satz ab, den du geschafft hast. Nicht abgehakte Sätze werden nicht gespeichert.',
+  'session.more': 'Weitere Optionen',
+  'exercise.rename': 'Umbenennen',
+  'exercise.missing': 'Diese Übung gibt es nicht mehr.',
+  'exercise.chartTitle': 'Schwerster Satz',
+  'exercise.chartA11y': 'Schwerster Satz von {from} am {fromDate} bis {to} am {toDate}',
+  'exercise.chartOne': 'Schwerster Satz {kg} am {date}',
+  'exercise.empty': 'Trainiere einmal, dann siehst du hier deinen Fortschritt',
+  'exercise.emptySub': 'Jedes beendete Training fügt einen Punkt hinzu.',
+  'exercise.history': 'Frühere Trainings',
+  'exercise.edit': 'Bearbeiten',
+  'exercise.deleteSession': 'Training löschen',
+  'exercise.deleted': 'Training gelöscht',
+  'exercise.kg': '{kg} kg',
 };
 
 const tables = { en, de } as const;
@@ -492,4 +556,14 @@ export function monthTitle(iso: string, todayIso: string, locale: Locale = curre
 
 export function dayOfMonth(iso: string): string {
   return String(Number(iso.slice(8, 10)));
+}
+
+// "5 Nov" / "5. Nov."
+export function shortDate(iso: string, locale: Locale = current): string {
+  return fmt(iso, { day: 'numeric', month: 'short' }, locale);
+}
+
+// "62.5" / "62,5": kg with the locale's decimal sign, at most one decimal.
+export function formatKg(kg: number, locale: Locale = current): string {
+  return new Intl.NumberFormat(intlLocale(locale), { maximumFractionDigits: 1 }).format(kg);
 }

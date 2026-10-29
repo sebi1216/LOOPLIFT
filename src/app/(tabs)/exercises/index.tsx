@@ -12,7 +12,7 @@ import { SwipeAction } from '@/ui/swipe-action';
 import { font, radius, size, space } from '@/ui/tokens';
 import { useColors } from '@/ui/use-colors';
 
-// Exercises: the library grouped by muscle group, with search. Tap to rename, swipe left to
+// Exercises: the library grouped by muscle group, with search. Tap for its progress, swipe left to
 // delete (warns when a workout uses it), + to add. The starter list is never empty.
 export default function Exercises() {
   const c = useColors();
@@ -76,7 +76,7 @@ export default function Exercises() {
                       accessibilityLabel={used.length ? `${e.name}, ${t('exercises.inWorkouts', { names: used.join(', ') })}` : e.name}
                       accessibilityActions={[{ name: 'delete', label: t('common.delete') }]}
                       onAccessibilityAction={(ev) => ev.nativeEvent.actionName === 'delete' && remove(e.id, e.name)}
-                      onPress={() => router.push({ pathname: '/exercises/edit', params: { id: e.id } })}
+                      onPress={() => router.push({ pathname: '/exercises/[id]', params: { id: e.id } })}
                       style={({ pressed }) => [
                         styles.row,
                         { backgroundColor: c.bgRaised },

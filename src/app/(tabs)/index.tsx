@@ -4,7 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { resolveDay, resolveRange } from '@/data/schedule';
 import { actions, useAppData, useToday, type AppData } from '@/data/store';
+import { doneDates, openSession } from '@/data/tracker';
 import { dayOfMonth, fullDate, longDate, t } from '@/i18n';
+import { ActionMenu } from '@/ui/action-menu';
 import { Button } from '@/ui/button';
 import { DayCell } from '@/ui/day-cell';
 import { Icon } from '@/ui/icon';
@@ -70,12 +72,20 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
           ? t('today.pushedBack')
           : '';
   const next = week.slice(1).find((x) => x.plan?.kind === 'workout');
+  const open = openSession(d.sessions);
+  const done = doneDates(d.sessions);
+  const todayDone = done.has(today);
+  const start = (workoutId: string) => router.push({ pathname: '/session', params: { start: workoutId } });
 
   return (
     <Screen>
       <Header over={greeting(d.userName)} date={today} />
 
-      <View style={styles.ringWrap} accessible accessibilityLabel={`${ringLabel} ${name}`} testID="today-ring">
+      <View
+        style={styles.ringWrap}
+        accessible
+        accessibilityLabel={[ringLabel, name, todayDone ? t('common.done') : ''].filter(Boolean).join(', ')}
+        testID="today-ring">
         <LoopRing slots={rotation.slots} current={day.source === 'loop' ? (day.slotIndex ?? 0) : null} diameter={size.ring} stroke={size.ringStroke}>
           {ringLabel ? (
             <View style={styles.ringSub}>
@@ -86,6 +96,12 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
           <Text style={[styles.hero, { color: c.text }]} numberOfLines={2} adjustsFontSizeToFit testID="today-plan">
             {name}
           </Text>
+          {todayDone ? (
+            <View style={styles.ringSub} testID="today-done">
+              <Icon name="check" size={13} color={c.success} />
+              <Text style={[styles.caption, { color: c.success }]}>{t('common.done')}</Text>
+            </View>
+          ) : null}
         </LoopRing>
       </View>
 
@@ -100,7 +116,11 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
               label={label}
               variant={dayVariant(x, today)}
               rest={x.plan?.kind === 'rest'}
-              accessibilityLabel={t('today.dayA11y', { date: longDate(x.date), plan: label || t('today.freeTitle') })}
+              done={done.has(x.date)}
+              accessibilityLabel={t('today.dayA11y', {
+                date: longDate(x.date),
+                plan: done.has(x.date) ? t('common.done') : label || t('today.freeTitle'),
+              })}
               onPress={() => router.push({ pathname: '/change-day', params: { day: x.date } })}
               testID={`strip-${x.date}`}
             />
@@ -142,14 +162,18 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
       </View>
 
       <View style={styles.actions}>
-        {workout ? (
-          <Button
-            label={t('today.letsGo')}
-            style={styles.flex}
-            onPress={() => router.push({ pathname: '/workouts/[id]', params: { id: workout.id } })}
-            testID="lets-go"
-          />
-        ) : null}
+        {open ? (
+          <Button label={t('today.continue')} style={styles.flex} onPress={() => router.push('/session')} testID="continue-workout" />
+        ) : todayDone ? null : workout ? (
+          <Button label={t('today.letsGo')} style={styles.flex} onPress={() => start(workout.id)} testID="lets-go" />
+        ) : (
+          // Rest or free day: any workout can still be started, today only.
+          <View style={styles.flex}>
+            <ActionMenu items={d.workouts.map((w) => ({ id: w.id, title: w.name }))} onSelect={start} testID="start-other-menu">
+              <Button label={t('today.startOther')} variant="soft" testID="start-other" />
+            </ActionMenu>
+          </View>
+        )}
         <Button
           label={t('today.changeDay')}
           variant="soft"

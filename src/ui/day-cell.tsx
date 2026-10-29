@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { t } from '@/i18n';
+
 import { Icon } from './icon';
 import { font, radius, size, space } from './tokens';
 import { useColors } from './use-colors';
@@ -16,6 +18,8 @@ type Props = {
   variant: DayVariant;
   // Rest days that are also today or changed keep their dashed outline.
   rest?: boolean;
+  // A finished workout on this day: a check plus "Done" instead of the plan (status = icon + label).
+  done?: boolean;
   // In previews the weekday is small and the plan is the important part.
   emphasis?: 'top' | 'label';
   onPress?: () => void;
@@ -23,7 +27,7 @@ type Props = {
   testID?: string;
 };
 
-export function DayCell({ shape, top, label, variant, rest, emphasis = 'top', onPress, accessibilityLabel, testID }: Props) {
+export function DayCell({ shape, top, label: planText, variant, rest, done, emphasis = 'top', onPress, accessibilityLabel, testID }: Props) {
   const c = useColors();
   const isRest = rest ?? variant === 'rest';
   const bg =
@@ -36,7 +40,14 @@ export function DayCell({ shape, top, label, variant, rest, emphasis = 'top', on
     isRest && variant !== 'today' && variant !== 'manual' && [styles.dashed, { borderColor: c.restOutline }],
     variant === 'manual' && [styles.manual, { borderColor: c.accent }],
   ];
-  const pin = variant === 'manual' ? <Icon name="pin" size={10} color={c.accent} /> : null;
+  const label = done ? t('common.done') : planText;
+  // Inside a today cell the text sits on accent, so it stays onAccent there.
+  const doneColor = variant === 'today' && shape === 'cell' ? c.onAccent : c.success;
+  const pin = done ? (
+    <Icon name="check" size={10} color={doneColor} />
+  ) : variant === 'manual' ? (
+    <Icon name="pin" size={10} color={c.accent} />
+  ) : null;
 
   const content =
     shape === 'circle' ? (
@@ -46,7 +57,7 @@ export function DayCell({ shape, top, label, variant, rest, emphasis = 'top', on
         </View>
         <View style={styles.labelRow}>
           {pin}
-          <Text numberOfLines={1} style={[styles.label, { color: variant === 'today' ? c.accent : c.textMuted }]}>
+          <Text numberOfLines={1} style={[styles.label, { color: done ? doneColor : variant === 'today' ? c.accent : c.textMuted }]}>
             {label}
           </Text>
         </View>
@@ -59,7 +70,7 @@ export function DayCell({ shape, top, label, variant, rest, emphasis = 'top', on
             {pin}
             <Text
               numberOfLines={1}
-              style={[emphasis === 'top' ? styles.label : styles.strong, { color: emphasis === 'top' ? sub : fg }]}>
+              style={[emphasis === 'top' ? styles.label : styles.strong, { color: done ? doneColor : emphasis === 'top' ? sub : fg }]}>
               {label}
             </Text>
           </View>

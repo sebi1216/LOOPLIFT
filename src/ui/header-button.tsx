@@ -4,9 +4,9 @@ import { Icon } from './icon';
 import { font, radius, size, space } from './tokens';
 import { useColors } from './use-colors';
 
-type Props = { label: string; onPress: () => void; icon?: 'plus'; testID?: string };
+type Props = { label: string; onPress?: () => void; icon?: 'plus' | 'more'; testID?: string };
 
-// A header action: text ("Save", "Done") or a round "+" (48 x 48). iOS places it inside the
+// A header action: text ("Save", "Done") or a round "+" or "•••" (48 x 48). iOS places it inside the
 // navigation bar's own inset; the web header has none, so it gets the 16 side padding there.
 export function HeaderButton({ label, onPress, icon, testID }: Props) {
   const c = useColors();

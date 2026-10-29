@@ -101,7 +101,9 @@ test.describe('Calendar', () => {
   test('November with the loop, rest dashed, Fri 20 set by hand', async ({ page }) => {
     await page.goto(`/calendar?${LENA}`);
     await expect(page.getByTestId('month-title')).toHaveText('November');
-    await expect(page.getByTestId('day-2026-11-02')).toContainText('Push');
+    // Lena trained on 2 Nov (her demo history), so it shows Done; the plan stays in the label.
+    await expect(page.getByTestId('day-2026-11-02')).toContainText(en('common.done'));
+    await expect(page.getByTestId('day-2026-11-02')).toHaveAttribute('aria-label', /Push/);
     await expect(page.getByTestId('day-2026-11-04')).toContainText('Rest');
     await expect(page.getByTestId('day-2026-11-20')).toHaveAttribute('aria-label', /Set by you/);
     await shot(page, 'calendar');
@@ -222,6 +224,88 @@ test.describe('Exercises', () => {
   });
 });
 
+test.describe('Workout (spec 001)', () => {
+  const openPush = async (page: Page) => {
+    await page.goto(`/?${LENA}`);
+    await tapUntil(page, 'lets-go', () => expect(page.getByTestId('session')).toBeVisible({ timeout: 2000 }));
+  };
+
+  test("Let's go on Push: 4 lifts, Bench 4 sets prefilled from the last Push (65 kg x 6)", async ({ page }) => {
+    await openPush(page);
+    await expect(page.locator('[data-testid^="session-ex-"]')).toHaveCount(4);
+    for (let i = 0; i < 4; i++) {
+      await expect(page.getByTestId(`set-0-${i}-kg`)).toHaveValue('65');
+      await expect(page.getByTestId(`set-0-${i}-reps`)).toHaveValue('6');
+    }
+    await expect(page.getByTestId('set-0-4-kg')).toHaveCount(0);
+    await shot(page, 'session');
+  });
+
+  test('finish: unticked sets are dropped, 5 Nov shows Done on Today and the Calendar', async ({ page }) => {
+    await openPush(page);
+    await page.getByTestId('set-0-0-tick').click();
+    await page.getByTestId('set-0-1-tick').click();
+    await expect(page.getByTestId('set-0-1-tick')).toHaveAttribute('aria-checked', 'true');
+    await page.getByTestId('finish-workout').click();
+    await expect(page.getByTestId('today-done')).toBeVisible();
+    await expect(page.getByTestId('strip-2026-11-05')).toContainText(en('common.done'));
+    await expect(page.getByTestId('lets-go')).toHaveCount(0);
+    await shot(page, 'today-done');
+    // In-app navigation: a new page load would reset Lena's demo data.
+    await page.getByRole('tab', { name: en('tab.calendar') }).click();
+    await expect(page.getByTestId('day-2026-11-05')).toContainText(en('common.done'));
+    await page.getByRole('tab', { name: en('tab.exercises') }).click();
+    await page.getByTestId('exercise-e1').click();
+    await expect(page.getByTestId('past-2026-11-05')).toContainText('65 × 6 · 65 × 6');
+    await expect(page.getByTestId('past-2026-11-05')).not.toContainText('65 × 6 · 65 × 6 · 65');
+    await expect(page.getByTestId('chart').locator('circle')).toHaveCount(15);
+  });
+});
+
+test.describe('Exercise screen (spec 001)', () => {
+  test('Bench Press: one point per finished Push, newest workout first', async ({ page }) => {
+    await page.goto(`/exercises/e1?${LENA}`);
+    await expect(page.getByTestId('chart').locator('circle')).toHaveCount(14);
+    await expect(page.getByTestId('chart')).toHaveAttribute('aria-label', /57.5 kg.*65 kg/);
+    await expect(page.locator('[data-testid^="past-2026-"][data-testid$="-open"]').first()).toContainText('2 Nov 2026');
+    await shot(page, 'exercise-detail');
+  });
+
+  test('dark', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto(`/exercises/e1?${LENA}`);
+    await expect(page.getByTestId('chart')).toBeVisible();
+    await shot(page, 'exercise-detail-dark');
+  });
+
+  test('a lift never logged shows the empty state', async ({ page }) => {
+    await page.goto(`/exercises/e9?${LENA}`);
+    await expect(page.getByText(en('exercise.empty'))).toBeVisible();
+    await expect(page.getByTestId('chart')).toHaveCount(0);
+    await shot(page, 'exercise-detail-empty');
+  });
+
+  test('editing a past set updates history and graph; Undo brings a deleted workout back', async ({ page }) => {
+    await page.goto(`/exercises/e1?${LENA}`);
+    await tapUntil(page, 'past-2026-11-02-open', () =>
+      expect(page.getByTestId('past-2026-11-02-set-0-kg')).toBeVisible({ timeout: 2000 }),
+    );
+    await page.getByTestId('past-2026-11-02-set-0-kg').fill('67,5');
+    await page.getByTestId('past-2026-11-02-done').click();
+    await expect(page.getByTestId('past-2026-11-02')).toContainText('67.5 × 6 · 65 × 6');
+    await expect(page.getByTestId('chart')).toHaveAttribute('aria-label', /to 67.5 kg on 2 Nov/);
+
+    await page.getByTestId('past-2026-11-02-more').click();
+    await page.getByRole('menuitem', { name: en('exercise.deleteSession') }).click();
+    await expect(page.getByTestId('past-2026-11-02')).toHaveCount(0);
+    await expect(page.getByTestId('chart').locator('circle')).toHaveCount(13);
+    await page.getByTestId('undo-bar-undo').click();
+    await expect(page.getByTestId('past-2026-11-02')).toContainText('67.5 × 6');
+    await expect(page.getByTestId('chart').locator('circle')).toHaveCount(14);
+    await expect(page.getByTestId('undo-bar')).toHaveCount(0);
+  });
+});
+
 test.describe('German (German text is longer: check it wraps well)', () => {
   test.use({ locale: 'de-DE' });
   const pages = [
@@ -231,6 +315,7 @@ test.describe('German (German text is longer: check it wraps well)', () => {
     ['rotation-editor-de', `/calendar/loop?${LENA}`, 'Dein Loop'],
     ['workout-editor-de', `/workouts/w1?${LENA}`, 'Bankdrücken'],
     ['exercises-de', `/exercises?${LENA}`, 'Bankdrücken'],
+    ['session-de', `/session?start=w1&${LENA}`, 'Bankdrücken'],
   ] as const;
   for (const [name, path, check] of pages) {
     test(name, async ({ page }) => {
@@ -272,6 +357,33 @@ test.describe('Saved on the device (web preview: localStorage)', () => {
     await page.goto('/workouts');
     await expect(page.getByText('Legs')).toBeVisible();
     await expect(page.getByTestId('workout-w1')).toHaveCount(0);
+  });
+  test('a workout in progress survives a restart: Today shows Continue workout, the set keeps its numbers', async ({ page }) => {
+    // A saved app with a one-day loop (Push every day) starting on the browser's real today.
+    // Only written when nothing is saved yet, so the second load reads what the app saved.
+    await page.addInitScript(() => {
+      if (localStorage.getItem('looplift.data')) return;
+      const d = new Date();
+      const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const data = {
+        userName: null,
+        libraryVersion: 2,
+        exercises: [{ id: 'e1', name: 'Bench Press', muscleGroup: 'chest' }],
+        workouts: [{ id: 'w1', name: 'Push', exercises: [{ exerciseId: 'e1', targetSets: 2, targetReps: 5 }] }],
+        schedule: { rotation: { startDate: today, slots: ['w1'] }, entries: {}, shifts: [] },
+        sessions: [],
+      };
+      localStorage.setItem('looplift.data', JSON.stringify({ v: 1, data }));
+    });
+    await page.goto('/');
+    await tapUntil(page, 'lets-go', () => expect(page.getByTestId('session')).toBeVisible({ timeout: 2000 }));
+    await page.getByTestId('set-0-0-kg').fill('72,5');
+    await page.getByTestId('set-0-0-tick').click();
+    await expect(page.getByTestId('set-0-0-tick')).toHaveAttribute('aria-checked', 'true');
+    await page.goto('/');
+    await tapUntil(page, 'continue-workout', () => expect(page.getByTestId('session')).toBeVisible({ timeout: 2000 }));
+    await expect(page.getByTestId('set-0-0-kg')).toHaveValue('72.5');
+    await expect(page.getByTestId('set-0-0-tick')).toHaveAttribute('aria-checked', 'true');
   });
 });
 

@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { addDays, resolveDay, resolveRange } from '@/data/schedule';
 import { useAppData, useToday } from '@/data/store';
+import { doneDates } from '@/data/tracker';
 import { dayOfMonth, longDate, monthTitle, t, weekdayLetter } from '@/i18n';
 import { Button } from '@/ui/button';
 import { DayCell } from '@/ui/day-cell';
@@ -24,6 +25,7 @@ function monthStart(iso: string, offset: number): string {
 export default function Calendar() {
   const c = useColors();
   const d = useAppData();
+  const done = doneDates(d.sessions);
   const today = useToday();
   const [offset, setOffset] = useState(0);
   const first = monthStart(today, offset);
@@ -108,9 +110,11 @@ export default function Calendar() {
                     label={planLabel(d, x.plan)}
                     variant={dayVariant(x, today)}
                     rest={x.plan?.kind === 'rest'}
+                    done={done.has(x.date)}
                     accessibilityLabel={[
                       longDate(x.date),
                       planLabel(d, x.plan) || t('today.freeTitle'),
+                      done.has(x.date) ? t('common.done') : '',
                       x.source === 'manual' ? t('today.setByYou') : '',
                     ]
                       .filter(Boolean)
