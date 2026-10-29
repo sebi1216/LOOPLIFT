@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { addDays, resolveDay, resolveRange, samePlan, type Plan, type Schedule } from '@/data/schedule';
+import { addDays, isIsoDate, resolveDay, resolveRange, samePlan, type Plan, type Schedule } from '@/data/schedule';
 import { actions, ops, useAppData, useToday, type AppData } from '@/data/store';
 import { longDate, shortWeekday, t, weekdayName } from '@/i18n';
 import { Chip } from '@/ui/chip';
@@ -21,7 +21,7 @@ export default function ChangeDay() {
   const d = useAppData();
   const today = useToday();
   const params = useLocalSearchParams<{ day?: string }>();
-  const date = params.day && /^\d{4}-\d{2}-\d{2}$/.test(params.day) ? params.day : today;
+  const date = params.day && isIsoDate(params.day) ? params.day : today;
   const day = resolveDay(d.schedule, date);
   const name = planLabel(d, day.plan);
 
@@ -85,7 +85,7 @@ export default function ChangeDay() {
               const label = planLabel(d, p);
               return (
                 <Chip
-                  key={label}
+                  key={p.kind === 'rest' ? 'rest' : p.workoutId}
                   label={label}
                   rest={p.kind === 'rest'}
                   accessibilityLabel={t('change.replaceWith', { plan: label })}

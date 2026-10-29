@@ -20,6 +20,8 @@ export default function WorkoutEditor() {
   const c = useColors();
   const d = useAppData();
   const [dragging, setDragging] = useState(false);
+  // What the field shows while typing; the store keeps the last non-empty name.
+  const [draftName, setDraftName] = useState<string | null>(null);
   const { id } = useLocalSearchParams<{ id: string }>();
   const workout = d.workouts.find((w) => w.id === id);
 
@@ -56,8 +58,12 @@ export default function WorkoutEditor() {
       <View style={[styles.field, { backgroundColor: c.bgRaised }]}>
         <Text style={[styles.caption, { color: c.textMuted }]}>{t('editor.name')}</Text>
         <TextInput
-          value={workout.name}
-          onChangeText={(name) => actions.updateWorkout(workout.id, { name })}
+          value={draftName ?? workout.name}
+          onChangeText={(name) => {
+            setDraftName(name);
+            actions.updateWorkout(workout.id, { name });
+          }}
+          onEndEditing={() => setDraftName(null)}
           accessibilityLabel={t('editor.name')}
           style={[styles.input, { color: c.text }]}
           returnKeyType="done"

@@ -41,6 +41,10 @@ export function addDays(date: string, n: number): string {
   return new Date((dayNumber(date) + n) * DAY_MS).toISOString().slice(0, 10);
 }
 
+export function isIsoDate(s: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
+
 export function toIsoDate(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;

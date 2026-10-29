@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { resolveDay, resolveRange, type Schedule } from '@/data/schedule';
 import { actions, ops, useAppData, useToday } from '@/data/store';
-import { longDate, t } from '@/i18n';
+import { dayOfMonth, longDate, t } from '@/i18n';
 import { Button } from '@/ui/button';
 import { CardRow } from '@/ui/card-row';
 import { Chip } from '@/ui/chip';
@@ -135,7 +135,7 @@ export default function RotationEditor() {
                 <DayCell
                   key={x.date}
                   shape="cell"
-                  top={x.date.slice(8).replace(/^0/, '')}
+                  top={dayOfMonth(x.date)}
                   label={planLabel(d, x.plan)}
                   variant={dayVariant(x, today)}
                   rest={x.plan?.kind === 'rest'}

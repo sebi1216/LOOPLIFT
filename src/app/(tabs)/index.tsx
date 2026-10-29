@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { resolveDay, resolveRange } from '@/data/schedule';
 import { actions, useAppData, useToday, type AppData } from '@/data/store';
-import { fullDate, longDate, t } from '@/i18n';
+import { dayOfMonth, fullDate, longDate, t } from '@/i18n';
 import { Button } from '@/ui/button';
 import { DayCell } from '@/ui/day-cell';
 import { Icon } from '@/ui/icon';
@@ -94,7 +94,7 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
             <DayCell
               key={x.date}
               shape="circle"
-              top={x.date.slice(8).replace(/^0/, '')}
+              top={dayOfMonth(x.date)}
               label={label}
               variant={dayVariant(x, today)}
               rest={x.plan?.kind === 'rest'}

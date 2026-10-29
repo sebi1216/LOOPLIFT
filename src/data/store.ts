@@ -3,13 +3,13 @@
 // tested in store.test.ts. Slice 1 keeps everything in memory (decision #4: storage later),
 // so a restart brings back the demo data.
 
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { useSyncExternalStore } from 'react';
 
 import { getLocale, t, type Locale, type StringKey } from '@/i18n';
 
 import { cast, demoSchedule, demoToday, demoWorkouts, starterLifts, type Exercise, type MuscleGroup, type Workout, type WorkoutExercise } from './demo';
-import { clearDay, pushBack, replaceDay, toIsoDate, type Plan, type Rotation, type Schedule } from './schedule';
+import { clearDay, isIsoDate, pushBack, replaceDay, toIsoDate, type Plan, type Rotation, type Schedule } from './schedule';
 
 export type AppData = {
   userName: string;
@@ -63,7 +63,10 @@ export const ops = {
   },
 
   updateWorkout(d: AppData, id: string, change: Partial<Omit<Workout, 'id'>>): AppData {
-    return { ...d, workouts: d.workouts.map((w) => (w.id === id ? { ...w, ...change } : w)) };
+    // A blank name is ignored: the workout keeps its last real name.
+    const { name, ...rest } = change;
+    const named = name !== undefined && name.trim() ? { name } : {};
+    return { ...d, workouts: d.workouts.map((w) => (w.id === id ? { ...w, ...rest, ...named } : w)) };
   },
 
   deleteWorkout(d: AppData, id: string): AppData {
@@ -154,7 +157,7 @@ export function applyUrlParams(params: { state?: string; date?: string }) {
     next.data = params.state === 'empty' ? emptyData(getLocale()) : lenaData(getLocale());
   }
   if (params.date === 'demo') next.today = demoToday;
-  else if (params.date && /^\d{4}-\d{2}-\d{2}$/.test(params.date) && params.date !== snapshot.today) next.today = params.date;
+  else if (params.date && isIsoDate(params.date) && params.date !== snapshot.today) next.today = params.date;
   if (Object.keys(next).length > 0) set(next);
 }
 
@@ -168,9 +171,15 @@ export function useAppData(): AppData {
   return useSyncExternalStore(subscribe, () => snapshot.data, () => snapshot.data);
 }
 
+// The real date is read on every store change and whenever the app comes back to the
+// foreground, so Today moves on after midnight.
+AppState.addEventListener('change', (s) => {
+  if (s === 'active') listeners.forEach((l) => l());
+});
+
 export function useToday(): string {
-  const today = useSyncExternalStore(subscribe, () => snapshot.today, () => snapshot.today);
-  return today ?? toIsoDate(new Date());
+  const read = () => snapshot.today ?? toIsoDate(new Date());
+  return useSyncExternalStore(subscribe, read, read);
 }
 
 function update(change: (d: AppData) => AppData) {

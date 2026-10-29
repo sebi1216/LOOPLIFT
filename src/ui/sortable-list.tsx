@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { StyleSheet, View, type AccessibilityActionEvent } from 'react-native';
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, type SharedValue } from 'react-native-reanimated';
@@ -32,13 +32,22 @@ export function SortableList<T>({ items, keyOf, labelOf, renderItem, onMove, onD
   const active = useSharedValue(-1);
   const hover = useSharedValue(-1);
   const dragY = useSharedValue(0);
-  const heights = useSharedValue<number[]>([]);
+  // Heights by row key (not by position), so they stay right after a reorder; order maps
+  // positions to keys for the worklets.
+  const heights = useSharedValue<Record<string, number>>({});
+  const order = useSharedValue<string[]>([]);
+  const keys = items.map(keyOf);
+  const keysId = keys.join('|');
+  useEffect(() => {
+    order.set(keysId.split('|'));
+  }, [keysId, order]);
 
   return (
     <View style={styles.list} testID={testID}>
       {items.map((item, index) => (
         <Row
-          key={keyOf(item)}
+          key={keys[index]}
+          rowKey={keys[index]}
           index={index}
           count={items.length}
           label={labelOf(item)}
@@ -46,6 +55,7 @@ export function SortableList<T>({ items, keyOf, labelOf, renderItem, onMove, onD
           hover={hover}
           dragY={dragY}
           heights={heights}
+          order={order}
           onMove={onMove}
           onDragging={onDragging}
           render={(handle) => renderItem(item, index, handle)}
@@ -56,19 +66,21 @@ export function SortableList<T>({ items, keyOf, labelOf, renderItem, onMove, onD
 }
 
 type RowProps = {
+  rowKey: string;
   index: number;
   count: number;
   label: string;
   active: SharedValue<number>;
   hover: SharedValue<number>;
   dragY: SharedValue<number>;
-  heights: SharedValue<number[]>;
+  heights: SharedValue<Record<string, number>>;
+  order: SharedValue<string[]>;
   onMove: (from: number, to: number) => void;
   onDragging?: (dragging: boolean) => void;
   render: (handle: ReactNode) => ReactNode;
 };
 
-function Row({ index, count, label, active, hover, dragY, heights, onMove, onDragging, render }: RowProps) {
+function Row({ rowKey, index, count, label, active, hover, dragY, heights, order, onMove, onDragging, render }: RowProps) {
   const setDragging = (dragging: boolean) => onDragging?.(dragging);
   const c = useColors();
 
@@ -85,17 +97,19 @@ function Row({ index, count, label, active, hover, dragY, heights, onMove, onDra
       'worklet';
       dragY.set(e.translationY);
       // Where would the row land? Walk past neighbours while the drag covers half of them.
-      const h = heights.get();
+      const byKey = heights.get();
+      const keys = order.get();
+      const h = (i: number) => byKey[keys[i]] ?? 0;
       let target = index;
       let moved = e.translationY;
       if (moved > 0) {
-        while (target < count - 1 && moved > (h[target + 1] ?? 0) / 2) {
-          moved -= (h[target + 1] ?? 0) + GAP;
+        while (target < count - 1 && moved > h(target + 1) / 2) {
+          moved -= h(target + 1) + GAP;
           target += 1;
         }
       } else {
-        while (target > 0 && -moved > (h[target - 1] ?? 0) / 2) {
-          moved += (h[target - 1] ?? 0) + GAP;
+        while (target > 0 && -moved > h(target - 1) / 2) {
+          moved += h(target - 1) + GAP;
           target -= 1;
         }
       }
@@ -110,12 +124,22 @@ function Row({ index, count, label, active, hover, dragY, heights, onMove, onDra
       scheduleOnRN(setDragging, false);
       if (to !== index && to >= 0) scheduleOnRN(onMove, index, to);
     },
+    // Also runs when the drag is cancelled (another gesture or the system took the touch),
+    // so the row never stays lifted and the screen never stays unscrollable.
+    onFinalize: () => {
+      'worklet';
+      if (active.get() !== index) return;
+      active.set(-1);
+      hover.set(-1);
+      dragY.set(0);
+      scheduleOnRN(setDragging, false);
+    },
   });
 
   const style = useAnimatedStyle(() => {
     const a = active.get();
     if (a === index) return { transform: [{ translateY: dragY.get() }], zIndex: 2, opacity: 0.95 };
-    const h = (heights.get()[a] ?? 0) + GAP;
+    const h = (heights.get()[order.get()[a]] ?? 0) + GAP;
     let shift = 0;
     if (a >= 0 && a < index && index <= hover.get()) shift = -h;
     if (a >= 0 && a > index && index >= hover.get()) shift = h;
@@ -149,9 +173,7 @@ function Row({ index, count, label, active, hover, dragY, heights, onMove, onDra
       style={style}
       onLayout={(e) => {
         const h = e.nativeEvent.layout.height;
-        const next = [...heights.get()];
-        next[index] = h;
-        heights.set(next);
+        heights.set({ ...heights.get(), [rowKey]: h });
       }}>
       {render(handle)}
     </Animated.View>

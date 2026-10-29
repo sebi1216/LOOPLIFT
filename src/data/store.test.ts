@@ -64,3 +64,9 @@ test('a new exercise gets a unique id; empty names are refused', () => {
   expect(d.exercises.find((e) => e.id === id)).toMatchObject({ name: 'Hip Thrust', muscleGroup: 'legs' });
   expect(ops.addExercise(d, '   ', 'legs')[1]).toBeNull();
 });
+
+test('a workout name is never saved empty', () => {
+  const d = ops.updateWorkout(lena(), 'w1', { name: '   ' });
+  expect(d.workouts[0].name).toBe('Push');
+  expect(ops.updateWorkout(d, 'w1', { name: 'Push A' }).workouts[0].name).toBe('Push A');
+});
