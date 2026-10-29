@@ -32,3 +32,9 @@ Format:
 - Learned: FigCraft only writes inside docs/design/; generating batch commands with a small script beats hand-writing 40-cell grids. Auto-layout strokes need the other three side weights set to 0.
 - Problems: two contrast misses caught before showing (A tint, C rest outline); a text frame truncated until set to fill. Another session committed the design kit during wrap-up.
 - Next: decide the loop-ring drawing (react-native-svg or not), then /build-screen Today.
+
+## 2026-10-29 · Ship (build all screens) · hours not given · checked-device +0
+- Built: scheduling engine resolveDay (15 tests, red/green) and in-memory store; all 8 screens in direction C (Today + empty, Change-a-day sheet, Calendar, Rotation editor, Workouts, Workout editor, Exercises) with 4 native tabs and 3 sheets; react-native-svg 15.16.0 for the loop ring (decision #3). `npm run check` 30 tests, `test:e2e` 28 passed. All 8 checked-web. Must-haves 3 and 4 ticked with web evidence. Tag good-2026-10-29.
+- Learned: @expo/ui MenuView and DateTimePicker do nothing on web, so both got small .web fallbacks. A screen's own ?date= param clashes with the store's ?date= switch (renamed the sheet's to ?day=).
+- Problems: a second dev server in this folder rewrote the typed routes; fixed by flat routes (workouts/[id].tsx, workouts/add). Code review: 6 fixed, 3 deferred (now.md). Teach-back and ratchet skipped at Sebastian's request.
+- Next: open all screens on the iPhone in Expo Go, set checked-device, decide storage (must-have 5).
