@@ -40,11 +40,13 @@ export default function SessionScreen() {
   // Opened by a link (no screen behind it): go to Today instead of back.
   const leave = () => (router.canGoBack() ? router.back() : router.replace(HOME));
 
+  const starting = !!start && d.workouts.some((w) => w.id === start);
   if (!s) {
     return (
       <View style={[styles.missing, { backgroundColor: c.bg }]} testID="session-none">
         <Stack.Screen options={{ title: t('session.title') }} />
-        {start ? null : <Text style={[styles.body, { color: c.textMuted }]}>{t('session.none')}</Text>}
+        {/* While a known workout is starting, show nothing for one frame instead of the message. */}
+        {starting ? null : <Text style={[styles.body, { color: c.textMuted }]}>{t('session.none')}</Text>}
       </View>
     );
   }
@@ -67,10 +69,15 @@ export default function SessionScreen() {
             <ActionMenu
               items={[{ id: 'discard', title: t('session.discard'), destructive: true }]}
               onSelect={() =>
-                confirmDelete(t('session.discardTitle'), t('session.discardBody'), () => {
-                  actions.discardSession(s.id);
-                  leave();
-                })
+                confirmDelete(
+                  t('session.discardTitle'),
+                  t('session.discardBody'),
+                  () => {
+                    actions.discardSession(s.id);
+                    leave();
+                  },
+                  t('session.discardConfirm'),
+                )
               }
               testID="session-menu">
               <HeaderButton label={t('session.more')} icon="more" testID="session-more" />

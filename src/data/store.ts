@@ -82,6 +82,15 @@ export function serialize(d: AppData): string {
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
 
+// Screens read every session on every render, so one broken entry would crash each launch.
+const isSession = (s: unknown) =>
+  isObj(s) &&
+  typeof s.id === 'string' &&
+  typeof s.date === 'string' &&
+  typeof s.finished === 'boolean' &&
+  Array.isArray(s.exercises) &&
+  s.exercises.every((e) => isObj(e) && typeof e.exerciseId === 'string' && Array.isArray(e.sets));
+
 // Saved text back to data. Anything broken, foreign or from another version gives null, and
 // the app starts fresh instead of crashing.
 export function parseSaved(raw: string | null): AppData | null {
@@ -99,7 +108,7 @@ export function parseSaved(raw: string | null): AppData | null {
   if (!isObj(s.entries) || !Array.isArray(s.shifts) || (s.rotation !== null && !isObj(s.rotation))) return null;
   if (isObj(s.rotation) && (typeof s.rotation.startDate !== 'string' || !Array.isArray(s.rotation.slots))) return null;
   // The workout log came later (spec 001): a save without it simply has no sessions yet.
-  if (d.sessions !== undefined && !Array.isArray(d.sessions)) return null;
+  if (d.sessions !== undefined && !(Array.isArray(d.sessions) && d.sessions.every(isSession))) return null;
   return { ...d, sessions: d.sessions ?? [] } as AppData;
 }
 

@@ -227,6 +227,7 @@ const en = {
   'session.discard': 'Discard workout',
   'session.discardTitle': 'Discard this workout?',
   'session.discardBody': 'The sets you logged today are not kept.',
+  'session.discardConfirm': 'Discard',
   'session.none': 'No workout running.',
   'session.hint': 'Tick each set you did. Unticked sets are not kept.',
   'session.more': 'More options',
@@ -242,6 +243,7 @@ const en = {
   'exercise.deleteSession': 'Delete workout',
   'exercise.deleted': 'Workout deleted',
   'exercise.kg': '{kg} kg',
+  'exercise.kgReps': '{kg} × {reps}',
 } as const;
 
 export type StringKey = keyof typeof en;
@@ -473,6 +475,7 @@ const de: Record<StringKey, string> = {
   'session.discard': 'Training verwerfen',
   'session.discardTitle': 'Dieses Training verwerfen?',
   'session.discardBody': 'Die heute eingetragenen Sätze werden nicht gespeichert.',
+  'session.discardConfirm': 'Verwerfen',
   'session.none': 'Kein Training läuft.',
   'session.hint': 'Hake jeden Satz ab, den du geschafft hast. Nicht abgehakte Sätze werden nicht gespeichert.',
   'session.more': 'Weitere Optionen',
@@ -488,6 +491,7 @@ const de: Record<StringKey, string> = {
   'exercise.deleteSession': 'Training löschen',
   'exercise.deleted': 'Training gelöscht',
   'exercise.kg': '{kg} kg',
+  'exercise.kgReps': '{kg} × {reps}',
 };
 
 const tables = { en, de } as const;

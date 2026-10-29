@@ -4,7 +4,7 @@ import Svg, { Circle, Line, Polyline } from 'react-native-svg';
 
 import { daysBetween } from '@/data/schedule';
 
-import { font, space } from './tokens';
+import { font, size, space } from './tokens';
 import { useColors } from './use-colors';
 
 type Point = { date: string; value: number };
@@ -18,8 +18,8 @@ type Props = {
   testID?: string;
 };
 
-const HEIGHT = 160;
-const DOT = 4;
+const HEIGHT = size.chart;
+const DOT = space.xs;
 
 // A small line chart: one dot per point, spaced by date, scaled from the lowest to the highest
 // value. Drawn with react-native-svg (decision #3), no chart package.
@@ -36,7 +36,8 @@ export function LineChart({ points, formatValue, formatDate, accessibilityLabel,
 
   const xy = points.map((p) => {
     const x = points.length === 1 ? width / 2 : pad + ((width - pad * 2) * daysBetween(first.date, p.date)) / span;
-    const y = max === min ? HEIGHT / 2 : pad + ((HEIGHT - pad * 2) * (max - p.value)) / (max - min);
+    // A flat series sits on the top line, next to its one label.
+    const y = max === min ? pad : pad + ((HEIGHT - pad * 2) * (max - p.value)) / (max - min);
     return { x, y };
   });
 

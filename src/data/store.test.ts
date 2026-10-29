@@ -141,6 +141,10 @@ describe('saved data', () => {
     d = ops.setSet(d, d.sessions.at(-1)!.id, 0, 0, { kg: 67.5, done: true });
     expect(parseSaved(serialize(d))).toEqual(d);
     expect(parseSaved(JSON.stringify({ v: 1, data: { ...lena(), sessions: 'x' } }))).toBeNull();
+    for (const bad of [null, {}, { id: 's', date: '2026-11-05', finished: false }, { id: 's', date: 5, finished: true, exercises: [] }]) {
+      expect(parseSaved(JSON.stringify({ v: 1, data: { ...lena(), sessions: [bad] } }))).toBeNull();
+    }
+    expect(parseSaved(JSON.stringify({ v: 1, data: { ...lena(), sessions: [{ ...lena().sessions[0], exercises: [{ exerciseId: 'e1', sets: 'x' }] }] } }))).toBeNull();
   });
 
   test('broken or foreign data is ignored, never crashes the app', () => {

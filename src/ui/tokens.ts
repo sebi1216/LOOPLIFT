@@ -58,6 +58,8 @@ export const size = {
   ringStroke: 22,
   ringStrokeSmall: 10,
   dayBubble: 44,
+  // Plot height of the line chart on the exercise screen.
+  chart: 160,
 } as const;
 
 // sm: calendar day cells, md: inputs and grouped lists, lg: cards and list rows, full: pills and buttons.

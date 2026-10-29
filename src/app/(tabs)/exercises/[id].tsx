@@ -92,7 +92,7 @@ export default function ExerciseDetail() {
             <View style={styles.list}>
               {[...h].reverse().map((x) => {
                 const open = editing === x.session.id;
-                const summary = x.sets.map((s) => t('common.setsReps', { sets: formatKg(s.kg ?? 0), reps: s.reps })).join(' · ');
+                const summary = x.sets.map((s) => t('exercise.kgReps', { kg: formatKg(s.kg ?? 0), reps: s.reps })).join(' · ');
                 return (
                   <View key={x.session.id} style={[styles.card, { backgroundColor: c.bgRaised }]} testID={`past-${x.session.date}`}>
                     <View style={styles.rowHead}>
