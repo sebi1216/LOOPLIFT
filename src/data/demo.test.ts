@@ -1,7 +1,7 @@
 import { cast, demoSchedule, demoWorkouts, starterLifts } from './demo';
 
-test('the starter library has about 20 lifts with unique ids', () => {
-  expect(starterLifts.length).toBe(20);
+test('the starter library has 60 lifts with unique ids', () => {
+  expect(starterLifts.length).toBe(60);
   expect(new Set(starterLifts.map((l) => l.id)).size).toBe(starterLifts.length);
 });
 

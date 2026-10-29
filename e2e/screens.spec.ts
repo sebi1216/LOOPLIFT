@@ -193,6 +193,16 @@ test.describe('Workout editor', () => {
     await expect(page.getByTestId('pick-e1')).toContainText(en('pick.already'));
     await shot(page, 'exercise-picker');
   });
+
+  test('a lift that is not in the library is created right in the picker', async ({ page }) => {
+    await page.goto(`/workouts/w1?${LENA}`);
+    await tapUntil(page, 'add-exercise', () => expect(page.getByTestId('pick-search')).toBeVisible({ timeout: 2000 }));
+    await page.getByTestId('pick-search').fill('Sled Push');
+    await expect(page.getByTestId('pick-create')).toContainText(en('pick.create', { name: 'Sled Push' }));
+    await shot(page, 'exercise-picker-create');
+    await page.getByTestId('create-legs').click();
+    await expect(page.getByTestId('editor-row-4')).toContainText('Sled Push');
+  });
 });
 
 test.describe('Exercises', () => {

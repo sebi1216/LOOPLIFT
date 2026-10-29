@@ -120,11 +120,10 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
                   accessible
                   accessibilityLabel={`${ex?.name}, ${t('common.setsRepsA11y', { sets: e.targetSets, reps: e.targetReps })}`}>
                   <Text style={[styles.body, styles.flex, { color: c.text }]}>{ex?.name}</Text>
-                  <View style={[styles.pill, { backgroundColor: c.accentSoft }]}>
-                    <Text style={[styles.pillText, { color: c.accent }]}>
-                      {t('common.setsReps', { sets: e.targetSets, reps: e.targetReps })}
-                    </Text>
-                  </View>
+                  {/* Quiet on purpose: after a few weeks you know the targets by heart. */}
+                  <Text style={[styles.target, { color: c.textMuted }]}>
+                    {t('common.setsReps', { sets: e.targetSets, reps: e.targetReps })}
+                  </Text>
                 </View>
               );
             })
@@ -228,8 +227,7 @@ const styles = StyleSheet.create({
   steps: { gap: space.md },
   step: { flexDirection: 'row', alignItems: 'center', gap: space.ms },
   exRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  pill: { borderRadius: radius.full, paddingHorizontal: space.sm, paddingVertical: space.xxs },
-  pillText: { ...font.caption, fontWeight: '600' },
+  target: { ...font.caption },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.ms },
   flex: { flex: 1 },
   center: { textAlign: 'center' },

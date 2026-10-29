@@ -1,4 +1,4 @@
-import { actions, applyUrlParams, emptyData, firstLaunchData, lenaData, ops, parseSaved, serialize, type AppData } from './store';
+import { actions, applyUrlParams, emptyData, firstLaunchData, lenaData, migrateLibrary, ops, parseSaved, serialize, type AppData } from './store';
 
 // The phone storage is native; unit tests never touch it. mockSaveRaw records the writes.
 const mockSaveRaw = jest.fn();
@@ -8,13 +8,13 @@ const lena = () => lenaData('en');
 
 test('Lena starts with 20 lifts, Push and Pull, and her loop; Mia starts empty', () => {
   const d = lena();
-  expect(d.exercises).toHaveLength(20);
+  expect(d.exercises).toHaveLength(60);
   expect(d.exercises[0].name).toBe('Bench Press');
   expect(d.workouts.map((w) => w.name)).toEqual(['Push', 'Pull']);
   const mia = emptyData('en');
   expect(mia.workouts).toEqual([]);
   expect(mia.schedule.rotation).toBeNull();
-  expect(mia.exercises).toHaveLength(20); // the starter library is there from the first launch
+  expect(mia.exercises).toHaveLength(60); // the starter library is there from the first launch
 });
 
 test('German starter names', () => {
@@ -79,14 +79,17 @@ test('groupByMuscle: groups in library order, search ignores case, empty groups 
   const all = ops.groupByMuscle(lena(), '');
   expect(all.map((g) => g.group)).toEqual(['arms', 'back', 'chest', 'core', 'legs', 'shoulders']);
   const curl = ops.groupByMuscle(lena(), '  CURL ');
-  expect(curl).toEqual([{ group: 'arms', items: [expect.objectContaining({ id: 'e8' }), expect.objectContaining({ id: 'e19' })] }]);
+  expect(curl.map((g) => [g.group, g.items.map((e) => e.id)])).toEqual([
+    ['arms', ['e8', 'e19', 'e55', 'e56', 'e57']],
+    ['legs', ['e25', 'e26']],
+  ]);
 });
 
 describe('saved data', () => {
   test('first launch: no name, the starter library, no workouts, no loop', () => {
     const d = firstLaunchData('en');
     expect(d.userName).toBeNull();
-    expect(d.exercises).toHaveLength(20);
+    expect(d.exercises).toHaveLength(60);
     expect(d.workouts).toEqual([]);
     expect(d.schedule.rotation).toBeNull();
   });
@@ -105,6 +108,36 @@ describe('saved data', () => {
     expect(parseSaved(JSON.stringify({ v: 99, data: lena() }))).toBeNull();
     expect(parseSaved(JSON.stringify({ v: 1, data: { exercises: 'x' } }))).toBeNull();
     expect(parseSaved(JSON.stringify({ v: 1, data: { ...lena(), schedule: { rotation: null } } }))).toBeNull();
+  });
+});
+
+describe('library update for saved data', () => {
+  // Data saved before the library grew: only the first 20 lifts, no libraryVersion.
+  const oldSave = (): AppData => {
+    const { libraryVersion: _v, ...rest } = lena();
+    return { ...rest, exercises: rest.exercises.slice(0, 20) };
+  };
+
+  test('adds the new starter lifts once, keeps renamed and own ones', () => {
+    const old = oldSave();
+    old.exercises[0] = { ...old.exercises[0], name: 'Flat Bench' };
+    old.exercises.push({ id: 'emine', name: 'Sled Push', muscleGroup: 'legs' });
+    const d = migrateLibrary(old, 'en');
+    expect(d.exercises).toHaveLength(61);
+    expect(d.exercises[0].name).toBe('Flat Bench');
+    expect(d.exercises.find((e) => e.id === 'emine')).toBeDefined();
+    expect(d.exercises.find((e) => e.id === 'e23')?.name).toBe('Hip Thrust');
+  });
+
+  test('a lift deleted after the update stays deleted', () => {
+    let d = migrateLibrary(oldSave(), 'en');
+    d = ops.deleteExercise(d, 'e23');
+    expect(migrateLibrary(d, 'en')).toBe(d);
+  });
+
+  test('new data needs no update', () => {
+    const d = firstLaunchData('en');
+    expect(migrateLibrary(d, 'en')).toBe(d);
   });
 });
 

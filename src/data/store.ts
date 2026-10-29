@@ -8,7 +8,7 @@ import { useSyncExternalStore } from 'react';
 
 import { getLocale, t, type Locale, type StringKey } from '@/i18n';
 
-import { cast, demoSchedule, demoToday, demoWorkouts, muscleGroups, starterLifts, type Exercise, type MuscleGroup, type Workout, type WorkoutExercise } from './demo';
+import { cast, demoSchedule, demoToday, demoWorkouts, LIBRARY_VERSION, muscleGroups, starterLifts, type Exercise, type MuscleGroup, type Workout, type WorkoutExercise } from './demo';
 import { loadRaw, saveRaw } from './persist';
 import { clearDay, isIsoDate, pushBack, replaceDay, toIsoDate, type Plan, type Rotation, type Schedule } from './schedule';
 
@@ -18,15 +18,30 @@ export type AppData = {
   exercises: Exercise[];
   workouts: Workout[];
   schedule: Schedule;
+  // Which starter library this data has seen (demo.ts LIBRARY_VERSION). Missing = 1.
+  libraryVersion?: number;
 };
 
-function starterLibrary(locale: Locale): Exercise[] {
-  return starterLifts.map((l) => ({ ...l, name: t(`lift.${l.id}` as StringKey, {}, locale) }));
+function starterLibrary(locale: Locale, sinceAfter = 0): Exercise[] {
+  return starterLifts
+    .filter((l) => (l.since ?? 1) > sinceAfter)
+    .map((l) => ({ id: l.id, muscleGroup: l.muscleGroup, name: t(`lift.${l.id}` as StringKey, {}, locale) }));
+}
+
+// Saved data from an older library gets the lifts added since, once. Lifts the user renamed,
+// added or deleted later are left alone (a lift is only added while its version is new).
+export function migrateLibrary(d: AppData, locale: Locale): AppData {
+  const seen = d.libraryVersion ?? 1;
+  if (seen >= LIBRARY_VERSION) return d;
+  const have = new Set(d.exercises.map((e) => e.id));
+  const added = starterLibrary(locale, seen).filter((e) => !have.has(e.id));
+  return { ...d, exercises: [...d.exercises, ...added], libraryVersion: LIBRARY_VERSION };
 }
 
 // Lena: the filled state on every screen.
 export function lenaData(locale: Locale): AppData {
   return {
+    libraryVersion: LIBRARY_VERSION,
     userName: cast.hero.name,
     exercises: starterLibrary(locale),
     workouts: demoWorkouts.map((w) => ({ ...w, exercises: w.exercises.map((e) => ({ ...e })) })),
@@ -36,7 +51,13 @@ export function lenaData(locale: Locale): AppData {
 
 // Mia: first launch (?state=empty). The starter library is there; no workouts, no loop.
 export function emptyData(locale: Locale): AppData {
-  return { userName: cast.newcomer.name, exercises: starterLibrary(locale), workouts: [], schedule: { rotation: null, entries: {}, shifts: [] } };
+  return {
+    libraryVersion: LIBRARY_VERSION,
+    userName: cast.newcomer.name,
+    exercises: starterLibrary(locale),
+    workouts: [],
+    schedule: { rotation: null, entries: {}, shifts: [] },
+  };
 }
 
 // The real first launch: the starter library, nothing else, no name.
@@ -179,7 +200,15 @@ export const ops = {
 type StateParam = 'empty' | 'filled';
 type Snapshot = { data: AppData; today: string | null };
 
-let snapshot: Snapshot = { data: parseSaved(loadRaw(SAVE_KEY)) ?? firstLaunchData(getLocale()), today: null };
+function loadData(): AppData {
+  const saved = parseSaved(loadRaw(SAVE_KEY));
+  if (!saved) return firstLaunchData(getLocale());
+  const updated = migrateLibrary(saved, getLocale());
+  if (updated !== saved) saveRaw(SAVE_KEY, serialize(updated));
+  return updated;
+}
+
+let snapshot: Snapshot = { data: loadData(), today: null };
 let lastState: StateParam | undefined;
 // True once a URL switch put a demo cast in place: from then on nothing is saved, so a demo
 // never overwrites the user's own data.
