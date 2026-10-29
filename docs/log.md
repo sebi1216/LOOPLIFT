@@ -26,3 +26,9 @@ Format:
 - Learned: all checks pass on Windows too (check, test:hooks, test:e2e). Expo Go on iOS needs the Expo CLI login as well. The guard blocked both safety tests (secrets file, force push).
 - Problems: `npx expo login` browser flow crashes on this PC (cmd cuts the link at `&`); fixed with `--no-browser`, added to troubleshooting.
 - Next: /wrap-up, then /designs in a new session.
+
+## 2026-10-28 · Ship (designs) · 2 h · checked-device +0
+- Built: FigCraft works from Claude Code (create, read back, export PNG). 3 directions on Today, Calendar, Workout editor; Sebastian picked C Loop Ring. Full C set (8 screens, empty Today, dark key screens), tokens in src/ui/tokens.ts (14 contrast pairs pass), direction.md, screens.md, decision #2. Tag good-2026-10-28.
+- Learned: FigCraft only writes inside docs/design/; generating batch commands with a small script beats hand-writing 40-cell grids. Auto-layout strokes need the other three side weights set to 0.
+- Problems: two contrast misses caught before showing (A tint, C rest outline); a text frame truncated until set to fill. Another session committed the design kit during wrap-up.
+- Next: decide the loop-ring drawing (react-native-svg or not), then /build-screen Today.

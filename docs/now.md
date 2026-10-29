@@ -1,10 +1,10 @@
 # Now
 
-Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-10-28 (after /designs)
+Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-10-28 (after /wrap-up, tag good-2026-10-28)
 
 Mode: Business   Phase: 1 strategy | 2 designs | 3 code (now: 3 code)
 Status: active
-Slice: slice 1 · hours logged 1 h (a record, sum of docs/log.md) · card: docs/brief.md section 3
+Slice: slice 1 · hours logged 3 h (a record, sum of docs/log.md) · card: docs/brief.md section 3
 
 ## Must-haves (locked: tick only with evidence, never edit; ~ = nice to have)
 - [x] Phase 1: /kickoff (files from docs/input/ into the brief, app name, Expo Go check, checks, preview, safety test, starter app on the iPhone) · evidence 28 Oct 2026: `npm run check` green (4 tests), `test:hooks` all passed, `test:e2e` 5 passed, Browser pane live reload seen, both guard blocks shown, LoopLift ran in Expo Go on the iPhone
@@ -16,7 +16,7 @@ Slice: slice 1 · hours logged 1 h (a record, sum of docs/log.md) · card: docs/
 - [ ] Local persistence: all data survives an app restart; no account
 
 ## Next step (one line)
-`/wrap-up`, then a new session: `/build-screen Today` (design: frame `C / Today` in `docs/design/looplift.figcraft`).
+Answer the loop-ring question below, then a new session: `/build-screen Today` (design: frame `C / Today` in `docs/design/looplift.figcraft`; read `docs/design/rules.md` first).
 
 ## Open questions (Claude adds here, never invents answers)
 - Should a loop also support weekday plans (Mon Push, Wed Pull every week), or is the N-day loop enough for v1? (from the concept PDF)
@@ -25,6 +25,7 @@ Slice: slice 1 · hours logged 1 h (a record, sum of docs/log.md) · card: docs/
 - Storage: `expo-sqlite` (in Expo Go) as the concept suggests? Needs your OK as a new package (CLAUDE.md rule 3) before the first data screen.
 - The loop ring needs arcs. `react-native-svg` is not in the project (new package = your OK first), or Claude draws it without SVG. Decide before `/build-screen Today`.
 - `npm ci`: install scripts of `@parcel/watcher` and `unrs-resolver` are not approved (allowScripts); `npm audit` shows 3 high. Look at both before adding packages.
+- `.mcp.json` (FigCraft MCP setup) is untracked. Commit it so the design tool setup is in the repo, or keep it local?
 - Two Expo integrations load here (the `expo` plugin and a claude.ai Expo connector); keep the plugin, turn the connector off for this folder.
 
 ## Evidence so far (Business mode; details in docs/evidence.md)
