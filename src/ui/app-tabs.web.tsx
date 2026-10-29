@@ -17,8 +17,10 @@ export default function AppTabs() {
         tabBarStyle: { backgroundColor: c.bg, borderTopColor: c.border },
         tabBarIconStyle: { display: 'none' },
       }}>
-      <Tabs.Screen name="index" options={{ title: t('home.title') }} />
-      <Tabs.Screen name="profile" options={{ title: t('profile.title') }} />
+      <Tabs.Screen name="index" options={{ title: t('tab.today') }} />
+      <Tabs.Screen name="calendar" options={{ title: t('tab.calendar') }} />
+      <Tabs.Screen name="workouts" options={{ title: t('tab.workouts') }} />
+      <Tabs.Screen name="exercises" options={{ title: t('tab.exercises') }} />
     </Tabs>
   );
 }

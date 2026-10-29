@@ -57,6 +57,8 @@ export const radius = { sm: 12, md: 16, lg: 22, full: 999 } as const;
 export const font = {
   hero: { fontSize: 36, lineHeight: 42, fontWeight: '700' },
   title: { fontSize: 30, lineHeight: 36, fontWeight: '700' },
+  // Sheet titles (Change-a-day): long dates must fit on a phone.
+  titleSmall: { fontSize: 22, lineHeight: 28, fontWeight: '700' },
   headline: { fontSize: 17, lineHeight: 22, fontWeight: '600' },
   body: { fontSize: 17, lineHeight: 24 },
   callout: { fontSize: 15, lineHeight: 20 },

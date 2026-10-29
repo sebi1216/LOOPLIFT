@@ -9,3 +9,6 @@ Who decided: `Sebastian` | `Claude suggestion, accepted by Sebastian` (then name
 |---|---|---|---|---|---|---|
 | 1 | 2026-10-28 | Stay on Expo SDK 58 and test on the iPhone with the App Store Expo Go (58.0.5 supports SDK 58). | Same SDK as the project, no Apple Developer Program needed yet. | Sebastian | decided | |
 | 2 | 2026-10-28 | Design direction C Loop Ring picked (playful, warm, visual; the loop shown as a ring). | Makes the loop idea visible and sets LoopLift apart from generic planners. | Sebastian | decided | |
+| 3 | 2026-10-28 | Loop ring: "Add react-native-svg" (15.16.0, the SDK 58 pin). | Real arcs with gaps for any loop length; ships in Expo Go. | Claude suggestion, accepted by Sebastian (turned down: fake arcs with View borders) | decided | |
+| 4 | 2026-10-28 | Storage: "Decide later". Screens run on an in-memory store in src/data until persistence is built. | Unblocks the screens; must-have 5 stays open. | Sebastian | decided | |
+| 5 | 2026-10-28 | /build-screen scope: "All 8, one plan", built "as planned" (Calendar tap opens Change-a-day, Let's go opens the workout, drag plus accessibility actions to reorder). | One OK for the whole set; screenshot per screen still shown. | Sebastian | decided | |

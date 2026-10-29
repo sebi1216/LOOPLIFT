@@ -1,6 +1,6 @@
 # Now
 
-Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-10-28 (after /wrap-up, tag good-2026-10-28)
+Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-10-29 (after /build-screen all: 8 screens checked-web)
 
 Mode: Business   Phase: 1 strategy | 2 designs | 3 code (now: 3 code)
 Status: active
@@ -16,14 +16,15 @@ Slice: slice 1 · hours logged 3 h (a record, sum of docs/log.md) · card: docs/
 - [ ] Local persistence: all data survives an app restart; no account
 
 ## Next step (one line)
-Answer the loop-ring question below, then a new session: `/build-screen Today` (design: frame `C / Today` in `docs/design/looplift.figcraft`; read `docs/design/rules.md` first).
+Open the 8 screens on the iPhone in Expo Go (taps in the /build-screen report), set `checked-device` in `docs/design/screens.md`, then decide storage for must-have 5.
 
 ## Open questions (Claude adds here, never invents answers)
 - Should a loop also support weekday plans (Mon Push, Wed Pull every week), or is the N-day loop enough for v1? (from the concept PDF)
 - "Mark as done": parked in the toy box at kickoff; confirm it stays out of v1? (from the concept PDF)
 - Business mode needs the Apple Developer Program (about 99 USD per year) before the 10 strangers test; budget cap is 0 EUR. Decide before the stranger check.
-- Storage: `expo-sqlite` (in Expo Go) as the concept suggests? Needs your OK as a new package (CLAUDE.md rule 3) before the first data screen.
-- The loop ring needs arcs. `react-native-svg` is not in the project (new package = your OK first), or Claude draws it without SVG. Decide before `/build-screen Today`.
+- Storage (decision #4: later): `expo-sqlite` (in Expo Go) as the concept suggests? Needs your OK as a new package (CLAUDE.md rule 3). Until then data resets on restart.
+- Days before the loop starts (today is 29 Oct, Lena's loop starts 2 Nov): Today shows "Free" and "Your loop starts Mon, 2 Nov 2026". No design for this; keep, or design it?
+- Rotation editor: the native tab bar stays visible on this pushed screen (iOS default); the design frame has none. Keep the platform default?
 - `npm ci`: install scripts of `@parcel/watcher` and `unrs-resolver` are not approved (allowScripts); `npm audit` shows 3 high. Look at both before adding packages.
 - `.mcp.json` (FigCraft MCP setup) is untracked. Commit it so the design tool setup is in the repo, or keep it local?
 - Two Expo integrations load here (the `expo` plugin and a claude.ai Expo connector); keep the plugin, turn the connector off for this folder.
