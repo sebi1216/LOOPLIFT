@@ -1,8 +1,8 @@
 @AGENTS.md
 
-# <APP NAME>: rules for Claude Code
+# LoopLift: rules for Claude Code
 
-<One line: what the app is. /kickoff fills this.> Founder: Sebastian, Germany (GDPR). Session start: read `docs/now.md` (say so if `docs/log.md` misses the last session), ask "Learn or Ship?". Details: `docs/how-this-repo-works.md`. Keep the `@AGENTS.md` line.
+LoopLift: a workout planner where you set your training split up once as a repeating loop and see today plus the next 7 days at a glance. Founder: Sebastian, Germany (GDPR). Session start: read `docs/now.md` (say so if `docs/log.md` misses the last session), ask "Learn or Ship?". Details: `docs/how-this-repo-works.md`. Keep the `@AGENTS.md` line.
 
 ## Commands
 - `npm run check` (types, lint, Jest) before every commit. `npm run test:e2e` (port 8099), `npm run test:hooks`.

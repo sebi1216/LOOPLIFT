@@ -1,12 +1,12 @@
 # How this repo works
 
-Plain-words tour. Claude updates it when folders, commands or the data flow change. State: the starter as shipped (29 Oct 2026). /kickoff adds the app name, Expo Go result, styling and preview below.
+Plain-words tour. Claude updates it when folders, commands or the data flow change. State: after /kickoff (28 Oct 2026).
 
 ## This app
-- Name: <set by /kickoff>
-- Expo SDK: 58. Expo Go on the iPhone: <set by /kickoff: matches | waiting | eas go | dev build>
-- Styling: Expo default (StyleSheet plus tokens) and @expo/ui. <changed by /kickoff if Uniwind>
-- Preview: <Browser pane in the Claude desktop app | `npm run web` + Chrome on the right>, decided on <date>
+- Name: LoopLift (scheme `looplift`)
+- Expo SDK: 58. Expo Go on the iPhone: matches (App Store Expo Go 58.0.5 supports SDK 58; checked 28 Oct 2026, decision #1). Log in to both Expo Go and the Expo CLI (`npx expo login --no-browser` on this PC).
+- Styling: Expo default (StyleSheet plus tokens) and @expo/ui.
+- Preview: Browser pane in the Claude desktop app (port 8081, live reload works), decided on 28 Oct 2026
 
 ## The three phases (details: `START-HERE.md`)
 1. **Strategy:** your files in `docs/input/` become `docs/brief.md` (`/kickoff`).

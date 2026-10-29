@@ -20,3 +20,9 @@ Format:
 - Learned: two homes (app-playbook and app-starter) confused the first real run.
 - Problems: /designs with FigCraft is untested; the skill checks first whether Claude Code can create frames there.
 - Next: a new app from this template: Use this template, docs/input/, /kickoff.
+
+## 2026-10-28 · Ship (kickoff) · 1 h · checked-device +0
+- Built: LoopLift brief from the concept PDF (Business mode, iPhone only, 5 locked must-haves, 8 main screens), evidence log, name and scheme, lifting cast (Lena, Jonas, Mia) with Push/Pull and the example loop, decision #1 (Expo Go 58 matches).
+- Learned: all checks pass on Windows too (check, test:hooks, test:e2e). Expo Go on iOS needs the Expo CLI login as well. The guard blocked both safety tests (secrets file, force push).
+- Problems: `npx expo login` browser flow crashes on this PC (cmd cuts the link at `&`); fixed with `--no-browser`, added to troubleshooting.
+- Next: /wrap-up, then /designs in a new session.
