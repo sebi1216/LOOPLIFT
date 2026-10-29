@@ -1,7 +1,8 @@
 // Demo data for slice 1. Screens read it through the store (src/data/store.ts), never a backend.
 // When persistence or a backend comes, only this folder changes, not the screens.
 
-import type { Schedule } from './schedule';
+import { addDays, type Schedule } from './schedule';
+import type { Session } from './tracker';
 
 // CAST (story bible light): the same few made-up people and things on every screen, test and
 // screenshot, so screens tell one consistent story. Rules: invented names only, no real people,
@@ -121,3 +122,43 @@ export const demoSchedule: Schedule = {
 
 // The day the designs show (Thursday 5 Nov). Open any screen with ?date=2026-11-05 to see it.
 export const demoToday = '2026-11-05';
+
+// Lena's last 6 weeks: Push every 3 days from Thu 24 Sep to Mon 2 Nov, Pull the day after each
+// (her loop's rhythm), all finished. Every lift climbs slowly, so the graphs have a story:
+// Bench Press 57.5 to 65 kg, and Thu 5 Nov prefills 4 x 65 kg x 6. Pull-up is bodyweight (0 kg).
+const demoProgress: Record<string, { from: number; to: number; step: number; reps?: [number, number] }> = {
+  e1: { from: 57.5, to: 65, step: 2.5 },
+  e2: { from: 20, to: 24, step: 2 },
+  e3: { from: 35, to: 40, step: 2.5 },
+  e4: { from: 22.5, to: 27.5, step: 2.5 },
+  e5: { from: 0, to: 0, step: 1, reps: [6, 8] },
+  e6: { from: 50, to: 57.5, step: 2.5 },
+  e7: { from: 15, to: 20, step: 2.5 },
+  e8: { from: 10, to: 12, step: 1 },
+};
+const DEMO_WEEKS = 14;
+
+function demoSession(w: Workout, i: number, date: string, id: string): Session {
+  const level = (levels: number) => Math.min(levels - 1, Math.floor((i * levels) / DEMO_WEEKS));
+  return {
+    id,
+    date,
+    workoutId: w.id,
+    workoutName: w.name,
+    finished: true,
+    exercises: w.exercises.map((e) => {
+      const p = demoProgress[e.exerciseId];
+      const kg = p.from + p.step * level(Math.round((p.to - p.from) / p.step) + 1);
+      const reps = p.reps ? p.reps[0] + level(p.reps[1] - p.reps[0] + 1) : e.targetReps;
+      return { ...e, sets: Array.from({ length: e.targetSets }, () => ({ kg, reps, done: true })) };
+    }),
+  };
+}
+
+export function demoSessions(): Session[] {
+  const [push, pull] = demoWorkouts;
+  return Array.from({ length: DEMO_WEEKS }, (_, i) => {
+    const day = addDays('2026-09-24', i * 3);
+    return [demoSession(push, i, day, `d${i * 2 + 1}`), demoSession(pull, i, addDays(day, 1), `d${i * 2 + 2}`)];
+  }).flat();
+}

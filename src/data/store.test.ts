@@ -1,3 +1,4 @@
+import { history } from './tracker';
 import { actions, applyUrlParams, emptyData, firstLaunchData, lenaData, migrateLibrary, ops, parseSaved, serialize, type AppData } from './store';
 
 // The phone storage is native; unit tests never touch it. mockSaveRaw records the writes.
@@ -85,6 +86,36 @@ test('groupByMuscle: groups in library order, search ignores case, empty groups 
   ]);
 });
 
+describe('workout log', () => {
+  test('Lena has 6 weeks of finished Push and Pull; Bench goes from 57.5 to 65 kg; Mia has none', () => {
+    const s = lena().sessions;
+    expect(s).toHaveLength(28);
+    expect(s.every((x) => x.finished)).toBe(true);
+    expect(s[0].date).toBe('2026-09-24');
+    expect(s.at(-1)!.date).toBe('2026-11-03');
+    const bench = history(s, 'e1');
+    expect(bench).toHaveLength(14);
+    expect(bench[0].top.kg).toBe(57.5);
+    expect(bench.at(-1)!.top).toMatchObject({ kg: 65, reps: 6 });
+    expect(emptyData('en').sessions).toEqual([]);
+    expect(firstLaunchData('en').sessions).toEqual([]);
+  });
+
+  test("Let's go on Lena's Push: 4 lifts, Bench 4 sets of 65 kg x 6; starting again returns it", () => {
+    const [d, id] = ops.startSession(lena(), 'w1', '2026-11-05');
+    const open = d.sessions.find((x) => x.id === id)!;
+    expect(open.exercises).toHaveLength(4);
+    expect(open.exercises[0].sets).toEqual(Array(4).fill({ kg: 65, reps: 6, done: false }));
+    expect(ops.startSession(d, 'w2', '2026-11-05')).toEqual([d, id]);
+    expect(ops.startSession(lena(), 'nope', '2026-11-05')[1]).toBeNull();
+  });
+
+  test('deleting a workout keeps its sessions', () => {
+    const d = ops.deleteWorkout(lena(), 'w1');
+    expect(d.sessions).toHaveLength(28);
+  });
+});
+
 describe('saved data', () => {
   test('first launch: no name, the starter library, no workouts, no loop', () => {
     const d = firstLaunchData('en');
@@ -98,6 +129,18 @@ describe('saved data', () => {
     let d = ops.pushBack(lena(), '2026-11-05');
     d = ops.setDay(d, '2026-11-10', { kind: 'rest' });
     expect(parseSaved(serialize(d))).toEqual(d);
+  });
+
+  test('a save from before the workout log loads with no sessions', () => {
+    const { sessions: _s, ...old } = lena();
+    expect(parseSaved(JSON.stringify({ v: 1, data: old }))?.sessions).toEqual([]);
+  });
+
+  test('sessions are saved and come back the same; a broken list is refused', () => {
+    let d = ops.startSession(lena(), 'w1', '2026-11-05')[0];
+    d = ops.setSet(d, d.sessions.at(-1)!.id, 0, 0, { kg: 67.5, done: true });
+    expect(parseSaved(serialize(d))).toEqual(d);
+    expect(parseSaved(JSON.stringify({ v: 1, data: { ...lena(), sessions: 'x' } }))).toBeNull();
   });
 
   test('broken or foreign data is ignored, never crashes the app', () => {

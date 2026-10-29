@@ -8,9 +8,11 @@ import { useSyncExternalStore } from 'react';
 
 import { getLocale, t, type Locale, type StringKey } from '@/i18n';
 
-import { cast, demoSchedule, demoToday, demoWorkouts, LIBRARY_VERSION, muscleGroups, starterLifts, type Exercise, type MuscleGroup, type Workout, type WorkoutExercise } from './demo';
+import { cast, demoSchedule, demoSessions, demoToday, demoWorkouts, LIBRARY_VERSION, muscleGroups, starterLifts, type Exercise, type MuscleGroup, type Workout, type WorkoutExercise } from './demo';
 import { loadRaw, saveRaw } from './persist';
 import { clearDay, isIsoDate, pushBack, replaceDay, toIsoDate, type Plan, type Rotation, type Schedule } from './schedule';
+import * as tracker from './tracker';
+import type { LoggedSet, Removed, Session } from './tracker';
 
 export type AppData = {
   // Only the demo casts have a name; the real user is never asked for one.
@@ -18,6 +20,8 @@ export type AppData = {
   exercises: Exercise[];
   workouts: Workout[];
   schedule: Schedule;
+  // The workout log (tracker.ts). Saves from before it load with [].
+  sessions: Session[];
   // Which starter library this data has seen (demo.ts LIBRARY_VERSION). Missing = 1.
   libraryVersion?: number;
 };
@@ -46,6 +50,7 @@ export function lenaData(locale: Locale): AppData {
     exercises: starterLibrary(locale),
     workouts: demoWorkouts.map((w) => ({ ...w, exercises: w.exercises.map((e) => ({ ...e })) })),
     schedule: { ...demoSchedule, entries: { ...demoSchedule.entries }, shifts: [...demoSchedule.shifts] },
+    sessions: demoSessions(),
   };
 }
 
@@ -57,6 +62,7 @@ export function emptyData(locale: Locale): AppData {
     exercises: starterLibrary(locale),
     workouts: [],
     schedule: { rotation: null, entries: {}, shifts: [] },
+    sessions: [],
   };
 }
 
@@ -92,7 +98,9 @@ export function parseSaved(raw: string | null): AppData | null {
   if (!Array.isArray(d.exercises) || !Array.isArray(d.workouts) || !isObj(s)) return null;
   if (!isObj(s.entries) || !Array.isArray(s.shifts) || (s.rotation !== null && !isObj(s.rotation))) return null;
   if (isObj(s.rotation) && (typeof s.rotation.startDate !== 'string' || !Array.isArray(s.rotation.slots))) return null;
-  return d as AppData;
+  // The workout log came later (spec 001): a save without it simply has no sessions yet.
+  if (d.sessions !== undefined && !Array.isArray(d.sessions)) return null;
+  return { ...d, sessions: d.sessions ?? [] } as AppData;
 }
 
 let idCount = 0;
@@ -193,6 +201,36 @@ export const ops = {
   setRotation(d: AppData, rotation: Rotation): AppData {
     return { ...d, schedule: { ...d.schedule, rotation } };
   },
+
+  // ---- Workout log (rules in tracker.ts) ----
+  // Returns the open session's id (an already open one wins), or null for an unknown workout.
+  startSession(d: AppData, workoutId: string, date: string): [AppData, string | null] {
+    const w = d.workouts.find((x) => x.id === workoutId);
+    const open = tracker.openSession(d.sessions);
+    if (open) return [d, open.id];
+    if (!w) return [d, null];
+    const [sessions, s] = tracker.startSession(d.sessions, w, date, newId('s'));
+    return [{ ...d, sessions }, s.id];
+  },
+  setSet(d: AppData, sessionId: string, exIndex: number, setIndex: number, change: Partial<LoggedSet>): AppData {
+    return { ...d, sessions: tracker.editSet(d.sessions, sessionId, exIndex, setIndex, change) };
+  },
+  addSet(d: AppData, sessionId: string, exIndex: number): AppData {
+    return { ...d, sessions: tracker.addSet(d.sessions, sessionId, exIndex) };
+  },
+  finishSession(d: AppData, sessionId: string): AppData {
+    return { ...d, sessions: tracker.finishSession(d.sessions, sessionId) };
+  },
+  discardSession(d: AppData, sessionId: string): AppData {
+    return { ...d, sessions: d.sessions.filter((s) => s.id !== sessionId) };
+  },
+  deleteSession(d: AppData, sessionId: string): [AppData, Removed | null] {
+    const [sessions, removed] = tracker.deleteSession(d.sessions, sessionId);
+    return [{ ...d, sessions }, removed];
+  },
+  restoreSession(d: AppData, removed: Removed): AppData {
+    return { ...d, sessions: tracker.restoreSession(d.sessions, removed) };
+  },
 };
 
 // ---- Runtime store (one per app run) ----
@@ -290,4 +328,16 @@ export const actions = {
   clearDay: (date: string) => update((d) => ops.clearDay(d, date)),
   pushBack: (date: string) => update((d) => ops.pushBack(d, date)),
   setRotation: (rotation: Rotation) => update((d) => ops.setRotation(d, rotation)),
+  startSession: (workoutId: string, date: string) => updateWithId((d) => ops.startSession(d, workoutId, date)),
+  setSet: (sessionId: string, exIndex: number, setIndex: number, change: Partial<LoggedSet>) =>
+    update((d) => ops.setSet(d, sessionId, exIndex, setIndex, change)),
+  addSet: (sessionId: string, exIndex: number) => update((d) => ops.addSet(d, sessionId, exIndex)),
+  finishSession: (sessionId: string) => update((d) => ops.finishSession(d, sessionId)),
+  discardSession: (sessionId: string) => update((d) => ops.discardSession(d, sessionId)),
+  deleteSession: (sessionId: string): Removed | null => {
+    const [data, removed] = ops.deleteSession(snapshot.data, sessionId);
+    set({ data });
+    return removed;
+  },
+  restoreSession: (removed: Removed) => update((d) => ops.restoreSession(d, removed)),
 };
