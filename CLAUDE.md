@@ -29,6 +29,7 @@ LoopLift: a workout planner where you set your training split up once as a repea
 - `docs/playbook/` is Sebastian's guide. Read it only when he asks, or when a skill points to a page in it.
 
 ## Design
+Before any UI work, read docs/design/rules.md.
 Platform owns navigation, brand owns content. Tokens only; tappables at least 48 x 48 with role and label; every state has a URL (`?state=empty`).
 
 ## Security (hard rules)
