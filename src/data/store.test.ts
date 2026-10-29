@@ -1,4 +1,7 @@
-import { emptyData, lenaData, ops, type AppData } from './store';
+import { emptyData, firstLaunchData, lenaData, ops, parseSaved, serialize, type AppData } from './store';
+
+// The phone storage is native; unit tests never touch it.
+jest.mock('./persist', () => ({ loadRaw: () => null, saveRaw: () => {} }));
 
 const lena = () => lenaData('en');
 
@@ -76,4 +79,30 @@ test('groupByMuscle: groups in library order, search ignores case, empty groups 
   expect(all.map((g) => g.group)).toEqual(['arms', 'back', 'chest', 'core', 'legs', 'shoulders']);
   const curl = ops.groupByMuscle(lena(), '  CURL ');
   expect(curl).toEqual([{ group: 'arms', items: [expect.objectContaining({ id: 'e8' }), expect.objectContaining({ id: 'e19' })] }]);
+});
+
+describe('saved data', () => {
+  test('first launch: no name, the starter library, no workouts, no loop', () => {
+    const d = firstLaunchData('en');
+    expect(d.userName).toBeNull();
+    expect(d.exercises).toHaveLength(20);
+    expect(d.workouts).toEqual([]);
+    expect(d.schedule.rotation).toBeNull();
+  });
+
+  test('what is saved comes back the same', () => {
+    let d = ops.pushBack(lena(), '2026-11-05');
+    d = ops.setDay(d, '2026-11-10', { kind: 'rest' });
+    expect(parseSaved(serialize(d))).toEqual(d);
+  });
+
+  test('broken or foreign data is ignored, never crashes the app', () => {
+    expect(parseSaved(null)).toBeNull();
+    expect(parseSaved('')).toBeNull();
+    expect(parseSaved('{not json')).toBeNull();
+    expect(parseSaved('42')).toBeNull();
+    expect(parseSaved(JSON.stringify({ v: 99, data: lena() }))).toBeNull();
+    expect(parseSaved(JSON.stringify({ v: 1, data: { exercises: 'x' } }))).toBeNull();
+    expect(parseSaved(JSON.stringify({ v: 1, data: { ...lena(), schedule: { rotation: null } } }))).toBeNull();
+  });
 });

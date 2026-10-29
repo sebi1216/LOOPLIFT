@@ -22,6 +22,8 @@ const test = base.extend<{ noPageErrors: void }>({
 });
 
 const DAY = 'date=2026-11-05';
+// Lena's demo data. A plain URL is the real app: empty on first launch, then saved.
+const LENA = `state=filled&${DAY}`;
 const en = (key: Parameters<typeof t>[0], vars: Record<string, string | number> = {}) => t(key, vars, 'en');
 const shot = (page: Page, name: string) => page.screenshot({ path: `docs/design/checks/${name}.png` });
 
@@ -35,7 +37,7 @@ async function tapUntil(page: Page, testId: string, check: () => Promise<void>) 
 
 test.describe('Today', () => {
   test('filled: Push, day 1 of 3, the week and the exercises', async ({ page }) => {
-    await page.goto(`/?${DAY}`);
+    await page.goto(`/?${LENA}`);
     await expect(page.getByTestId('today-plan')).toHaveText('Push');
     await expect(page.getByText(en('today.dayOf', { n: 1, total: 3 }))).toBeVisible();
     await expect(page.getByText('Thursday, 5 Nov')).toBeVisible();
@@ -46,7 +48,7 @@ test.describe('Today', () => {
 
   test('dark', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
-    await page.goto(`/?${DAY}`);
+    await page.goto(`/?${LENA}`);
     await expect(page.getByTestId('today-plan')).toHaveText('Push');
     await shot(page, 'today-dark');
   });
@@ -69,7 +71,7 @@ test.describe('Today', () => {
 
 test.describe('Change-a-day sheet', () => {
   test('both options, equal, each with a preview', async ({ page }) => {
-    await page.goto(`/change-day?day=2026-11-05&${DAY}`);
+    await page.goto(`/change-day?day=2026-11-05&${LENA}`);
     await expect(page.getByText('Change Thursday, 5 Nov')).toBeVisible();
     await expect(page.getByTestId('option-replace')).toBeVisible();
     await expect(page.getByTestId('option-push')).toBeVisible();
@@ -77,7 +79,7 @@ test.describe('Change-a-day sheet', () => {
   });
 
   test('Push the loop back: today becomes Rest, Push moves to Friday', async ({ page }) => {
-    await page.goto(`/?${DAY}`);
+    await page.goto(`/?${LENA}`);
     await tapUntil(page, 'change-day', () => expect(page.getByTestId('option-push')).toBeVisible({ timeout: 2000 }));
     await page.getByTestId('option-push').click();
     await expect(page.getByTestId('today-plan')).toHaveText('Rest');
@@ -86,7 +88,7 @@ test.describe('Change-a-day sheet', () => {
   });
 
   test('Replace this day only: today becomes Pull, tomorrow stays Pull', async ({ page }) => {
-    await page.goto(`/?${DAY}`);
+    await page.goto(`/?${LENA}`);
     await tapUntil(page, 'change-day', () => expect(page.getByTestId('replace-w2')).toBeVisible({ timeout: 2000 }));
     await page.getByTestId('replace-w2').click();
     await expect(page.getByTestId('today-plan')).toHaveText('Pull');
@@ -97,7 +99,7 @@ test.describe('Change-a-day sheet', () => {
 
 test.describe('Calendar', () => {
   test('November with the loop, rest dashed, Fri 20 set by hand', async ({ page }) => {
-    await page.goto(`/calendar?${DAY}`);
+    await page.goto(`/calendar?${LENA}`);
     await expect(page.getByTestId('month-title')).toHaveText('November');
     await expect(page.getByTestId('day-2026-11-02')).toContainText('Push');
     await expect(page.getByTestId('day-2026-11-04')).toContainText('Rest');
@@ -107,13 +109,13 @@ test.describe('Calendar', () => {
 
   test('dark', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
-    await page.goto(`/calendar?${DAY}`);
+    await page.goto(`/calendar?${LENA}`);
     await expect(page.getByTestId('month-title')).toHaveText('November');
     await shot(page, 'calendar-dark');
   });
 
   test('next month keeps the loop going', async ({ page }) => {
-    await page.goto(`/calendar?${DAY}`);
+    await page.goto(`/calendar?${LENA}`);
     await tapUntil(page, 'month-next', () =>
       expect(page.getByTestId('month-title')).toHaveText('December', { timeout: 2000 }),
     );
@@ -130,7 +132,7 @@ test.describe('Calendar', () => {
 
 test.describe('Rotation editor', () => {
   test('three days; adding Pull makes four', async ({ page }) => {
-    await page.goto(`/calendar/loop?${DAY}`);
+    await page.goto(`/calendar/loop?${LENA}`);
     await expect(page.getByText(en('loop.sub', { n: 3 }))).toBeVisible();
     await shot(page, 'rotation-editor');
     await tapUntil(page, 'add-slot', () => expect(page.getByTestId('add-w2')).toBeVisible({ timeout: 2000 }));
@@ -147,14 +149,14 @@ test.describe('Rotation editor', () => {
 
 test.describe('Workouts', () => {
   test('Push and Pull with their loop days', async ({ page }) => {
-    await page.goto(`/workouts?${DAY}`);
+    await page.goto(`/workouts?${LENA}`);
     await expect(page.getByTestId('workout-w1')).toContainText(en('workouts.loopDay', { n: 1 }));
     await expect(page.getByTestId('workout-w2')).toContainText(en('workouts.meta', { n: 4, sets: 13 }));
     await shot(page, 'workouts');
   });
 
   test('••• menu duplicates a workout', async ({ page }) => {
-    await page.goto(`/workouts?${DAY}`);
+    await page.goto(`/workouts?${LENA}`);
     const item = page.getByRole('menuitem', { name: en('workouts.duplicate') });
     await tapUntil(page, 'more-w1', () => expect(item).toBeVisible({ timeout: 2000 }));
     await item.click();
@@ -170,7 +172,7 @@ test.describe('Workouts', () => {
 
 test.describe('Workout editor', () => {
   test('Push with steppers; + adds a set', async ({ page }) => {
-    await page.goto(`/workouts/w1?${DAY}`);
+    await page.goto(`/workouts/w1?${LENA}`);
     await expect(page.getByTestId('workout-name')).toHaveValue('Push');
     await expect(page.getByTestId('sets-0-value')).toHaveText(en('editor.sets', { n: 4 }));
     await shot(page, 'workout-editor');
@@ -181,13 +183,13 @@ test.describe('Workout editor', () => {
 
   test('dark', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
-    await page.goto(`/workouts/w1?${DAY}`);
+    await page.goto(`/workouts/w1?${LENA}`);
     await expect(page.getByTestId('workout-name')).toHaveValue('Push');
     await shot(page, 'workout-editor-dark');
   });
 
   test('exercise picker marks lifts already in the workout', async ({ page }) => {
-    await page.goto(`/workouts/add?id=w1&${DAY}`);
+    await page.goto(`/workouts/add?id=w1&${LENA}`);
     await expect(page.getByTestId('pick-e1')).toContainText(en('pick.already'));
     await shot(page, 'exercise-picker');
   });
@@ -195,7 +197,7 @@ test.describe('Workout editor', () => {
 
 test.describe('Exercises', () => {
   test('grouped library, In Push labels, search', async ({ page }) => {
-    await page.goto(`/exercises?${DAY}`);
+    await page.goto(`/exercises?${LENA}`);
     await expect(page.getByTestId('exercise-e1')).toContainText(en('exercises.inWorkouts', { names: 'Push' }));
     await shot(page, 'exercises');
     await page.getByTestId('exercise-search').fill('curl');
@@ -204,7 +206,7 @@ test.describe('Exercises', () => {
   });
 
   test('add sheet', async ({ page }) => {
-    await page.goto(`/exercises/edit?${DAY}`);
+    await page.goto(`/exercises/edit?${LENA}`);
     await expect(page.getByTestId('exercise-name')).toBeVisible();
     await shot(page, 'exercise-edit');
   });
@@ -213,12 +215,12 @@ test.describe('Exercises', () => {
 test.describe('German (German text is longer: check it wraps well)', () => {
   test.use({ locale: 'de-DE' });
   const pages = [
-    ['today-de', `/?${DAY}`, 'Donnerstag, 5. Nov.'],
-    ['change-day-sheet-de', `/change-day?day=2026-11-05&${DAY}`, 'Loop nach hinten schieben'],
-    ['calendar-de', `/calendar?${DAY}`, 'November'],
-    ['rotation-editor-de', `/calendar/loop?${DAY}`, 'Dein Loop'],
-    ['workout-editor-de', `/workouts/w1?${DAY}`, 'Bankdrücken'],
-    ['exercises-de', `/exercises?${DAY}`, 'Bankdrücken'],
+    ['today-de', `/?${LENA}`, 'Donnerstag, 5. Nov.'],
+    ['change-day-sheet-de', `/change-day?day=2026-11-05&${LENA}`, 'Loop nach hinten schieben'],
+    ['calendar-de', `/calendar?${LENA}`, 'November'],
+    ['rotation-editor-de', `/calendar/loop?${LENA}`, 'Dein Loop'],
+    ['workout-editor-de', `/workouts/w1?${LENA}`, 'Bankdrücken'],
+    ['exercises-de', `/exercises?${LENA}`, 'Bankdrücken'],
   ] as const;
   for (const [name, path, check] of pages) {
     test(name, async ({ page }) => {
@@ -229,6 +231,39 @@ test.describe('German (German text is longer: check it wraps well)', () => {
   }
 });
 
+test.describe('Saved on the device (web preview: localStorage)', () => {
+  test('first launch is empty and has no name', async ({ page }) => {
+    await page.goto(`/?${DAY}`);
+    await expect(page.getByTestId('empty-state')).toBeVisible();
+    await expect(page.getByText(en('today.welcomePlain'), { exact: true })).toBeVisible();
+  });
+
+  async function createLegs(page: Page) {
+    await page.goto(`/?${DAY}`);
+    await tapUntil(page, 'empty-cta', () =>
+      expect(page.getByTestId('workout-name')).toHaveValue(en('workouts.newName'), { timeout: 2000 }),
+    );
+    await page.getByTestId('workout-name').fill('Legs');
+  }
+
+  test('a new workout survives a restart', async ({ page }) => {
+    await createLegs(page);
+    await page.goto(`/workouts?${DAY}`);
+    await expect(page.getByText('Legs')).toBeVisible();
+    await page.reload();
+    await expect(page.getByText('Legs')).toBeVisible();
+  });
+
+  test('a demo URL never overwrites saved data', async ({ page }) => {
+    await createLegs(page);
+    await page.goto(`/workouts?${LENA}`);
+    await expect(page.getByTestId('workout-w1')).toBeVisible();
+    await page.goto(`/workouts?${DAY}`);
+    await expect(page.getByText('Legs')).toBeVisible();
+    await expect(page.getByTestId('workout-w1')).toHaveCount(0);
+  });
+});
+
 test('layout wall shows Today in every frame', async ({ page }) => {
   await page.setViewportSize({ width: 1800, height: 1000 });
   await page.goto('/layout-wall.html');
@@ -236,7 +271,7 @@ test('layout wall shows Today in every frame', async ({ page }) => {
   const frames = page.locator('iframe');
   await expect(frames).toHaveCount(7);
   for (let i = 0; i < 7; i++) {
-    await expect(frames.nth(i).contentFrame().getByTestId('today-card')).toBeVisible({ timeout: 30_000 });
+    await expect(frames.nth(i).contentFrame().getByTestId('empty-state')).toBeVisible({ timeout: 30_000 });
   }
   await page.screenshot({ path: 'e2e/screenshots/layout-wall.png', fullPage: true });
 });

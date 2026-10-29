@@ -1,7 +1,7 @@
 // The app's data while it runs: exercises, workouts and the schedule. Screens read it with
 // useAppData() and change it only through `actions`. The changes are pure functions (`ops`),
-// tested in store.test.ts. Slice 1 keeps everything in memory (decision #4: storage later),
-// so a restart brings back the demo data.
+// tested in store.test.ts. Every change is saved on the phone (persist.ts) and read back at
+// the next launch. The demo casts (?state=filled Lena, ?state=empty Mia) are never saved.
 
 import { AppState, Platform } from 'react-native';
 import { useSyncExternalStore } from 'react';
@@ -9,10 +9,12 @@ import { useSyncExternalStore } from 'react';
 import { getLocale, t, type Locale, type StringKey } from '@/i18n';
 
 import { cast, demoSchedule, demoToday, demoWorkouts, muscleGroups, starterLifts, type Exercise, type MuscleGroup, type Workout, type WorkoutExercise } from './demo';
+import { loadRaw, saveRaw } from './persist';
 import { clearDay, isIsoDate, pushBack, replaceDay, toIsoDate, type Plan, type Rotation, type Schedule } from './schedule';
 
 export type AppData = {
-  userName: string;
+  // Only the demo casts have a name; the real user is never asked for one.
+  userName: string | null;
   exercises: Exercise[];
   workouts: Workout[];
   schedule: Schedule;
@@ -35,6 +37,41 @@ export function lenaData(locale: Locale): AppData {
 // Mia: first launch (?state=empty). The starter library is there; no workouts, no loop.
 export function emptyData(locale: Locale): AppData {
   return { userName: cast.newcomer.name, exercises: starterLibrary(locale), workouts: [], schedule: { rotation: null, entries: {}, shifts: [] } };
+}
+
+// The real first launch: the starter library, nothing else, no name.
+export function firstLaunchData(locale: Locale): AppData {
+  return { ...emptyData(locale), userName: null };
+}
+
+// ---- Saving (format version 1). Change SAVE_VERSION when AppData changes shape. ----
+
+const SAVE_KEY = 'looplift.data';
+const SAVE_VERSION = 1;
+
+export function serialize(d: AppData): string {
+  return JSON.stringify({ v: SAVE_VERSION, data: d });
+}
+
+const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
+
+// Saved text back to data. Anything broken, foreign or from another version gives null, and
+// the app starts fresh instead of crashing.
+export function parseSaved(raw: string | null): AppData | null {
+  if (!raw) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  if (!isObj(parsed) || parsed.v !== SAVE_VERSION || !isObj(parsed.data)) return null;
+  const d = parsed.data;
+  const s = d.schedule;
+  if (!Array.isArray(d.exercises) || !Array.isArray(d.workouts) || !isObj(s)) return null;
+  if (!isObj(s.entries) || !Array.isArray(s.shifts) || (s.rotation !== null && !isObj(s.rotation))) return null;
+  if (isObj(s.rotation) && (typeof s.rotation.startDate !== 'string' || !Array.isArray(s.rotation.slots))) return null;
+  return d as AppData;
 }
 
 let idCount = 0;
@@ -142,12 +179,16 @@ export const ops = {
 type StateParam = 'empty' | 'filled';
 type Snapshot = { data: AppData; today: string | null };
 
-let snapshot: Snapshot = { data: lenaData(getLocale()), today: null };
+let snapshot: Snapshot = { data: parseSaved(loadRaw(SAVE_KEY)) ?? firstLaunchData(getLocale()), today: null };
 let lastState: StateParam | undefined;
+// True once a URL switch put a demo cast in place: from then on nothing is saved, so a demo
+// never overwrites the user's own data.
+let demo = false;
 const listeners = new Set<() => void>();
 
 function set(next: Partial<Snapshot>) {
   snapshot = { ...snapshot, ...next };
+  if (next.data && !demo) saveRaw(SAVE_KEY, serialize(next.data));
   listeners.forEach((l) => l());
 }
 
@@ -162,6 +203,7 @@ export function applyUrlParams(params: { state?: string; date?: string }) {
   const next: Partial<Snapshot> = {};
   if ((params.state === 'empty' || params.state === 'filled') && params.state !== lastState) {
     lastState = params.state;
+    demo = true;
     next.data = params.state === 'empty' ? emptyData(getLocale()) : lenaData(getLocale());
   }
   if (params.date === 'demo') next.today = demoToday;

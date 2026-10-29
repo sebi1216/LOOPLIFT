@@ -24,8 +24,10 @@ export default function Today() {
   return empty ? <TodayEmpty d={d} today={today} /> : <TodayFilled d={d} today={today} />;
 }
 
-function greeting(name: string) {
+// With a name only for the demo casts; the real user is never asked for one.
+function greeting(name: string | null) {
   const h = new Date().getHours();
+  if (!name) return t(h < 12 ? 'today.morningPlain' : h < 18 ? 'today.afternoonPlain' : 'today.eveningPlain');
   return t(h < 12 ? 'today.morning' : h < 18 ? 'today.afternoon' : 'today.evening', { name });
 }
 
@@ -182,7 +184,7 @@ function TodayEmpty({ d, today }: { d: AppData; today: string }) {
 
   return (
     <Screen>
-      <Header over={t('today.welcome', { name: d.userName })} date={today} />
+      <Header over={d.userName ? t('today.welcome', { name: d.userName }) : t('today.welcomePlain')} date={today} />
       <View style={styles.ringWrap} testID="empty-state">
         <LoopRing slots={[]} current={null} diameter={size.ring} stroke={size.ringStroke}>
           <Text style={[styles.headline, { color: c.text }]}>{t('today.noLoop')}</Text>

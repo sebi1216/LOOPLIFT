@@ -30,7 +30,7 @@
   - [ ] Local persistence: all data survives an app restart; no account
 - No-gos: set and weight logging, pre-made programs or AI coaching, accounts or cloud sync, social features, Apple Health or wearables.
 - Build risk (both modes): the scheduling engine, a pure `resolveDay(date)` over DayEntry, Rotation and RotationShift (slot = (days since start - shifts before d) mod n) · built and unit-tested first (example loop Push, Pull, Rest from Mon 2 Nov 2026, both override types), before Calendar and Today · result: <works | cut | change plan>
-- Storage: the PDF suggests `expo-sqlite` (in Expo Go). A new package needs Sebastian's OK first (CLAUDE.md rule 3).
+- Storage: `expo-sqlite` 58.0.13 key-value store, on the phone only (decision #6). What is stored: `docs/data-inventory.md`.
 - Permission or approval risk: Apple 4.3(b) (spam: many workout planners exist; the loop must be clearly our own) · no third-party APIs · daily reminder (later) needs notification permission · how we check: re-read App Review Guidelines 4.3 before the first TestFlight.
 - Done when (behaviour, not opinion): every screen checked-web and checked on the iPhone, and "I used it on my iPhone with my own real data on 3 different days" (data on the device; no backend in slice 1). Then the stranger check in section 5.
 - New ideas go to the toy box. A must-have changes only when I say so (logged in `docs/decisions.md`).
