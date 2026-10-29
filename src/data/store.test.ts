@@ -1,7 +1,8 @@
-import { emptyData, firstLaunchData, lenaData, ops, parseSaved, serialize, type AppData } from './store';
+import { actions, applyUrlParams, emptyData, firstLaunchData, lenaData, ops, parseSaved, serialize, type AppData } from './store';
 
-// The phone storage is native; unit tests never touch it.
-jest.mock('./persist', () => ({ loadRaw: () => null, saveRaw: () => {} }));
+// The phone storage is native; unit tests never touch it. mockSaveRaw records the writes.
+const mockSaveRaw = jest.fn();
+jest.mock('./persist', () => ({ loadRaw: () => null, saveRaw: (...args: unknown[]) => mockSaveRaw(...args) }));
 
 const lena = () => lenaData('en');
 
@@ -105,4 +106,13 @@ describe('saved data', () => {
     expect(parseSaved(JSON.stringify({ v: 1, data: { exercises: 'x' } }))).toBeNull();
     expect(parseSaved(JSON.stringify({ v: 1, data: { ...lena(), schedule: { rotation: null } } }))).toBeNull();
   });
+});
+
+// Last test: it switches the shared store into demo mode.
+test('URL switches (?state=, ?date=) are demo mode: nothing is saved after them', () => {
+  actions.addWorkout('Legs');
+  expect(mockSaveRaw).toHaveBeenCalledTimes(1);
+  applyUrlParams({ date: '2026-11-05' });
+  actions.addWorkout('Arms');
+  expect(mockSaveRaw).toHaveBeenCalledTimes(1);
 });

@@ -231,15 +231,16 @@ test.describe('German (German text is longer: check it wraps well)', () => {
   }
 });
 
+// Plain URLs here: any ?state= or ?date= switch is demo mode and saves nothing.
 test.describe('Saved on the device (web preview: localStorage)', () => {
   test('first launch is empty and has no name', async ({ page }) => {
-    await page.goto(`/?${DAY}`);
+    await page.goto('/');
     await expect(page.getByTestId('empty-state')).toBeVisible();
     await expect(page.getByText(en('today.welcomePlain'), { exact: true })).toBeVisible();
   });
 
   async function createLegs(page: Page) {
-    await page.goto(`/?${DAY}`);
+    await page.goto('/');
     await tapUntil(page, 'empty-cta', () =>
       expect(page.getByTestId('workout-name')).toHaveValue(en('workouts.newName'), { timeout: 2000 }),
     );
@@ -248,7 +249,7 @@ test.describe('Saved on the device (web preview: localStorage)', () => {
 
   test('a new workout survives a restart', async ({ page }) => {
     await createLegs(page);
-    await page.goto(`/workouts?${DAY}`);
+    await page.goto('/workouts');
     await expect(page.getByText('Legs')).toBeVisible();
     await page.reload();
     await expect(page.getByText('Legs')).toBeVisible();
@@ -258,7 +259,7 @@ test.describe('Saved on the device (web preview: localStorage)', () => {
     await createLegs(page);
     await page.goto(`/workouts?${LENA}`);
     await expect(page.getByTestId('workout-w1')).toBeVisible();
-    await page.goto(`/workouts?${DAY}`);
+    await page.goto('/workouts');
     await expect(page.getByText('Legs')).toBeVisible();
     await expect(page.getByTestId('workout-w1')).toHaveCount(0);
   });

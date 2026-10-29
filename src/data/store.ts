@@ -206,8 +206,14 @@ export function applyUrlParams(params: { state?: string; date?: string }) {
     demo = true;
     next.data = params.state === 'empty' ? emptyData(getLocale()) : lenaData(getLocale());
   }
-  if (params.date === 'demo') next.today = demoToday;
-  else if (params.date && isIsoDate(params.date) && params.date !== snapshot.today) next.today = params.date;
+  // A pretend "today" is demo mode too: changes made against a fake date are not saved.
+  if (params.date === 'demo') {
+    demo = true;
+    next.today = demoToday;
+  } else if (params.date && isIsoDate(params.date) && params.date !== snapshot.today) {
+    demo = true;
+    next.today = params.date;
+  }
   if (Object.keys(next).length > 0) set(next);
 }
 

@@ -16,14 +16,15 @@ Slice: slice 1 · hours logged 3 h + 2026-10-29 not given (a record, sum of docs
 - [ ] Local persistence: all data survives an app restart; no account
 
 ## Next step (one line)
-Open the 8 screens on the iPhone in Expo Go (taps in the /build-screen report), set `checked-device` in `docs/design/screens.md`, then decide storage for must-have 5.
+Open the app on the iPhone in Expo Go (first launch is now empty: create your own workouts and loop), close and reopen it to see the data stay, set `checked-device` in `docs/design/screens.md`, then tick must-have 5 with that evidence.
 
 ## Open questions (Claude adds here, never invents answers)
 - Another dev server in this folder overwrote `.expo/types` (route types) mid-session; CLAUDE.md says one session per repo.
 - Should a loop also support weekday plans (Mon Push, Wed Pull every week), or is the N-day loop enough for v1? (from the concept PDF)
 - "Mark as done": parked in the toy box at kickoff; confirm it stays out of v1? (from the concept PDF)
 - Business mode needs the Apple Developer Program (about 99 USD per year) before the 10 strangers test; budget cap is 0 EUR. Decide before the stranger check.
-- Storage (decision #4: later): `expo-sqlite` (in Expo Go) as the concept suggests? Needs your OK as a new package (CLAUDE.md rule 3). Until then data resets on restart.
+- Confirm `docs/data-inventory.md` (written by Claude as a Suggestion while building persistence).
+- Demo data now needs `?state=filled` (Lena); a plain launch is the real, saved app. Any `?state=` or `?date=` link is demo mode and saves nothing until the app restarts.
 - Days before the loop starts (today is 29 Oct, Lena's loop starts 2 Nov): Today shows "Free" and "Your loop starts Mon, 2 Nov 2026". No design for this; keep, or design it?
 - Rotation editor: the native tab bar stays visible on this pushed screen (iOS default); the design frame has none. Keep the platform default?
 - `npm ci`: install scripts of `@parcel/watcher` and `unrs-resolver` are not approved (allowScripts); `npm audit` shows 3 high. Look at both before adding packages.
