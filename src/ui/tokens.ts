@@ -1,43 +1,59 @@
 // Design tokens: the only place for colours, spacing, sizes and fonts.
-// Values come from the picked direction "C Loop Ring" (docs/design/direction.md, design file
-// docs/design/looplift.figcraft). Every text and background pair is contrast-checked in light and
-// dark; the table lives in docs/design/direction.md. Recheck before changing a colour.
-// Source of truth is this file. The design file mirrors it by hand.
+// Values come from the picked direction "S1 Loop orbit" in Teal Glow (docs/design/direction.md,
+// design file docs/design/looplift.figcraft, frames "Final / ..."). Every text and background pair
+// is contrast-checked in light and dark; the table lives in docs/design/direction.md. Recheck
+// before changing a colour. Source of truth is this file. The design file mirrors it by hand.
 // Screens and components import from here (or from useColors), never hard-code values.
 
 const light = {
-  bg: '#FFF8F1',
+  bg: '#F2F5F7',
   bgRaised: '#FFFFFF',
-  text: '#2A1B12',
-  textMuted: '#6B5547',
-  accent: '#6D3FD9',
+  // Input fields (kg, reps), secondary buttons and search.
+  field: '#E8EEF1',
+  text: '#0D1B24',
+  textMuted: '#51606B',
+  accent: '#0B6B5D',
   onAccent: '#FFFFFF',
-  // Accent tint behind secondary buttons, steppers and sets x reps pills.
-  accentSoft: '#EFE8FC',
+  // Accent tint behind ticked set rows, hint chips and sets x reps pills.
+  accentSoft: '#D6EFEA',
+  // Background behind exercise and workout drawings.
+  artTint: '#E6F4F1',
   // Loop ring segments and loop chips: the current slot uses accent, the others these.
-  loopPull: '#E4D9FA',
-  loopRest: '#F1E6DA',
+  loopPull: '#9DC4BE',
+  loopRest: '#E8EEF1',
   // Dashed outline of rest days (non-text, 3:1).
-  restOutline: '#9C8573',
-  border: '#EFE2D6',
+  restOutline: '#7C8A94',
+  border: '#DCE3E8',
   danger: '#B42318',
   success: '#067647',
+  // Hero cards (loop orbit on Today, exercise header, Summary top): a gradient from heroFrom to
+  // heroTo with onHero text. Chips on the hero use heroChip (a dark tint keeps white text >= 4.5).
+  heroFrom: '#0A5C50',
+  heroTo: '#0E7C6B',
+  onHero: '#FFFFFF',
+  heroChip: '#0000001F',
 } as const;
 
 const dark: Record<keyof typeof light, string> = {
-  bg: '#17110D',
-  bgRaised: '#241B15',
-  text: '#F7EEE6',
-  textMuted: '#C2AE9F',
-  accent: '#A98BFA',
-  onAccent: '#17110D',
-  accentSoft: '#2E2445',
-  loopPull: '#3B3058',
-  loopRest: '#3A2E25',
-  restOutline: '#8A7464',
-  border: '#3A2E25',
+  bg: '#0A1215',
+  bgRaised: '#131E21',
+  field: '#1C2A2E',
+  text: '#E9F1F0',
+  textMuted: '#9DB0AE',
+  accent: '#4FD1B5',
+  onAccent: '#0A1215',
+  accentSoft: '#12302B',
+  artTint: '#12302B',
+  loopPull: '#2A5A52',
+  loopRest: '#1C2A2E',
+  restOutline: '#6B7F84',
+  border: '#24343A',
   danger: '#F97066',
   success: '#47CD89',
+  heroFrom: '#0A5C50',
+  heroTo: '#0E7C6B',
+  onHero: '#FFFFFF',
+  heroChip: '#0000001F',
 };
 
 export type ColorName = keyof typeof light;
@@ -62,8 +78,9 @@ export const size = {
   chart: 160,
 } as const;
 
-// sm: calendar day cells, md: inputs and grouped lists, lg: cards and list rows, full: pills and buttons.
-export const radius = { sm: 12, md: 16, lg: 22, full: 999 } as const;
+// sm: inputs and day cells, md: grouped lists and set rows, lg: cards and tiles, xl: hero cards,
+// full: pills and buttons.
+export const radius = { sm: 12, md: 16, lg: 24, xl: 32, full: 999 } as const;
 
 // Type ramp. Font scaling stays on, so never put fixed heights on text containers.
 export const font = {

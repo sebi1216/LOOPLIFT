@@ -1,95 +1,108 @@
 # Design direction
 
-Decisions Claude can apply, not adjectives. Picked direction: **C · Loop Ring**, picked by Sebastian on 2026-10-28, design file `docs/design/looplift.figcraft` (frames named `C / ...`, PNGs in `docs/design/renders/c-loop-ring/`). Last changed: 2026-10-28. Tokens live in code (`src/ui/tokens.ts`); the design file mirrors them by hand.
+Decisions Claude can apply, not adjectives. Picked direction: **S1 Loop orbit in Teal Glow (light)**, picked by Sebastian on 2026-10-29 (replaces C Loop Ring, decision #2). Design file `docs/design/looplift.figcraft`, frames named `Final / ...` (row "Picked: S1 Loop orbit"), PNGs in `docs/design/renders/final/`. Last changed: 2026-10-29. Tokens live in code (`src/ui/tokens.ts`); the design file mirrors them by hand.
 
-Design tool: FigCraft 0.11.2 (local app), driven through its MCP (`figcraft-cli mcp --attach 8790`, set in `.mcp.json`). The app is started with `--control 8790` and read and write roots on `docs/design/` (exports can only be written there). Design file: `docs/design/looplift.figcraft`. Key screens for the directions: Today, Calendar, Workout editor (confirmed 2026-10-28). Note: set `parent` on every layer, set sizes directly, never scale components. Directions A and B stay in the file as reference (rows 1 and 2); they are not the app.
+Design tool: FigCraft 0.11.2 (local app), driven through its MCP (`figcraft-cli mcp --attach 8790`, set in `.mcp.json`). The app is started with `--control 8790` and read and write roots on `docs/design/` (exports can only be written there). Notes: set `parent` on every layer, set sizes directly, never scale components; in a `batch`, `$step` numbers count every command (recount after edits); duplicated frames do not keep id order. Earlier directions (A, B, C, D to G, rounds 3 and 4) stay in the file as reference; they are not the app.
 
 ## Design rounds
-- 2026-10-28 · round 0 · 3 directions on Today, Calendar, Workout editor in `docs/design/looplift.figcraft`, PNGs in `docs/design/renders/` (A Loop Cards, B Big Type, C Loop Ring). Contrast fixes before showing: A tint to #EAF5F1 (4.60), C rest outline to #9C8573 (3.32).
-- 2026-10-28 · round 1 · Sebastian picked C Loop Ring as it is, no changes. Next: remaining screens, empty Today, dark mode.
-- 2026-10-28 · round 2 · Full set in C (8 main screens, empty Today, dark Today, Calendar and Workout editor). Sebastian: "Looks good, hand off".
+- 2026-10-28 · round 0 · 3 directions on Today, Calendar, Workout editor (A Loop Cards, B Big Type, C Loop Ring).
+- 2026-10-28 · round 1 · Sebastian picked C Loop Ring as it is.
+- 2026-10-28 · round 2 · Full set in C (8 screens, empty Today, dark). "Looks good, hand off".
+- 2026-10-29 · redo round 1 · 3 new directions on Today, Workout, Exercise (D Track dark lime, E Ledger editorial, F Bento tiles); C kept as reference. He liked D Today, D Workout, E Exercise, F Today (stats on Today); not the colours; bottom bar looked low effort.
+- 2026-10-29 · redo round 2 · Mix G (D Today + F stat tiles, D Workout, E Exercise, floating iOS 26 tab bar) in Ember, Midnight, Glacier. He liked G3 Glacier, wants light.
+- 2026-10-29 · redo round 3 · G3 Today with gradients (V1 Teal glow, V2 Aurora, V3 Ocean, V4 Sunrise). V1 liked most, "still nothing special".
+- 2026-10-29 · redo round 4 · Signature ideas on Today (S1 Loop orbit, S2 Poster type, S3 Own drawing, S4 Progress first) plus a board of 8 palettes. Picked S1 + palette 1 Teal Glow; liked the S3 bench press drawing.
+- 2026-10-29 · redo round 5 · New workout flow (Workout tiles, Exercise screen with cues, hint and graph, Summary), drawings per lift, then the full set: Calendar, Change-a-day, Rotation editor, Workouts, Workout editor, Exercises, empty Today, comeback state, dark Today, Workout, Exercise. "Looks good".
 
 ## Feel
-- Three words: playful, warm, visual
-- Not (Suggestion, from the direction's idea): corporate, loud, cluttered
-- References: none. The loop ring is our own idea and the reason C was picked over generic planner layouts (Apple 4.3 risk in `docs/brief.md`).
+- Three words: calm, fresh, confident
+- Not (Suggestion, from the direction's idea): cluttered, loud, generic
+- References: none. The loop orbit (a ring split into the loop's days with a marker on today) is our own idea and the reason S1 was picked (Apple 4.3 risk in `docs/brief.md`).
 
 ## The idea in one line
-The loop is visible: a ring split into the loop's days shows where today sits (Today, Rotation editor), and every other screen speaks the same loop language (loop chips, "Day 1 in your loop", dashed rest days).
+The loop is the hero: a teal gradient card with a ring split into the loop's days shows where today sits; every lift has its own simple line drawing; hints from your own history ("Try 67.5 kg", "Welcome back") tell you what to lift.
 
 ## Platform stance
 - Platform owns navigation, brand owns content.
-- Chrome: native (native tabs with 4 tabs Today, Calendar, Workouts, Exercises; stack headers with back and Done/Save; Change-a-day is a native sheet). The large titles in the designs map to native large-title headers.
-- Icons: SF Symbols on iOS, Material Symbols on Android (the design file uses simple stand-in strokes).
-- Dark mode in slice 1: yes, follows the system. Designed for Today, Calendar, Workout editor; other screens use the same tokens.
+- Chrome: native tabs (Today, Calendar, Workouts, Exercises). The floating pill tab bar in the frames is what iOS 26 native tabs render; never rebuild it in JS. Stack headers with back and Save; Change-a-day is a native sheet.
+- Icons: SF Symbols on iOS, Material Symbols on Android (the design file uses stand-in strokes).
+- Dark mode: follows the system. Designed for Today, Workout, Exercise; other screens use the same tokens.
 
 ## Tokens (source of truth: src/ui/tokens.ts)
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| bg | #FFF8F1 | #17110D | screen background (warm cream / warm near-black) |
-| bgRaised | #FFFFFF | #241B15 | cards, list rows, fields, day cells |
-| text | #2A1B12 | #F7EEE6 | body text |
-| textMuted | #6B5547 | #C2AE9F | secondary text, labels |
-| accent | #6D3FD9 | #A98BFA | act or selected only: primary button, today, current loop slot, links |
-| onAccent | #FFFFFF | #17110D | text and icons on accent |
-| accentSoft | #EFE8FC | #2E2445 | secondary buttons, steppers, sets x reps pills, changed days in previews |
-| loopPull | #E4D9FA | #3B3058 | loop ring and chips: other workout slots |
-| loopRest | #F1E6DA | #3A2E25 | loop ring and chips: rest slot |
-| restOutline | #9C8573 | #8A7464 | dashed outline of rest days (always with the word "Rest") |
-| border | #EFE2D6 | #3A2E25 | dividers, tab bar edge |
+| bg | #F2F5F7 | #0A1215 | screen background |
+| bgRaised | #FFFFFF | #131E21 | cards, tiles, list rows |
+| field | #E8EEF1 | #1C2A2E | kg and reps fields, secondary buttons, search |
+| text | #0D1B24 | #E9F1F0 | body text |
+| textMuted | #51606B | #9DB0AE | secondary text, labels |
+| accent | #0B6B5D | #4FD1B5 | act or selected only: primary button, today, links, ticks |
+| onAccent | #FFFFFF | #0A1215 | text and icons on accent |
+| accentSoft | #D6EFEA | #12302B | ticked set rows, hint chips, pills |
+| artTint | #E6F4F1 | #12302B | background behind drawings |
+| loopPull / loopRest | #9DC4BE / #E8EEF1 | #2A5A52 / #1C2A2E | other loop slots on light surfaces |
+| restOutline | #7C8A94 | #6B7F84 | dashed outline of rest days (always with the word "Rest") |
+| border | #DCE3E8 | #24343A | dividers, chart grid |
+| heroFrom → heroTo | #0A5C50 → #0E7C6B | same | hero gradient (Today orbit, exercise header, Summary) |
+| onHero / heroChip | #FFFFFF / 12% black | same | text on the hero; chips on the hero |
 | danger / success | #B42318 / #067647 | #F97066 / #47CD89 | status, always with icon plus label |
 
-Checked contrast pairs (WCAG ratio, light / dark; computed 2026-10-28 with a script for these values):
+Checked contrast pairs (WCAG ratio, light / dark; computed 2026-10-29 with a script for these values):
 | Pair | Light | Dark | Needs |
 |---|---|---|---|
-| text on bg | 15.78 | 16.33 | 4.5 |
-| text on bgRaised | 16.61 | 14.75 | 4.5 |
-| textMuted on bg | 6.62 | 8.77 | 4.5 |
-| textMuted on bgRaised | 6.96 | 7.93 | 4.5 |
-| textMuted on accentSoft | 5.84 | 6.77 | 4.5 |
-| onAccent on accent | 6.24 | 6.91 | 4.5 |
-| accent on bg | 5.93 | 6.91 | 4.5 |
-| accent on bgRaised | 6.24 | 6.25 | 4.5 |
-| accent on accentSoft | 5.24 | 5.34 | 4.5 |
-| text on loopPull | 12.35 | 10.47 | 4.5 |
-| text on loopRest | 13.51 | 11.47 | 4.5 |
-| restOutline on bg | 3.32 | 4.24 | 3 (non-text) |
-| danger on bg | 6.25 | 6.72 | 4.5 |
-| success on bg | 5.41 | 9.23 | 4.5 |
-Rule: at least 4.5 for body text, 3 for large text and icons. Recheck when a colour changes.
+| text on bg | 15.99 | 16.49 | 4.5 |
+| text on bgRaised | 17.51 | 14.82 | 4.5 |
+| text on field | 14.95 | 12.89 | 4.5 |
+| text on accentSoft | 14.50 | 12.34 | 4.5 |
+| textMuted on bg | 5.93 | 8.34 | 4.5 |
+| textMuted on bgRaised | 6.49 | 7.49 | 4.5 |
+| textMuted on field | 5.54 | 6.52 | 4.5 |
+| accent on bg | 5.86 | 10.02 | 4.5 |
+| accent on bgRaised | 6.41 | 9.00 | 4.5 |
+| accent on accentSoft | 5.31 | 7.50 | 4.5 |
+| onAccent on accent | 6.41 | 10.02 | 4.5 |
+| onHero on heroFrom | 7.90 | 7.90 | 4.5 |
+| onHero on heroTo | 5.10 | 5.10 | 4.5 |
+| onHero on heroChip (over heroTo) | 6.24 | 6.24 | 4.5 |
+| text on loopPull | 9.23 | 6.82 | 4.5 |
+| danger on bg | 6.00 | 6.79 | 4.5 |
+| success on bg | 5.20 | 9.33 | 4.5 |
+| accent on artTint (drawings) | 5.67 | 7.50 | 3 (non-text) |
+| restOutline on bg | 3.24 | 4.50 | 3 (non-text) |
+| restOutline on bgRaised | 3.55 | 4.04 | 3 (non-text) |
+Rule: at least 4.5 for body text, 3 for large text and icons. Never put white text on a white tint over the hero (3.9 on heroTo); use heroChip. Recheck when a colour changes.
 
-Spacing: 4, 8, 12, 16, 24, 32, 48. Side padding 16. Radius: 12 (day cells), 16 (fields, grouped lists), 22 (cards, rows), full (buttons, pills, bubbles).
-Sizes: touch 48, ring 200 (Today), ringSmall 84 (Rotation editor), dayBubble 44 (inside a 48+ tappable column with its label).
-Type ramp: hero 36 bold (workout name in the ring), title 30 bold, headline 17 semibold, body 17, callout 15, caption 13, label 11 medium. Fonts: system font.
-Motion: fast 150 ms, base 250 ms; respect Reduce Motion. Suggestion: the ring segment can slide to the next slot after midnight; skip it if Reduce Motion is on.
+Note: in the dark frames the primary buttons are #0E7C6B with white text; the tokens use the mint accent with dark text (10.02), which keeps one accent per mode. Suggestion: check this on the iPhone and switch if it looks too bright.
+
+Spacing: 4, 8, 12, 16, 24, 32, 48. Side padding 16. Radius: 12 (fields, day cells), 16 (lists, set rows), 24 (cards, tiles), 32 (hero cards), full (buttons, pills, chips).
+Sizes: touch 48, ring 200 (Today). Type ramp unchanged (system font). Hero numbers ("Push", "65 kg") use title/hero sizes.
+Gradient in code: Suggestion, decide in `/build-screen` Today (React Native's `experimental_backgroundImage` linear-gradient if SDK 58 supports it on iOS, else `expo-linear-gradient`, which needs Sebastian's OK as a new package).
+Motion: fast 150 ms, base 250 ms; respect Reduce Motion. Suggestion: the today marker slides to the next slot after midnight.
 
 ## Principles (summary; the full rules Claude follows are in .claude/rules/ui.md)
 - Layers: navigation = platform, content = brand. No custom tab bar or header. No glass in content.
-- Touch: house rule 48 x 48 on everything tappable (hitSlop is fine). Covers iOS 44 pt and Android 48 dp; WCAG 2.2 AA asks only 24 px.
+- Touch: house rule 48 x 48 on everything tappable (hitSlop is fine; the small pills in the frames need it).
 - Text: font scaling stays on, layouts survive 200%. German is often about 30% longer (E).
 - Colour: checked pairs only. Status = icon plus label. One accent = act or selected.
-- Platform differences: SF Symbols on iOS, Material Symbols on Android. Never block Android back or the iOS edge swipe.
-- Sizes: small phone, large phone, tablet, web. Every screen needs a wide layout (a centred column with max width 640 is enough).
-- Motion: respect Reduce Motion; short springs over long animations.
+- Sizes: small phone, large phone, tablet, web; wide screens use a centred column, max width 640.
 
 ## Rules (the ones Claude breaks)
-- One accent colour = act or selected, never decoration. Pull and Rest in the ring use loopPull and loopRest, never a second bright colour.
-- Rest days: dashed restOutline plus the word "Rest". Days set by hand: accent outline plus pin icon plus label; the legend "Set by you, outside the loop" sits under the calendar.
-- The two Change-a-day options are equal: same card, same weight, no default, each with a 4-day preview of what changes.
-- Hit area at least 48; 4 pt grid; gap, not margins. Steppers (40 high) and day bubbles (44) get hitSlop.
-- Status = icon plus label.
-- Short copy, EN and DE, no em dashes.
+- One accent = act or selected, never decoration. The hero gradient is the one brand surface; do not add more gradients.
+- Rest days: dashed restOutline plus the word "Rest". Days set by hand: accent outline plus pin plus the legend "Set by you, outside the loop".
+- The two Change-a-day options are equal: same card, same weight, no default, each with a 4-day preview.
+- Every lift and every workout has its own drawing (simple line figure in the app's style, own work, never copied); never reuse one drawing for two lifts.
+- Hints are rule-based from the user's history (decision rows pending), never AI coaching. Each hint names its reason ("every rep, 3 times").
+- Hit area at least 48; 4 pt grid; gap, not margins. Short copy, EN and DE, no em dashes.
 
 ## Layout by size
-- Phone: single column.
-- Tablet and wide: centred column, max width 640 (size.maxContent). The ring stays 200.
-- Web: same as tablet, centred.
+- Phone: single column. Workout tiles in 2 columns (1 column above 200% text).
+- Tablet and wide: centred column, max width 640.
 
-## Components for slice 1 (max 5 at first; extract on second use)
+## Components for this direction (max 5 at first; extract on second use)
 | Component | Source | Status | Used on |
 |---|---|---|---|
-| Button (primary, soft) | ours (src/ui/button.tsx, restyle to pill + accentSoft variant) | starter | Today, empty Today, editors |
-| LoopRing | ours (react-native-svg is not in the project; Suggestion: draw arcs with View borders or ask before adding a package) | to build | Today, Rotation editor |
-| DayBubble / DayCell | ours | to build | Today strip, Calendar grid, previews |
-| Stepper (− value +) | ours, or @expo/ui stepper if it matches | to build | Workout editor |
-| Card row (drag handle, title, subtitle, trailing) | ours | to build | Workout editor, Rotation editor, Workouts, Exercises |
+| HeroCard (gradient, heroChip chips) | ours | to build | Today, Exercise, Summary, Rotation editor |
+| LoopRing | ours (react-native-svg, decision #3) | restyle (white on hero) | Today, Rotation editor, Calendar loop card |
+| LiftArt (drawing per lift and workout) | ours (react-native-svg) | to build; drawings are a separate art task | Workout tiles, Exercise, Today, Workouts, Exercises |
+| HintCard / HintChip | ours | to build | Workout tiles, Exercise, Summary |
+| SetRow, DayCell, Button, LineChart | ours (exist) | restyle with new tokens | Exercise, Calendar, everywhere |
