@@ -37,7 +37,6 @@ New session: `/build-screen Today` in the new direction S1 Loop orbit (design `F
 - Drawings for every lift and workout (#14): 60 lifts plus each workout is a separate art task. Draw them all in FigCraft first, or start with Lena's 8 lifts and a neutral placeholder for the rest?
 - Hero gradient in code: React Native's built-in gradient background, or `expo-linear-gradient` (new package, needs your OK)? Decide in `/build-screen Today`.
 - Dark mode buttons: tokens use the mint accent with dark text; the dark frames showed teal buttons with white text. Check on the iPhone.
-- Ratchet (same mistake twice, 2026-10-29): wrong `$step` numbers in FigCraft batches (4 times) and frame names swapped after duplicating. Suggestion: a small script in `scripts/` that builds FigCraft batches with named steps instead of counted numbers, plus "read the copy's ids before renaming" as a note in `/designs` step 2. OK to add?
 
 ## Evidence so far (Business mode; details in docs/evidence.md)
 Channel: gym / uni sport circle, 10 try it · Conversations: 0/5 · Signups: 0 · Strangers who used it twice: 0

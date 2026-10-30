@@ -53,3 +53,4 @@ Format:
 - Learned: white text on a white tint over the lighter end of a gradient drops to 3.9:1; a dark tint keeps it above 6. Hint rules follow ACSM progression (2-10% when you beat the target) and detraining studies (comeback weight after 2 to 4 weeks off).
 - Problems: FigCraft batch step numbers went wrong 4 times and duplicated frames came back in a different id order (G2/G3 names and PNGs swapped, fixed). FigCraft disconnected at the end, after the last save. Teach-back skipped at Sebastian's request.
 - Next: new session, /build-screen Today in S1; update spec 001 for the new workout flow before Workout, Exercise and Summary.
+- Ratchet (2026-10-30): added tools/figcraft-batch.js (named steps instead of counted $step numbers, 4 tests red/green) and a note in /designs (use it; read a copy's ids after duplicating).

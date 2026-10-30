@@ -24,6 +24,7 @@ Work through the steps in order. Say in one line which step you are on. Ask with
 ## 2. Design tool (check before designing)
 - Look for FigCraft tools in this session (`/mcp`, or tool names that contain "figcraft"). If they exist, test on a throwaway file: create one frame (402 x 874) with a text and a rectangle, read it back, export a PNG. Say what worked.
 - FigCraft not connected: ask Sebastian how FigCraft's MCP is set up on this PC (he used it before). Never guess install commands. Note from an earlier app: scaling components in FigCraft once broke many texts, so do not scale components; set sizes directly.
+- Big FigCraft batches: write steps with names (`as`, `{ "$ref": "card" }`) and turn them into `$step` numbers with `tools/figcraft-batch.js` (`node tools/figcraft-batch.js steps.json`); never count `$step` by hand (it went wrong 4 times on 2026-10-29). After `edit.duplicate`, read the copy's ids and names with `get_node` before renaming or recolouring; copies do not keep the id order.
 - If FigCraft cannot create designs, offer, with a default:
   - (a) Figma through the Figma MCP, if it is connected (free seats have few MCP calls a month; check the limit message),
   - (b) coded variants: a temporary `/dev/variants` route in the web preview that shows the 3 directions side by side, with screenshots saved to `docs/design/renders/` (always works, no account; default if (a) is not available).
