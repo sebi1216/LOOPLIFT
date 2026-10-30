@@ -1,6 +1,6 @@
 # Now
 
-Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-10-29 (design redo: S1 Loop orbit, Teal Glow picked, decisions #10 to #14)
+Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-10-30 (after /wrap-up, tag good-2026-10-30; design redo S1 Loop orbit, decisions #10 to #14)
 
 Mode: Business   Phase: 1 strategy | 2 designs | 3 code (now: 3 code)
 Status: active
@@ -16,7 +16,7 @@ Slice: slice 1 · hours logged 3 h + 2026-10-29 not given (a record, sum of docs
 - [ ] Local persistence: all data survives an app restart; no account
 
 ## Next step (one line)
-`/wrap-up`, then a new session: `/build-screen Today` in the new direction S1 Loop orbit (design `Final / Today`; tokens already switched to Teal Glow, the old C layouts remain until each screen is rebuilt). The new workout flow (#11, #12) needs a spec update of 001 before Workout, Exercise and Summary are built.
+New session: `/build-screen Today` in the new direction S1 Loop orbit (design `Final / Today`; tokens already switched to Teal Glow, the old C layouts remain until each screen is rebuilt). The new workout flow (#11, #12) needs a spec update of 001 before Workout, Exercise and Summary are built.
 
 ## Open questions (Claude adds here, never invents answers)
 - Another dev server in this folder overwrote `.expo/types` (route types) mid-session; CLAUDE.md says one session per repo.
@@ -37,6 +37,7 @@ Slice: slice 1 · hours logged 3 h + 2026-10-29 not given (a record, sum of docs
 - Drawings for every lift and workout (#14): 60 lifts plus each workout is a separate art task. Draw them all in FigCraft first, or start with Lena's 8 lifts and a neutral placeholder for the rest?
 - Hero gradient in code: React Native's built-in gradient background, or `expo-linear-gradient` (new package, needs your OK)? Decide in `/build-screen Today`.
 - Dark mode buttons: tokens use the mint accent with dark text; the dark frames showed teal buttons with white text. Check on the iPhone.
+- Ratchet (same mistake twice, 2026-10-29): wrong `$step` numbers in FigCraft batches (4 times) and frame names swapped after duplicating. Suggestion: a small script in `scripts/` that builds FigCraft batches with named steps instead of counted numbers, plus "read the copy's ids before renaming" as a note in `/designs` step 2. OK to add?
 
 ## Evidence so far (Business mode; details in docs/evidence.md)
 Channel: gym / uni sport circle, 10 try it · Conversations: 0/5 · Signups: 0 · Strangers who used it twice: 0

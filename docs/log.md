@@ -47,3 +47,9 @@ Format:
 - Learned: react-native-web needs `aria-checked`, not accessibilityState, for checkboxes. A second dev server in this folder still breaks `.expo/types`.
 - Problems: one unit test was wrong (it contradicted the one-open-session rule) and was removed. The Calendar e2e test changed together with the code (2 Nov now reads Done). /code-review: 6 fixed, 4 parked as open questions; /security-review: no findings.
 - Next: Sebastian looks at the screenshots, merges, iPhone check.
+
+## 2026-10-29/30 · Ship (designs redo) · hours not given · checked-device +0
+- Built: /designs redo in FigCraft. Rounds D/E/F, mix G in 3 palettes, G3 gradients, 4 signature ideas plus an 8-palette board; picked S1 Loop orbit in Teal Glow (#10). New workout flow with exercise tiles, exercise screen (cues, hint, sets, graph below) and Summary (#11), research-based hint rules (#12), merged exercise screens (#13), a drawing per lift (#14). Full set of 10 screens plus empty, comeback and 3 dark in docs/design/renders/final/. Tokens switched to Teal Glow, all 20 contrast pairs pass; npm run check green (58 tests); /code-review: no findings; pushed, tag good-2026-10-30.
+- Learned: white text on a white tint over the lighter end of a gradient drops to 3.9:1; a dark tint keeps it above 6. Hint rules follow ACSM progression (2-10% when you beat the target) and detraining studies (comeback weight after 2 to 4 weeks off).
+- Problems: FigCraft batch step numbers went wrong 4 times and duplicated frames came back in a different id order (G2/G3 names and PNGs swapped, fixed). FigCraft disconnected at the end, after the last save. Teach-back skipped at Sebastian's request.
+- Next: new session, /build-screen Today in S1; update spec 001 for the new workout flow before Workout, Exercise and Summary.
