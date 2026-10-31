@@ -70,6 +70,8 @@ export const size = {
   touch: 48,
   maxContent: 640,
   ring: 200,
+  // The ring in the Rotation editor's hero.
+  ringMedium: 150,
   ringSmall: 84,
   ringStroke: 22,
   ringStrokeSmall: 10,
@@ -84,6 +86,8 @@ export const radius = { sm: 12, md: 16, lg: 24, xl: 32, full: 999 } as const;
 
 // Type ramp. Font scaling stays on, so never put fixed heights on text containers.
 export const font = {
+  // The plan name in the middle of the Today ring ("Push").
+  display: { fontSize: 52, lineHeight: 58, fontWeight: '700' },
   hero: { fontSize: 36, lineHeight: 42, fontWeight: '700' },
   title: { fontSize: 30, lineHeight: 36, fontWeight: '700' },
   // Sheet titles (Change-a-day): long dates must fit on a phone.

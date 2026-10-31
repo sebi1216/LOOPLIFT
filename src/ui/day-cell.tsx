@@ -7,7 +7,7 @@ import { font, radius, size, space } from './tokens';
 import { useColors } from './use-colors';
 
 // today = accent fill · rest = dashed outline plus the word · manual = accent outline plus pin
-// changed = accentSoft (previews) · plain = raised · blank = no plan (before the loop starts)
+// changed = accent outline, dashed on rest days (previews) · plain = raised · blank = no plan
 export type DayVariant = 'today' | 'rest' | 'manual' | 'changed' | 'plain' | 'blank';
 
 type Props = {
@@ -18,7 +18,8 @@ type Props = {
   variant: DayVariant;
   // Rest days that are also today or changed keep their dashed outline.
   rest?: boolean;
-  // A finished workout on this day: a check plus "Done" instead of the plan (status = icon + label).
+  // A finished workout on this day: a check in front of the plan (direction S1: "✓ Push"); the
+  // cell's accessibilityLabel says Done.
   done?: boolean;
   // In previews the weekday is small and the plan is the important part.
   emphasis?: 'top' | 'label';
@@ -31,16 +32,16 @@ export function DayCell({ shape, top, label: planText, variant, rest, done, emph
   const c = useColors();
   const isRest = rest ?? variant === 'rest';
   const bg =
-    variant === 'today' ? c.accent : variant === 'changed' ? c.accentSoft : variant === 'blank' ? 'transparent' : c.bgRaised;
+    variant === 'today' ? c.accent : variant === 'blank' ? 'transparent' : c.bgRaised;
   const fg = variant === 'today' ? c.onAccent : c.text;
   const sub = variant === 'today' ? c.onAccent : variant === 'changed' ? c.accent : c.textMuted;
   const box = [
     shape === 'circle' ? styles.bubble : styles.cell,
     { backgroundColor: bg },
-    isRest && variant !== 'today' && variant !== 'manual' && [styles.dashed, { borderColor: c.restOutline }],
-    variant === 'manual' && [styles.manual, { borderColor: c.accent }],
+    isRest && variant !== 'today' && variant !== 'manual' && [styles.dashed, { borderColor: variant === 'changed' ? c.accent : c.restOutline }],
+    (variant === 'manual' || (variant === 'changed' && !isRest)) && [styles.manual, { borderColor: c.accent }],
   ];
-  const label = done ? t('common.done') : planText;
+  const label = planText || (done ? t('common.done') : '');
   // Inside a today cell the text sits on accent, so it stays onAccent there.
   const doneColor = variant === 'today' && shape === 'cell' ? c.onAccent : c.success;
   const pin = done ? (
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
   manual: { borderWidth: 2 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: space.xxs, maxWidth: '100%' },
   num: { ...font.headline },
-  small: { ...font.label },
+  small: { ...font.label, textTransform: 'uppercase' },
   label: { ...font.label },
   strong: { ...font.caption, fontWeight: '600' },
   pressed: { opacity: 0.7 },

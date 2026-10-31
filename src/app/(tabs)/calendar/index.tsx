@@ -6,10 +6,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { addDays, resolveDay, resolveRange } from '@/data/schedule';
 import { useAppData, useToday } from '@/data/store';
 import { doneDates } from '@/data/tracker';
-import { dayOfMonth, longDate, monthTitle, t, weekdayLetter } from '@/i18n';
+import { dayOfMonth, fullDate, longDate, monthTitle, t, weekdayLetter } from '@/i18n';
 import { Button } from '@/ui/button';
 import { DayCell } from '@/ui/day-cell';
 import { Icon } from '@/ui/icon';
+import { LoopRing } from '@/ui/loop-ring';
 import { dayVariant, planLabel, slotLabel } from '@/ui/plan-label';
 import { font, radius, size, space } from '@/ui/tokens';
 import { useColors } from '@/ui/use-colors';
@@ -20,8 +21,10 @@ function monthStart(iso: string, offset: number): string {
   return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, '0')}-01`;
 }
 
-// Calendar: the month, each day labelled with its workout. Rest days dashed, days set by hand
-// with accent outline plus pin. Tap a day to change it. States: filled, empty (?state=empty).
+// Calendar (direction S1): the month, each day labelled with its workout. Rest days dashed, days
+// set by hand with accent outline plus pin, finished days with a check. A legend, then the loop
+// card (small ring, the loop in order) that opens the Rotation editor, like Edit loop at the top.
+// Tap a day to change it. States: filled, empty (?state=empty).
 export default function Calendar() {
   const c = useColors();
   const d = useAppData();
@@ -41,7 +44,7 @@ export default function Calendar() {
   const hasLoop = !!rotation && rotation.slots.length > 0;
   // Today's slot gets the accent chip, like the ring on Today.
   const now = resolveDay(d.schedule, today);
-  const currentSlot = now.source === 'loop' ? now.slotIndex : -1;
+  const currentSlot = now.source === 'loop' ? now.slotIndex : null;
   // A Monday to build the weekday letters from.
   const monday = addDays(first, -lead);
 
@@ -59,32 +62,33 @@ export default function Calendar() {
   return (
     <SafeAreaView edges={['top']} style={[styles.safe, { backgroundColor: c.bg }]}>
       <ScrollView contentContainerStyle={styles.content}>
+        {hasLoop ? (
+          <View style={styles.topRow}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('calendar.editLoop')}
+              onPress={() => router.push('/calendar/loop')}
+              style={({ pressed }) => [styles.pill, { backgroundColor: c.accentSoft }, pressed && styles.pressed]}
+              testID="edit-loop">
+              <Icon name="loop" size={17} color={c.accent} />
+              <Text style={[styles.pillText, { color: c.accent }]}>{t('calendar.editLoop')}</Text>
+            </Pressable>
+          </View>
+        ) : null}
         <View style={styles.head}>
-          <Text accessibilityRole="header" style={[styles.title, { color: c.text }]} testID="month-title">
-            {monthTitle(first, today)}
-          </Text>
+          <View style={styles.titleRow} accessible accessibilityRole="header">
+            <Text style={[styles.title, { color: c.text }]} testID="month-title">
+              {monthTitle(first, today)}
+            </Text>
+            {first.slice(0, 4) === today.slice(0, 4) ? (
+              <Text style={[styles.title, { color: c.textMuted }]}>{first.slice(0, 4)}</Text>
+            ) : null}
+          </View>
           {navButton(t('calendar.prev'), 'chevronLeft', -1, 'month-prev')}
           {navButton(t('calendar.next'), 'chevronRight', 1, 'month-next')}
         </View>
 
-        {hasLoop ? (
-          <View style={[styles.loopBar, { backgroundColor: c.bgRaised }]}>
-            <Text style={[styles.caption, { color: c.textMuted }]}>{t('calendar.loop')}</Text>
-            <View style={styles.loopChips}>
-              {rotation.slots.map((slot, i) => (
-                <View
-                  key={`${slot}-${i}`}
-                  style={[
-                    styles.loopChip,
-                    { backgroundColor: i === currentSlot ? c.accent : slot === 'rest' ? c.loopRest : c.loopPull },
-                  ]}>
-                  <Text style={[styles.chipText, { color: i === currentSlot ? c.onAccent : c.text }]}>{slotLabel(d, slot)}</Text>
-                </View>
-              ))}
-            </View>
-            <Button label={t('calendar.edit')} variant="soft" onPress={() => router.push('/calendar/loop')} style={styles.edit} testID="edit-loop" />
-          </View>
-        ) : (
+        {hasLoop ? null : (
           <View style={[styles.emptyCard, { backgroundColor: c.bgRaised }]} testID="empty-state">
             <Text style={[styles.callout, { color: c.textMuted }]}>{t('calendar.empty')}</Text>
             <Button label={t('calendar.build')} onPress={() => router.push('/calendar/loop')} testID="build-loop" />
@@ -131,10 +135,42 @@ export default function Calendar() {
         </View>
 
         {hasLoop || Object.keys(d.schedule.entries).length > 0 ? (
-        <View style={styles.legend}>
-          <Icon name="pin" size={13} color={c.accent} />
-          <Text style={[styles.caption, styles.flex, { color: c.textMuted }]}>{t('calendar.legend')}</Text>
-        </View>
+          <View style={styles.legend} testID="legend">
+            <View style={styles.legendItem}>
+              <View style={[styles.swatch, styles.dashed, { borderColor: c.restOutline }]} />
+              <Text style={[styles.caption, { color: c.textMuted }]}>{t('common.rest')}</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <Icon name="check" size={15} color={c.success} />
+              <Text style={[styles.caption, { color: c.textMuted }]}>{t('common.done')}</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.swatch, styles.manual, { borderColor: c.accent }]}>
+                <Icon name="pin" size={9} color={c.accent} />
+              </View>
+              <Text style={[styles.caption, { color: c.textMuted }]}>{t('calendar.legendManual')}</Text>
+            </View>
+          </View>
+        ) : null}
+
+        {hasLoop ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('calendar.loopA11y', {
+              slots: rotation.slots.map((x) => slotLabel(d, x)).join(', '),
+              date: fullDate(rotation.startDate),
+            })}
+            onPress={() => router.push('/calendar/loop')}
+            style={({ pressed }) => [styles.loopCard, { backgroundColor: c.bgRaised }, pressed && styles.pressed]}
+            testID="loop-card">
+            <LoopRing slots={rotation.slots} current={currentSlot ?? null} diameter={size.ringSmall} stroke={size.ringStrokeSmall} />
+            <View style={styles.flex}>
+              <Text style={[styles.callout, { color: c.textMuted }]}>{t('calendar.yourLoop')}</Text>
+              <Text style={[styles.headline, { color: c.text }]}>{rotation.slots.map((x) => slotLabel(d, x)).join(' → ')}</Text>
+              <Text style={[styles.callout, { color: c.textMuted }]}>{t('calendar.since', { date: fullDate(rotation.startDate) })}</Text>
+            </View>
+            <Icon name="chevronRight" size={20} color={c.textMuted} />
+          </Pressable>
         ) : null}
       </ScrollView>
     </SafeAreaView>
@@ -144,29 +180,25 @@ export default function Calendar() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   content: { padding: space.md, gap: space.md, width: '100%', maxWidth: size.maxContent, alignSelf: 'center' },
+  topRow: { flexDirection: 'row', justifyContent: 'flex-end' },
+  pill: { flexDirection: 'row', alignItems: 'center', gap: space.xs, minHeight: size.touch, borderRadius: radius.full, paddingHorizontal: space.md },
+  pillText: { ...font.headline },
   head: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  title: { ...font.title, flex: 1 },
+  titleRow: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', columnGap: space.sm },
+  title: { ...font.title },
   round: { width: size.touch, height: size.touch, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
-  loopBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: space.sm,
-    borderRadius: radius.lg,
-    paddingLeft: space.md,
-    paddingRight: space.xs,
-    paddingVertical: space.xs,
-  },
-  loopChips: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: space.xs },
-  loopChip: { borderRadius: radius.full, paddingHorizontal: space.sm, paddingVertical: space.xxs },
-  chipText: { ...font.caption, fontWeight: '600' },
-  edit: { paddingHorizontal: space.md },
   emptyCard: { borderRadius: radius.lg, padding: space.md, gap: space.ms },
   grid: { gap: space.xs },
   week: { flexDirection: 'row', gap: space.xs },
   weekday: { ...font.label, flex: 1, textAlign: 'center' },
   blank: { flex: 1 },
-  legend: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  legend: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: space.md, rowGap: space.xs },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  swatch: { width: space.md, height: space.md, borderRadius: space.xs, alignItems: 'center', justifyContent: 'center' },
+  dashed: { borderWidth: 1.5, borderStyle: 'dashed' },
+  manual: { borderWidth: 1.5 },
+  loopCard: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderRadius: radius.lg, padding: space.md },
+  headline: { ...font.headline },
   flex: { flex: 1 },
   caption: { ...font.caption },
   callout: { ...font.callout },

@@ -1,4 +1,31 @@
-# Spec 001: Workout tracker   Status: built (branch feat/workout-tracker, web-checked; device check open)
+# Spec 001: Workout tracker   Status: update 2 (S1 flow) in build; update 1 built (web-checked; device check open)
+
+## Update 2, 2026-10-30: S1 workout flow (decisions #11, #12, #13, #14)
+Replaces "Flow" steps 2 and 3 and the workout screen part of the checks below. Everything else stays.
+
+Flow:
+1. "Start workout" on Today opens the Workout screen: one tile per exercise (drawing, "Last: 4 × 6 · 65 kg", hint chip), "0 of 4 done", any order.
+2. A tile opens the Exercise screen inside the workout: muscle group, name, 2 to 3 cues and the drawing on the hero; the hint card ("Time to add weight", with "Use 67.5 kg" and "Keep 65 kg"); "Last time"; the set rows (prefilled as before); "Finish exercise" goes back to the tiles; the graph and history below.
+3. A tile counts as done when every set of it is ticked; otherwise it shows "2 of 4 sets".
+4. "Finish workout" saves (ticked sets only, as before) and opens the Summary: lifts, sets, new records, "Next time" hints (add weight and stay only) and the next loop day. "Done" goes to Today.
+5. The Exercises tab opens the same Exercise screen without the set rows and Finish (graph, history, rename, delete).
+
+Hint rules (decision #12), pure in `src/data/hints.ts`, built red/green in `hints.test.ts`:
+- Add weight: every set reached the target reps in each of the last 2 finished sessions at the same top weight: + 2.5 kg (upper body), + 5 kg (legs); rounded to 2.5 kg.
+- Stay: the same top weight for 3 or more sessions without every rep: stay, aim for 1 more rep than the lowest set last time.
+- Comeback: last session 14 to 27 days ago: about 90%, 28 days or more: about 80% of the last top weight, rounded down to 2.5 kg ("Welcome back").
+- Same: anything else, and bodyweight lifts (0 kg): "Same as last time". No history: no hint.
+- Each hint says its reason ("every rep, 2 sessions in a row"). "Use" sets the kg of all unticked sets; "Keep" hides the card for this workout.
+- Record: a finished set heavier than every earlier finished set of that lift (tie: more reps). A lift's first session is not a record.
+
+Acceptance checks (update 2):
+- Lena, Thu 5 Nov, Start workout: 4 tiles; Bench Press shows "Last: 4 × 6 · 65 kg" and "Try 67.5 kg"; Incline DB Press shows "Stay at 24 kg · +1 rep". Check: Playwright + `docs/design/checks/workout.png`.
+- Bench Press tile → hint "Time to add weight", "Use 67.5 kg" fills 4 sets with 67.5; tick all 4, Finish exercise: the tile reads done, "1 of 4 done". Check: Playwright + `exercise.png`.
+- Finish workout → Summary: 1 new record (Bench Press 67.5 kg × 6, 2.5 kg over your best), "Next in your loop: Pull, tomorrow". Check: Playwright + `summary.png`.
+- `?state=comeback` on Bench Press shows "Welcome back" with 57.5 kg (about 90% of 65 after 2 to 4 weeks off). Check: Playwright + `exercise-comeback.png`.
+- Lifts without a drawing yet show a neutral placeholder, never another lift's drawing (#14; drawn now: Push, Pull and Lena's 8 lifts).
+
+Done when (update 2): `npm run check` and `npm run test:e2e` pass, and `docs/design/checks/` has `workout.png`, `exercise.png`, `exercise-comeback.png`, `summary.png`.
 
 Slice: 1 (decision #7, must-have added by Sebastian) · Why: targets you soon know by heart; the weight you did and its trend is what keeps you coming back.
 

@@ -126,9 +126,11 @@ export const demoToday = '2026-11-05';
 // Lena's last 6 weeks: Push every 3 days from Thu 24 Sep to Mon 2 Nov, Pull the day after each
 // (her loop's rhythm), all finished. Every lift climbs slowly, so the graphs have a story:
 // Bench Press 57.5 to 65 kg, and Thu 5 Nov prefills 4 x 65 kg x 6. Pull-up is bodyweight (0 kg).
-const demoProgress: Record<string, { from: number; to: number; step: number; reps?: [number, number] }> = {
+// missLast: at the top weight the last set falls one rep short, so Incline DB Press shows the
+// "stay, aim for 1 more rep" hint (decision #12) next to Bench Press's "Try 67.5 kg".
+const demoProgress: Record<string, { from: number; to: number; step: number; reps?: [number, number]; missLast?: boolean }> = {
   e1: { from: 57.5, to: 65, step: 2.5 },
-  e2: { from: 20, to: 24, step: 2 },
+  e2: { from: 20, to: 24, step: 2, missLast: true },
   e3: { from: 35, to: 40, step: 2.5 },
   e4: { from: 22.5, to: 27.5, step: 2.5 },
   e5: { from: 0, to: 0, step: 1, reps: [6, 8] },
@@ -150,7 +152,8 @@ function demoSession(w: Workout, i: number, date: string, id: string): Session {
       const p = demoProgress[e.exerciseId];
       const kg = p.from + p.step * level(Math.round((p.to - p.from) / p.step) + 1);
       const reps = p.reps ? p.reps[0] + level(p.reps[1] - p.reps[0] + 1) : e.targetReps;
-      return { ...e, sets: Array.from({ length: e.targetSets }, () => ({ kg, reps, done: true })) };
+      const miss = p.missLast && kg === p.to;
+      return { ...e, sets: Array.from({ length: e.targetSets }, (_, k) => ({ kg, reps: miss && k === e.targetSets - 1 ? reps - 1 : reps, done: true })) };
     }),
   };
 }
@@ -161,4 +164,11 @@ export function demoSessions(): Session[] {
     const day = addDays('2026-09-24', i * 3);
     return [demoSession(push, i, day, `d${i * 2 + 1}`), demoSession(pull, i, addDays(day, 1), `d${i * 2 + 2}`)];
   }).flat();
+}
+
+// The comeback state (?state=comeback): Lena's same log, 23 days earlier, so on Thu 5 Nov her
+// last Bench Press was Sat 10 Oct (26 days off: "Welcome back", about 90%).
+export const COMEBACK_DAYS = 23;
+export function comebackSessions(): Session[] {
+  return demoSessions().map((s) => ({ ...s, date: addDays(s.date, -COMEBACK_DAYS) }));
 }

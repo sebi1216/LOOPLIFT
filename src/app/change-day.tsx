@@ -3,17 +3,17 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { addDays, isIsoDate, resolveDay, resolveRange, samePlan, type Plan, type Schedule } from '@/data/schedule';
 import { actions, ops, useAppData, useToday, type AppData } from '@/data/store';
-import { longDate, shortWeekday, t, weekdayName } from '@/i18n';
+import { dayOfMonth, longDate, shortWeekday, t, weekdayName } from '@/i18n';
 import { Chip } from '@/ui/chip';
 import { DayCell } from '@/ui/day-cell';
-import { Icon, type IconName } from '@/ui/icon';
+import { Icon } from '@/ui/icon';
 import { planLabel } from '@/ui/plan-label';
 import { font, radius, size, space } from '@/ui/tokens';
 import { useColors } from '@/ui/use-colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Change-a-day sheet: "Replace this day only" and "Push the loop back", equal weight, no default.
-// Each shows the next 4 days after the change; changed days are highlighted.
+// Each shows the next 4 days after the change; changed days get an accent outline (S1).
 // Opens from Today (that day) and from the Calendar (any day): /change-day?day=2026-11-05
 export default function ChangeDay() {
   const c = useColors();
@@ -52,7 +52,7 @@ export default function ChangeDay() {
     <ScrollView
       automaticallyAdjustKeyboardInsets
       keyboardDismissMode="interactive"
-      style={{ backgroundColor: c.bg }} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + space.md }]} testID="change-day-sheet">
+      style={{ backgroundColor: c.bgRaised }} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + space.md }]} testID="change-day-sheet">
       <View style={styles.head}>
         <View style={styles.flex}>
           <Text accessibilityRole="header" style={[styles.title, { color: c.text }]}>
@@ -64,7 +64,7 @@ export default function ChangeDay() {
           accessibilityRole="button"
           accessibilityLabel={t('common.close')}
           onPress={() => router.back()}
-          style={[styles.close, { backgroundColor: c.bgRaised }]}
+          style={[styles.close, { backgroundColor: c.field }]}
           testID="change-close">
           <Icon name="close" size={15} color={c.textMuted} />
         </Pressable>
@@ -72,7 +72,6 @@ export default function ChangeDay() {
 
       {previewPlan ? (
         <OptionCard
-          icon="pin"
           title={t('change.replace')}
           body={t('change.replaceBody')}
           d={d}
@@ -100,7 +99,6 @@ export default function ChangeDay() {
 
       {canPush ? (
         <OptionCard
-          icon="arrow"
           title={t('change.push')}
           body={t('change.pushBody', {
             day: date === today ? t('change.today') : weekdayName(date),
@@ -118,7 +116,6 @@ export default function ChangeDay() {
 
       {canClear ? (
         <OptionCard
-          icon="loop"
           title={t('change.clear')}
           body={t('change.clearBody')}
           d={d}
@@ -136,7 +133,6 @@ export default function ChangeDay() {
 }
 
 type CardProps = {
-  icon: IconName;
   title: string;
   body: string;
   d: AppData;
@@ -148,7 +144,7 @@ type CardProps = {
   testID?: string;
 };
 
-function OptionCard({ icon, title, body, d, from, before, after, onPress, children, testID }: CardProps) {
+function OptionCard({ title, body, d, from, before, after, onPress, children, testID }: CardProps) {
   const c = useColors();
   const old = resolveRange(before, from, 4);
   const days = resolveRange(after, from, 4);
@@ -156,22 +152,15 @@ function OptionCard({ icon, title, body, d, from, before, after, onPress, childr
 
   const inner = (
     <>
-      <View style={styles.cardHead}>
-        <View style={[styles.iconBubble, { backgroundColor: c.accentSoft }]}>
-          <Icon name={icon} size={15} color={c.accent} />
-        </View>
-        <View style={styles.flex}>
-          <Text style={[styles.headline, { color: c.text }]}>{title}</Text>
-          <Text style={[styles.callout, { color: c.textMuted }]}>{body}</Text>
-        </View>
-      </View>
+      <Text style={[styles.cardTitle, { color: c.text }]}>{title}</Text>
+      <Text style={[styles.callout, { color: c.textMuted }]}>{body}</Text>
       <View style={styles.preview} accessible accessibilityLabel={t('change.preview', { days: labels })}>
         {days.map((x, i) => (
           <DayCell
             key={x.date}
             shape="cell"
             emphasis="label"
-            top={shortWeekday(x.date)}
+            top={`${shortWeekday(x.date)} ${dayOfMonth(x.date)}`}
             label={planLabel(d, x.plan)}
             variant={samePlan(x.plan, old[i].plan) ? 'plain' : 'changed'}
             rest={x.plan?.kind === 'rest'}
@@ -182,7 +171,7 @@ function OptionCard({ icon, title, body, d, from, before, after, onPress, childr
     </>
   );
 
-  const box = [styles.card, { backgroundColor: c.bgRaised }];
+  const box = [styles.card, { backgroundColor: c.bg }];
   return (
     <View style={box} testID={testID}>
       {onPress ? (
@@ -206,11 +195,10 @@ const styles = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'flex-start', gap: space.ms, paddingTop: space.sm },
   title: { ...font.titleSmall },
   close: { width: size.touch, height: size.touch, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
-  card: { borderRadius: radius.lg, padding: space.md, gap: space.ms },
-  cardPress: { gap: space.ms },
-  cardHead: { flexDirection: 'row', gap: space.ms, alignItems: 'flex-start' },
-  iconBubble: { width: space.xl, height: space.xl, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
-  preview: { flexDirection: 'row', gap: space.sm },
+  card: { borderRadius: radius.xl, padding: space.md, gap: space.sm },
+  cardPress: { gap: space.sm },
+  cardTitle: { ...font.titleSmall },
+  preview: { flexDirection: 'row', gap: space.sm, marginTop: space.xs },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   flex: { flex: 1 },
   headline: { ...font.headline },

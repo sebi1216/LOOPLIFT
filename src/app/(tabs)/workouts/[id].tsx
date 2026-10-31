@@ -1,27 +1,32 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 import { actions, ops, useAppData } from '@/data/store';
 import { t } from '@/i18n';
 import { Button } from '@/ui/button';
 import { CardRow } from '@/ui/card-row';
+import { confirmDelete } from '@/ui/confirm';
 import { HeaderButton } from '@/ui/header-button';
+import { LiftArt } from '@/ui/lift-art';
 import { SortableList } from '@/ui/sortable-list';
 import { Stepper } from '@/ui/stepper';
 import { SwipeAction } from '@/ui/swipe-action';
 import { font, radius, size, space } from '@/ui/tokens';
 import { useColors } from '@/ui/use-colors';
 
-// Workout editor: name, exercises in order (drag), target sets x reps (steppers).
-// Changes save as you go; Done goes back. Swipe a row left to remove it.
+// Workout editor (direction S1): name, exercises in order (drag), each with its drawing, muscle
+// group and target pill ("4 × 6"); tapping the pill opens its sets and reps steppers. Changes
+// save as you go; Done goes back. Swipe a row left to remove it; Delete workout at the bottom.
 export default function WorkoutEditor() {
   const c = useColors();
   const d = useAppData();
   const [dragging, setDragging] = useState(false);
   // What the field shows while typing; the store keeps the last non-empty name.
   const [draftName, setDraftName] = useState<string | null>(null);
+  // The row whose target steppers are open.
+  const [open, setOpen] = useState<number | null>(null);
   const { id } = useLocalSearchParams<{ id: string }>();
   const workout = d.workouts.find((w) => w.id === id);
 
@@ -45,6 +50,10 @@ export default function WorkoutEditor() {
   }
 
   const nameOf = (exerciseId: string) => d.exercises.find((e) => e.id === exerciseId)?.name ?? '';
+  const groupOf = (exerciseId: string) => {
+    const g = d.exercises.find((e) => e.id === exerciseId)?.muscleGroup;
+    return g ? t(`muscle.${g}`) : '';
+  };
 
   return (
     <ScrollView
@@ -55,8 +64,8 @@ export default function WorkoutEditor() {
       contentContainerStyle={styles.content}
       testID="workout-editor">
       {header}
+      <Text style={[styles.section, { color: c.textMuted }]}>{t('editor.name')}</Text>
       <View style={[styles.field, { backgroundColor: c.bgRaised }]}>
-        <Text style={[styles.caption, { color: c.textMuted }]}>{t('editor.name')}</Text>
         <TextInput
           value={draftName ?? workout.name}
           onChangeText={(name) => {
@@ -72,7 +81,7 @@ export default function WorkoutEditor() {
         />
       </View>
 
-      <Text style={[styles.section, { color: c.textMuted }]}>{t('editor.exercises').toUpperCase()}</Text>
+      <Text style={[styles.section, { color: c.textMuted }]}>{t('editor.exercisesTitle')}</Text>
       {workout.exercises.length === 0 ? (
         <Text style={[styles.callout, { color: c.textMuted }]} testID="empty-state">
           {t('editor.empty')}
@@ -105,7 +114,32 @@ export default function WorkoutEditor() {
                 <View
                   accessibilityActions={[{ name: 'remove', label: t('editor.removeA11y', { name }) }]}
                   onAccessibilityAction={(ev) => ev.nativeEvent.actionName === 'remove' && remove()}>
-                  <CardRow title={name} leading={handle} testID={`editor-row-${i}`}>
+                  <CardRow
+                    title={name}
+                    subtitle={groupOf(e.exerciseId)}
+                    leading={
+                      <View style={styles.leading}>
+                        {handle}
+                        <View style={[styles.art, { backgroundColor: c.artTint }]}>
+                          <LiftArt id={e.exerciseId} color={c.accent} width={size.touch * 0.75} />
+                        </View>
+                      </View>
+                    }
+                    trailing={
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={t('editor.targetA11y', { name, sets: e.targetSets, reps: e.targetReps })}
+                        accessibilityState={{ expanded: open === i }}
+                        onPress={() => setOpen(open === i ? null : i)}
+                        style={({ pressed }) => [styles.target, { backgroundColor: c.accentSoft }, pressed && styles.pressed]}
+                        testID={`target-${i}`}>
+                        <Text style={[styles.targetText, { color: c.accent }]}>
+                          {t('common.setsReps', { sets: e.targetSets, reps: e.targetReps })}
+                        </Text>
+                      </Pressable>
+                    }
+                    testID={`editor-row-${i}`}>
+                    {open === i ? (
                     <View style={styles.steppers}>
                       <Stepper
                         value={t('editor.sets', { n: e.targetSets })}
@@ -124,6 +158,7 @@ export default function WorkoutEditor() {
                         testID={`reps-${i}`}
                       />
                     </View>
+                    ) : null}
                   </CardRow>
                 </View>
               </ReanimatedSwipeable>
@@ -139,7 +174,20 @@ export default function WorkoutEditor() {
         onPress={() => router.push({ pathname: '/workouts/add', params: { id: workout.id } })}
         testID="add-exercise"
       />
-      <Text style={[styles.caption, { color: c.textMuted }]}>{t('editor.hint')}</Text>
+      <Text style={[styles.caption, styles.center, { color: c.textMuted }]}>{t('editor.tapHint')}</Text>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('editor.delete')}
+        onPress={() =>
+          confirmDelete(t('workouts.deleteTitle', { name: workout.name }), t('workouts.deleteBody'), () => {
+            actions.deleteWorkout(workout.id);
+            router.back();
+          })
+        }
+        style={({ pressed }) => [styles.delete, pressed && styles.pressed]}
+        testID="delete-workout">
+        <Text style={[styles.headline, { color: c.danger }]}>{t('editor.delete')}</Text>
+      </Pressable>
     </ScrollView>
   );
 }
@@ -147,9 +195,17 @@ export default function WorkoutEditor() {
 const styles = StyleSheet.create({
   content: { padding: space.md, gap: space.md, width: '100%', maxWidth: size.maxContent, alignSelf: 'center' },
   missing: { flex: 1, padding: space.md },
-  field: { borderRadius: radius.md, paddingHorizontal: space.md, paddingVertical: space.sm, gap: space.xxs },
-  input: { ...font.body, minHeight: space.xl, paddingVertical: 0 },
-  section: { ...font.section },
+  field: { borderRadius: radius.md, paddingHorizontal: space.md, paddingVertical: space.ms },
+  input: { ...font.titleSmall, minHeight: space.xl, paddingVertical: 0 },
+  section: { ...font.section, textTransform: 'uppercase' },
+  leading: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  art: { borderRadius: radius.sm, padding: space.xs },
+  target: { minWidth: size.touch, minHeight: size.touch, borderRadius: radius.md, paddingHorizontal: space.ms, alignItems: 'center', justifyContent: 'center' },
+  targetText: { ...font.headline },
+  delete: { minHeight: size.touch, alignItems: 'center', justifyContent: 'center', marginTop: space.lg },
+  center: { textAlign: 'center' },
+  headline: { ...font.headline },
+  pressed: { opacity: 0.7 },
   steppers: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, paddingTop: space.xs },
   body: { ...font.body },
   callout: { ...font.callout },

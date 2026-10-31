@@ -22,8 +22,8 @@ type Props = {
 export function SetRow({ n, set, onChange, tickable = true, testID }: Props) {
   const c = useColors();
   return (
-    <View style={styles.row} testID={testID}>
-      <Text style={[styles.n, { color: c.textMuted }]} importantForAccessibility="no" accessibilityElementsHidden>
+    <View style={[styles.row, styles.card, { backgroundColor: set.done && tickable ? c.accentSoft : c.field }]} testID={testID}>
+      <Text style={[styles.n, { color: set.done && tickable ? c.accent : c.textMuted }]} importantForAccessibility="no" accessibilityElementsHidden>
         {n}
       </Text>
       <NumberField
@@ -52,12 +52,12 @@ export function SetRow({ n, set, onChange, tickable = true, testID }: Props) {
           onPress={() => onChange({ done: !set.done })}
           style={({ pressed }) => [
             styles.tick,
-            // Unticked: an accent ring (6.2:1 on bgRaised), so the empty box is clearly a control.
-            set.done ? { backgroundColor: c.accent } : [styles.open, { borderColor: c.accent }],
+            // Unticked: a bgRaised circle with a restOutline ring and a muted check (3:1+ on field).
+            set.done ? { backgroundColor: c.accent } : [styles.open, { borderColor: c.restOutline, backgroundColor: c.bgRaised }],
             pressed && styles.pressed,
           ]}
           testID={`${testID}-tick`}>
-          {set.done ? <Icon name="check" size={22} color={c.onAccent} /> : null}
+          <Icon name="check" size={22} color={set.done ? c.onAccent : c.textMuted} />
         </Pressable>
       ) : null}
     </View>
@@ -97,7 +97,7 @@ function NumberField({ value, parse, onValue, keyboardType, placeholder, accessi
       placeholder={placeholder}
       placeholderTextColor={c.textMuted}
       accessibilityLabel={accessibilityLabel}
-      style={[styles.field, { backgroundColor: c.bg, color: c.text }]}
+      style={[styles.field, { backgroundColor: c.bgRaised, color: c.text }]}
       testID={testID}
     />
   );
@@ -107,7 +107,7 @@ function NumberField({ value, parse, onValue, keyboardType, placeholder, accessi
 export function SetHeader({ tickable = true }: { tickable?: boolean }) {
   const c = useColors();
   return (
-    <View style={styles.row} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+    <View style={[styles.row, styles.headRow]} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
       <Text style={[styles.n, styles.head, { color: c.textMuted }]}>{t('session.set')}</Text>
       <Text style={[styles.flex, styles.head, { color: c.textMuted }]}>{t('session.kg')}</Text>
       <Text style={[styles.flex, styles.head, { color: c.textMuted }]}>{t('session.reps')}</Text>
@@ -118,6 +118,9 @@ export function SetHeader({ tickable = true }: { tickable?: boolean }) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  // Each set sits on its own tinted strip: field, or accentSoft once ticked.
+  card: { borderRadius: radius.md, padding: space.xs },
+  headRow: { paddingHorizontal: space.xs },
   n: { ...font.headline, minWidth: space.xl, textAlign: 'center' },
   head: { ...font.label, textAlign: 'center' },
   flex: { flex: 1 },
@@ -131,7 +134,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   tick: { width: size.touch, height: size.touch, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
-  open: { borderWidth: 2 },
+  open: { borderWidth: 1.5 },
   tickSpace: { width: size.touch },
   pressed: { opacity: 0.7 },
 });

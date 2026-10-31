@@ -8,7 +8,7 @@ import { useSyncExternalStore } from 'react';
 
 import { getLocale, t, type Locale, type StringKey } from '@/i18n';
 
-import { cast, demoSchedule, demoSessions, demoToday, demoWorkouts, LIBRARY_VERSION, muscleGroups, starterLifts, type Exercise, type MuscleGroup, type Workout, type WorkoutExercise } from './demo';
+import { cast, comebackSessions, demoSchedule, demoSessions, demoToday, demoWorkouts, LIBRARY_VERSION, muscleGroups, starterLifts, type Exercise, type MuscleGroup, type Workout, type WorkoutExercise } from './demo';
 import { loadRaw, saveRaw } from './persist';
 import { clearDay, isIsoDate, pushBack, replaceDay, toIsoDate, type Plan, type Rotation, type Schedule } from './schedule';
 import * as tracker from './tracker';
@@ -244,7 +244,7 @@ export const ops = {
 
 // ---- Runtime store (one per app run) ----
 
-type StateParam = 'empty' | 'filled';
+type StateParam = 'empty' | 'filled' | 'comeback';
 type Snapshot = { data: AppData; today: string | null };
 
 function loadData(): AppData {
@@ -274,13 +274,20 @@ function subscribe(listener: () => void) {
 }
 
 // URL switches, so every state has a URL: ?state=empty (Mia), ?state=filled (Lena),
+// ?state=comeback (Lena back after 2 to 4 weeks off),
 // ?date=2026-11-05 (pretend today is that day; the designs show Thursday 5 Nov).
 export function applyUrlParams(params: { state?: string; date?: string }) {
   const next: Partial<Snapshot> = {};
-  if ((params.state === 'empty' || params.state === 'filled') && params.state !== lastState) {
-    lastState = params.state;
+  const state = params.state;
+  if ((state === 'empty' || state === 'filled' || state === 'comeback') && state !== lastState) {
+    lastState = state;
     demo = true;
-    next.data = params.state === 'empty' ? emptyData(getLocale()) : lenaData(getLocale());
+    next.data =
+      state === 'empty'
+        ? emptyData(getLocale())
+        : state === 'comeback'
+          ? { ...lenaData(getLocale()), sessions: comebackSessions() }
+          : lenaData(getLocale());
   }
   // A pretend "today" is demo mode too: changes made against a fake date are not saved.
   if (params.date === 'demo') {

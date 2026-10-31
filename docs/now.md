@@ -16,10 +16,10 @@ Slice: slice 1 · hours logged 3 h + 2026-10-29 not given (a record, sum of docs
 - [ ] Local persistence: all data survives an app restart; no account
 
 ## Next step (one line)
-New session: `/build-screen Today` in the new direction S1 Loop orbit (design `Final / Today`; tokens already switched to Teal Glow, the old C layouts remain until each screen is rebuilt). The new workout flow (#11, #12) needs a spec update of 001 before Workout, Exercise and Summary are built.
+Open all 10 S1 screens on the iPhone in Expo Go (taps in the build report), set `checked-device` in `docs/design/screens.md`, then answer the open questions below.
 
 ## Open questions (Claude adds here, never invents answers)
-- Another dev server in this folder overwrote `.expo/types` (route types) mid-session; CLAUDE.md says one session per repo.
+- Route types in `.expo/types` break (`/../ui/...` entries) also with only one dev server: on 2026-10-31 it happened right after new files were added under `src/ui/` while the server ran; a restart fixed it. Restart the dev server after adding files.
 - Should a loop also support weekday plans (Mon Push, Wed Pull every week), or is the N-day loop enough for v1? (from the concept PDF)
 - Business mode needs the Apple Developer Program (about 99 USD per year) before the 10 strangers test; budget cap is 0 EUR. Decide before the stranger check.
 - Confirm `docs/data-inventory.md` (written by Claude as a Suggestion while building persistence).
@@ -34,8 +34,12 @@ New session: `/build-screen Today` in the new direction S1 Loop orbit (design `F
 - 2026-10-29: a dev server on 8081 (`expo start -c`, not started by Claude) was running next to your 8082 one; the route types in `.expo/types` came out broken (`/../data/...` paths). Stop it when you are done with it.
 - Two Expo integrations load here (the `expo` plugin and a claude.ai Expo connector); keep the plugin, turn the connector off for this folder.
 
-- Drawings for every lift and workout (#14): 60 lifts plus each workout is a separate art task. Draw them all in FigCraft first, or start with Lena's 8 lifts and a neutral placeholder for the rest?
-- Hero gradient in code: React Native's built-in gradient background, or `expo-linear-gradient` (new package, needs your OK)? Decide in `/build-screen Today`.
+- Drawings (#14): Lena's 8 lifts plus Push and Pull are drawn in code (`src/ui/lift-art.tsx`); the other 52 lifts and any new workout show a neutral dumbbell. New workouts get no drawing of their own yet: how should a user-made workout get one?
+- Hero gradient: built with React Native's own `backgroundImage` (no package). If the iPhone shows a flat teal card instead of a gradient, decide on `expo-linear-gradient`.
+- Workout editor: also shows the native tab bar on a pushed screen (frame has none), like the Rotation editor. Same answer for both?
+- Change-a-day sheet keeps the Pull / Rest choice pills under "Replace this day only" (the frame shows none; without them there is no way to pick the replacement). Keep, or design how the choice works?
+- Exercises tab lists muscle groups alphabetically (Arms first); the frame starts with Chest. Order by your workouts, or keep A to Z?
+- Bodyweight lifts (Pull-up) get "Same as last time", never a weight hint (spec 001 update 2). Add a reps hint later?
 - Dark mode buttons: tokens use the mint accent with dark text; the dark frames showed teal buttons with white text. Check on the iPhone.
 
 ## Evidence so far (Business mode; details in docs/evidence.md)

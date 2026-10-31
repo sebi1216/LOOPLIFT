@@ -10,7 +10,7 @@ type Props = { value: string; onChange: (q: string) => void; placeholder: string
 export function SearchField({ value, onChange, placeholder, testID }: Props) {
   const c = useColors();
   return (
-    <View style={[styles.box, { backgroundColor: c.bgRaised }]}>
+    <View style={[styles.box, { backgroundColor: c.field }]}>
       <Icon name="search" size={17} color={c.textMuted} />
       <TextInput
         value={value}

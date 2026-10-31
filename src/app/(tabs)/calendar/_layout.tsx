@@ -8,7 +8,7 @@ export default function CalendarLayout() {
   return (
     <Stack screenOptions={useStackOptions()}>
       <Stack.Screen name="index" options={{ headerShown: false, title: t('tab.calendar') }} />
-      <Stack.Screen name="loop" options={{ title: '', headerBackTitle: t('tab.calendar') }} />
+      <Stack.Screen name="loop" options={{ title: t('loop.title'), headerBackTitle: t('tab.calendar') }} />
     </Stack>
   );
 }
