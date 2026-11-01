@@ -1,12 +1,12 @@
 # Now
 
-Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-10-30 (after /wrap-up, tag good-2026-10-30; design redo S1 Loop orbit, decisions #10 to #14)
+Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-11-01 (retro 1 fixes, decisions #15 to #21)
 
 Mode: Business   Phase: 1 strategy | 2 designs | 3 code (now: 3 code)
 Status: active
-Slice: slice 1 · hours logged 3 h + 2026-10-29 not given (a record, sum of docs/log.md) · card: docs/brief.md section 3
+Slice: slice 1 · card: docs/brief.md section 3
 
-## Must-haves (locked: tick only with evidence, never edit; ~ = nice to have)
+## Must-haves (tick only with evidence; to change one, Claude proposes the line and Sebastian answers yes; ~ = nice to have)
 - [x] Phase 1: /kickoff (files from docs/input/ into the brief, app name, Expo Go check, checks, preview, safety test, starter app on the iPhone) · evidence 28 Oct 2026: `npm run check` green (4 tests), `test:hooks` all passed, `test:e2e` 5 passed, Browser pane live reload seen, both guard blocks shown, LoopLift ran in Expo Go on the iPhone
 - [x] Phase 2: /designs (main screens in 3 directions, one picked, tokens and direction written) · evidence 28 Oct 2026: 3 directions in `docs/design/looplift.figcraft` + PNGs in `docs/design/renders/`, C Loop Ring picked (decision #2), 8 screens + empty + dark exported, `src/ui/tokens.ts` with 14 contrast pairs passing, `npm run check` green (4 tests)
 - [ ] Exercise library and workout templates: starter list of about 20 lifts; add, rename, delete exercises; named workouts with target sets x reps, reorderable

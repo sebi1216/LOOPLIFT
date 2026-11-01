@@ -1,6 +1,6 @@
 ---
 name: design-reviewer
-description: Compares a built screen with its design or direction and lists every visible difference. Use after /build-screen has saved a screenshot, or when Sebastian asks "does this match the design?". Read-only; it never edits files.
+description: Compares a built screen with its design or direction and lists every visible difference. Use after /build has saved a screenshot, or when Sebastian asks "does this match the design?". Read-only; it never edits files.
 tools: Read, Glob, Grep
 model: sonnet
 maxTurns: 15

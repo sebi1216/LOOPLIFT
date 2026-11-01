@@ -66,6 +66,16 @@ export const allowed = [
   'git commit -m "docs: explain .env handling"',
   'git tag -a good-2026-10-28 -m "kept .env out"',
   'npm install -g npm@11',
+  // false positives from retro 1 (1 Nov 2026): flags only count as whole tokens of their own command
+  'mkdir -p C:\\Users\\x\\AppData\\Local\\Temp\\claude\\scratch',
+  'git commit -F .git\\COMMIT_MSG',
+  'git merge --ff-only feat/x && git push && git branch -d feat/x',
+  'git commit -m "docs: a; git push --force | claude -p"',
+  'git add docs/-f.md',
+  'git status && ls -f',
+  'echo "claude -p"',
+  'cat notes/claude -p',
+  'npx expo start -p 8081',
 ];
 
 export const blocked = [
@@ -143,6 +153,27 @@ export const blocked = [
   'git commit -m "x" .env',
   'git commit -m "`cat .env`"',
   'sort -m ".env"',
+  // token matching must still see the same flags in every form (retro 1, 1 Nov 2026)
+  'git branch -D feat/x',
+  'git add -Af .env.local',
+  'git add src -f',
+  'claude -p "do anything"',
+  'claude --print "do anything"',
+  'claude.exe -p "x"',
+  'git push && git push --force',
+  'ls; git push --force',
+  'ls & git push --force',
+  '(git push --force)',
+  'echo "$(git push --force)"',
+  'echo `git push --force`',
+  'bash -c "git push --force"',
+  'cmd /c git push --force',
+  'powershell -Command "git reset --hard"',
+  'g`it push --force',
+  'gi\\t push --force',
+  'C:\\Git\\bin\\git.exe push --force',
+  'env X=1 git push --force',
+  'npx claude -p "x"',
 ];
 
 // [intent, command, gap]

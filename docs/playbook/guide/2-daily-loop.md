@@ -5,7 +5,7 @@ Use this every session after day 1. The rules are in the [README](../README.md#t
 ## Session start (3 minutes)
 
 1. Open the repo in your cockpit. One Claude session writes to it ([rule 4](../README.md#the-10-rules)).
-2. First message: "**Learn**" or "**Ship**", then "Read docs/now.md. Is git clean and pulled? What is the next step?" If `docs/log.md` has no line for your last session, Claude says so.
+2. First message: "Read docs/now.md. Is git clean and pulled? What is the next step?", or paste a next-chat prompt from the last `/wrap-up`. If `docs/log.md` has no line for your last session, Claude says so.
 3. "Did I decide anything outside this repo since last time (chat, Doc, notes)?" Paste it; Claude turns it into rows for `docs/decisions.md` (you confirm the wording).
 4. Pick **one** must-have from `docs/now.md`. New ideas go to the toy box in `docs/brief.md`, not into the slice.
 
@@ -18,13 +18,13 @@ HQ and Build never run at the same time on one repo: both write `docs/`, and Bui
 ## The loop (one screen or feature)
 
 1. **Spec, if needed.** `/spec <feature>` when it touches 3 or more files or you are unsure. Claude interviews you and writes `docs/specs/NNN-<feature>.md`: acceptance checks, each saying how it is checked, and a "Done when" line. Skip it when one sentence describes the change.
-2. **Fresh build session.** `/clear`, plan mode (Shift+Tab), read the plan, say OK.
-3. **Build.** `/build-screen <name>` for a screen; a plain prompt with "Done when" for logic ("use red/green TDD" for data functions). `/build-screen` ends with "choices I made": confirm or change each. Design path: [guide 3](3-design-to-code.md).
-4. **Look and play** for 5 minutes in the preview and layout wall. Say what feels wrong in plain words. Max 3 rounds, then accept, cut or park it.
+2. **Fresh build session.** `/clear`. Claude builds first, then you comment.
+3. **Build.** `/build <topic>`, `/build all` or `/build` plus a feature list; a plain prompt with "Done when" for logic ("use red/green TDD" for data functions). `/build` ends with "Choices I made for you": confirm or change each. Design path: [guide 3](3-design-to-code.md).
+4. **Look and play** for 5 minutes in the preview and the `/_gallery/<topic>` route. Say what feels wrong in plain words. Max 3 rounds, then accept, cut or park it.
 5. **Device.** `native-gap-checker` reads the code first (a pre-check, not device truth). Then open the screen on the iPhone (and on the Android emulator only if Android is a target platform in the brief) and set its status in `docs/design/screens.md`.
 6. **`/wrap-up`** at the end, or a small commit after each green step.
 
-**Done = evidence** ([rule 7](../README.md#the-10-rules)): Claude's last message shows the command it ran and its output, or the screenshot. Must-haves in `docs/now.md` are a locked checklist: Claude ticks a box only with evidence and never edits a must-have.
+**Done = evidence** ([rule 7](../README.md#the-10-rules)): Claude's last message shows the command it ran and its output, or the screenshot. Must-haves in `docs/now.md`: Claude ticks a box only with evidence. To change one, Claude proposes the new line, you answer yes, Claude writes it.
 
 ## Preview levels
 
@@ -40,25 +40,21 @@ The layout wall has no iOS safe areas, iOS fonts, native modules or touch. So sc
 ## Git gates
 
 - Slice 1 works on `main`. Hooks run ESLint after every edit and TypeScript when Claude ends a turn; the full `npm run check` runs in `/wrap-up` and CI. Red means not done.
-- `/code-review` before every push (inside `/wrap-up`) looks for **correctness** bugs. Duplication is `/simplify`, in the weekly review. Fix blocking findings now, put the rest on one "later" line; max two review rounds per change.
+- `/code-review low` before a push when code outside `docs/` changed (inside `/wrap-up`) looks for **correctness** bugs. Duplication is `/simplify`, in the weekly review. Fix blocking findings now, put the rest on one "later" line; max two review rounds per change.
 - Claude never changes a test and the code it tests in one step without saying so.
-- Daily tag `good-YYYY-MM-DD`. Going back: ask Claude to check out the last good tag.
-- Risky changes (auth, payments, RLS, data): a short branch, `/security-review` before the push (it compares against `origin`).
+- Going back: ask Claude to check out the last good commit.
+- Risky changes (auth, payments, RLS, data): a short branch. When `/security-review` runs is in `docs/security-checklist.md`.
 - Worktrees only for a truly separate task; the main session merges. No background dispatch (`claude --bg`, agent view) in slice 1: each one creates a branch, which was Clou's branch chaos.
 
-## /wrap-up (end of every session, 7 steps)
+## /wrap-up (end of every session, 3 steps)
 
-1. Checks: `npm run check`, and `/code-review` (correctness) when code changed.
-2. Commit and push (you approve the push).
-3. Re-read `docs/now.md` from disk, then rewrite it (status `active`, `paused` or `done`; changed facts go into their doc).
-4. One line in `docs/log.md`: date, Learn or Ship, **hours** (a record, not a cap), screens moved to `checked-device`.
-5. **Teach-back**: you write 2 or 3 sentences on what changed and why; Claude asks one question; a weak answer means a 5-minute walk-through, then commit anyway.
-6. One question: "Did Claude make the same mistake twice?"
-7. Tag `good-YYYY-MM-DD`.
+1. `npm run check`, `/code-review low` only if code outside `docs/` changed, commit and push (you approve the push).
+2. Re-read `docs/now.md` from disk, then rewrite it (status, next step, open questions; no hours, no waivers), and one line in `docs/log.md` without hours.
+3. A "Next chat" section: 1 to 3 ready-to-paste prompts, one per sensible continuation, each with one line saying what it leads to.
 
 ## Weekly review (15 to 30 minutes, Sunday, fresh HQ)
 
-1. **Measure, don't feel.** Logged hours and screens moved to `checked-device`, as facts (no cap, [#49](../decisions.md)). In METR's 2025 trial developers felt 20% faster and were 19% slower ([METR](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/)).
+1. **Measure, don't feel.** Screens moved to `checked-device`, as facts (no cap, [#49](../decisions.md)). In METR's 2025 trial developers felt 20% faster and were 19% slower ([METR](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/)).
 2. **Next problem.** Is the slice still the smallest thing that proves the core loop? Which problem is biggest now, and what is most fun?
 3. Evidence (Business mode): reach, talks, signups, repeat users against `docs/evidence.md`.
 4. **Harness ratchet**: same mistake twice becomes a test, lint rule or hook (a `CLAUDE.md` line only if impossible). Delete one rule that never caught anything.
@@ -106,10 +102,10 @@ Optional, max one task, only at the trigger above.
 
 Anthropic's own trial (Jan 2026, 52 mostly junior developers): the AI group scored 50% on a quiz about the code they had just written, hand coders 67%. Full delegation scored 39%; asking conceptual questions 65%; letting AI debug for you 24% ([Anthropic](https://www.anthropic.com/research/AI-assistance-coding-skills)). Default Claude Code work is full delegation. So:
 
-- **Learn or Ship**, marked at session start. Learn sessions use the Learning output style (`/output-style Learning`): you write the `TODO(human)` parts and ask "why" and "what would break if...". Ship sessions use Default.
-- **Teach-back** in every `/wrap-up`. In a small preprint study, 77% of unrestricted AI users failed a later task without AI, against 39% of those who had to explain their code first ([arXiv 2602.20206](https://arxiv.org/abs/2602.20206)).
+- When you want to learn something, ask for it: the Learning output style (`/output-style Learning`) has you write the `TODO(human)` parts and ask "why" and "what would break if...". It is your choice per session; no skill asks.
+- **Explain it back** when a change matters. In a small preprint study, 77% of unrestricted AI users failed a later task without AI, against 39% of those who had to explain their code first ([arXiv 2602.20206](https://arxiv.org/abs/2602.20206)).
 - **Guess first** when stuck: debugging is where most skill is lost.
-- Monthly, 30 minutes: change something small without Claude. If you can't, next week's Learn sessions go there.
+- Monthly, 30 minutes: change something small without Claude.
 
 ## Cockpit habits
 
@@ -126,7 +122,7 @@ What actually protects you:
 1. **No production secrets on the PC** in slice 1: dev keys only, rotated if leaked; real secrets in a password manager.
 2. **Claude touches dev data only.** You run anything that hits production, publishes, or costs money.
 3. **Unattended work only in the cloud** (above).
-4. **Git**: push daily, tag good states; read every change to `.claude/`, `.mcp.json`, `.vscode/` and `.github/` like code.
+4. **Git**: push daily; read every change to `.claude/`, `.mcp.json`, `.vscode/` and `.github/` like code.
 5. Before each phase, tick `docs/security-checklist.md`. Collect [lawyer] questions in one list and book one paid hour when about 5 pile up or before anything goes public.
 
 Real isolation, if you want more: (1) cloud sessions for unattended work; (2) WSL2, where Claude Code's sandbox runs (you decided against WSL for now; it is the upgrade path) ([sandboxing](https://code.claude.com/docs/en/sandboxing.md)); (3) a separate Windows user account or VM just for Claude (E).

@@ -1,6 +1,7 @@
 # Security and legal checklist
 
-Tick items at each gate. Claude: at /wrap-up, name the next open item of the current phase.
+Tick items at each gate.
+Run /security-review once per milestone and whenever a dependency is added; per PR once auth, server data, third-party SDKs, payments, file import or export, push or a web deployment arrive.
 Honest limits: native Windows has no sandbox. The deny rules and the guard hook match text: a seatbelt against accidents, not a wall against attacks or prompt injection. The real protection is what is NOT on this PC (production secrets) and where unattended work runs (cloud sessions). Legal points are orientation only.
 
 ## A. Once per PC and accounts

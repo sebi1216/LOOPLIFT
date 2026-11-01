@@ -3,7 +3,7 @@ import { expect, test as base, type Page } from '@playwright/test';
 import { t } from '../src/i18n';
 
 // One test per screen and state (docs/design/screens.md). Each saves the screenshot that
-// /build-screen checks against the design: docs/design/checks/<screen>.png.
+// /build checks against the design: docs/design/checks/<screen>.png.
 // ?date=2026-11-05 pretends today is Thursday 5 Nov (the day the designs show).
 // Every test fails if the page throws or logs a console error.
 const test = base.extend<{ noPageErrors: void }>({

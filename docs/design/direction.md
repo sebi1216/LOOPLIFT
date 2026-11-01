@@ -76,7 +76,7 @@ Note: in the dark frames the primary buttons are #0E7C6B with white text; the to
 
 Spacing: 4, 8, 12, 16, 24, 32, 48. Side padding 16. Radius: 12 (fields, day cells), 16 (lists, set rows), 24 (cards, tiles), 32 (hero cards), full (buttons, pills, chips).
 Sizes: touch 48, ring 200 (Today). Type ramp unchanged (system font). Hero numbers ("Push", "65 kg") use title/hero sizes.
-Gradient in code: Suggestion, decide in `/build-screen` Today (React Native's `experimental_backgroundImage` linear-gradient if SDK 58 supports it on iOS, else `expo-linear-gradient`, which needs Sebastian's OK as a new package).
+Gradient in code: Suggestion, decide in `/build` Today (React Native's `experimental_backgroundImage` linear-gradient if SDK 58 supports it on iOS, else `expo-linear-gradient`, which needs Sebastian's OK as a new package).
 Motion: fast 150 ms, base 250 ms; respect Reduce Motion. Suggestion: the today marker slides to the next slot after midnight.
 
 ## Principles (summary; the full rules Claude follows are in .claude/rules/ui.md)

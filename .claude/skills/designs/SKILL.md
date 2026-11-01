@@ -53,6 +53,6 @@ Work through the steps in order. Say in one line which step you are on. Ask with
 - Expo default styling (StyleSheet plus tokens) covers most designs. If the picked design clearly needs a styling library, say why and ask first; see `docs/playbook/guide/3-design-to-code.md`.
 - `npm run check` must stay green (tokens are code).
 - Propose the `docs/decisions.md` row ("Design direction <name> picked", Who: Sebastian) and add it after he confirms the wording.
-- `docs/now.md`: phase 3 code, next step "/build-screen <first screen of the core loop>".
+- `docs/now.md`: phase 3 code, next step "/build <first topic of the core loop>".
 - Commit `docs: design direction <name>` (tokens, docs, renders). Do not push; that is `/wrap-up`.
-- Tell him in max 8 lines: the picked direction, where the designs are, what changed in the code (tokens only), and the next step: `/wrap-up`, then a new session with `/build-screen <first screen>`.
+- Tell him in max 8 lines: the picked direction, where the designs are, what changed in the code (tokens only), and the next step: `/wrap-up`, then a new session with `/build <first topic>`.

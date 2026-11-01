@@ -107,10 +107,10 @@ Plain words for the terms you will meet. Alphabetical within each group.
 | **Learn/Fun vs Business mode** | Picked on day 0. Learn/Fun is judged by fun and skills. Business adds the evidence track and is judged by strangers who come back. |
 | **Mom Test** | A way to ask people about their real past behaviour, not about your idea, so polite answers don't fool you. |
 | **Must-have** | A line in the slice card that must work for the slice to be done; at most 5. Claude may tick it only with evidence and never rewrite it. |
-| **Phases** | The fixed order for every app: 1. strategy (`/kickoff`), 2. designs (`/designs`), 3. code (`/build-screen`). |
+| **Phases** | The fixed order for every app: 1. strategy (`/kickoff`), 2. designs (`/designs`), 3. code (`/build`). |
 | **Preview check** | The 15-minute day-1 test of which cockpit works on your PC (Browser pane, or `npm run web` and plain Chrome). |
 | **Slice** | A thin piece of the app that works end to end (one core loop). |
 | **Smoke test page** | Business mode only: a simple web page that describes the app and asks for a signup, to see if strangers care. |
 | **Spike** | A throwaway test of the riskiest technical piece, done first, before you build screens on top of it. |
-| **Teach-back** | At wrap-up you explain in 2 to 3 sentences what changed and why; Claude asks one question. Protects your learning. |
+| **Teach-back** | You explain in 2 to 3 sentences what changed and why. Protects your learning. Your choice; `/wrap-up` no longer asks for it. |
 | **Toy box** | The list in `docs/brief.md` where new ideas wait, so they don't grow the slice. One 2-hour play session a week. |

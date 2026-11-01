@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 Input: $ARGUMENTS
 
-The template already ships a working Expo app (SDK 58). Kickoff personalises it; it never re-scaffolds. It writes no app screens: the order is 1. strategy (this skill), 2. designs (`/designs`), 3. code (`/build-screen`).
+The template already ships a working Expo app (SDK 58). Kickoff personalises it; it never re-scaffolds. It writes no app screens: the order is 1. strategy (this skill), 2. designs (`/designs`), 3. code (`/build`).
 Work through the steps in order. Say in one line which step you are on. Ask with AskUserQuestion (options plus a default). Explain every change in plain words.
 Tell Sebastian once at the start: "You will get some approval prompts. Approve edits inside `docs/` freely; read every edit outside `docs/` and every push or install."
 PC setup (Git, Node, gh, Claude Code) is in `docs/playbook/guide/1-first-day.md` section B. Point there instead of repeating it.
@@ -64,4 +64,4 @@ Write the preview winner (Browser pane or `npm run web` + Chrome) into `docs/how
 
 ## 6. Commit
 - `git add -A`, then `git commit -m "chore: kickoff <app name>"`. Do not push.
-- Tell him in max 8 lines what changed, what he decided, and the next step: `/wrap-up` (pushes and tags), then a new session in this folder with `/designs`.
+- Tell him in max 8 lines what changed, what he decided, and the next step: `/wrap-up` (pushes), then a new session in this folder with `/designs`.

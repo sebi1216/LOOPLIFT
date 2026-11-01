@@ -1,6 +1,6 @@
 # Design rules
 
-Read before any UI work. On a conflict between skills (`animate-expo`, `hig-*`, `expo-*`, `/designs`, `/build-screen`), this file wins. `CLAUDE.md` still wins over this file. The picked look (tokens, feel) lives in `docs/design/direction.md`.
+Read before any UI work. On a conflict between skills (`animate-expo`, `hig-*`, `expo-*`, `/designs`, `/build`), this file wins. `CLAUDE.md` still wins over this file. The picked look (tokens, feel) lives in `docs/design/direction.md`.
 
 ## 1. Native components first
 - Navigation: Expo Router native stack (`Stack`), with the platform's default transitions. Never rebuild a screen transition in JS.
@@ -31,6 +31,6 @@ Read before any UI work. On a conflict between skills (`animate-expo`, `hig-*`, 
 
 ## 5. Always (from CLAUDE.md, repeated so no skill overrides it)
 - Tokens only, no raw colours or sizes in screens.
-- Tap targets at least 48 x 48 (wins over the 44 pt in HIG and `animate-expo`; use `hitSlop` if the visual is smaller), each with a role and label.
+- Tap targets at least 48 x 48 (wins over the smaller minimum in HIG and `animate-expo`; use `hitSlop` if the visual is smaller), each with a role and label.
 - Every state has a URL (`?state=empty`).
 - Platform owns navigation, brand owns content.

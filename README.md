@@ -2,14 +2,14 @@
 
 A template repo for a new app: a running Expo SDK 58 app (iPhone, iPad, Android, web) plus everything Claude Code needs to build it with you. Made for a native Windows PC, an iPhone and the Claude desktop app.
 
-**Start with [START-HERE.md](START-HERE.md).** Every app goes through three phases in this order: 1. strategy (`/kickoff`), 2. designs (`/designs`), 3. code (`/build-screen`, `/wrap-up`).
+**Start with [START-HERE.md](START-HERE.md).** Every app goes through three phases in this order: 1. strategy (`/kickoff`), 2. designs (`/designs`), 3. code (`/build`, `/wrap-up`).
 
 The guide behind it (why each part exists, first day, daily loop, design to code, fixes, words) lives in [docs/playbook/](docs/playbook/README.md) and comes with every new app.
 
 ## New app in short
 1. GitHub: **Use this template** > new private repo with the app's name.
 2. Clone it to `C:\DEV\<app name>` (GitHub Desktop is fine), open it in the Claude desktop app (Code tab), ask Claude to run `npm ci`. Yellow warnings are normal; never run `npm audit fix --force`.
-3. Strategy files into `docs/input/`, then `/kickoff`. Next session `/designs`. Then `/build-screen` per screen. End every session with `/wrap-up`.
+3. Strategy files into `docs/input/`, then `/kickoff`. Next session `/designs`. Then `/build` per topic. End every session with `/wrap-up`.
 
 Plain-words tour of the repo: [docs/how-this-repo-works.md](docs/how-this-repo-works.md).
 

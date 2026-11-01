@@ -1,6 +1,6 @@
 # 1. First day (tutorial)
 
-Goal: a new repo from the template, your strategy turned into the brief, the starter app next to the conversation and on your iPhone, and a first push. Designs (`/designs`) and code (`/build-screen`) come in the next sessions; the order is in [START-HERE.md](../../../START-HERE.md). Realistic time (E): 5 to 7 hours on a new PC, 2.5 to 4 hours on a known PC. Best in two sittings: (1) PC setup to the repo (A to D), (2) `/kickoff` (E to I).
+Goal: a new repo from the template, your strategy turned into the brief, the starter app next to the conversation and on your iPhone, and a first push. Designs (`/designs`) and code (`/build`) come in the next sessions; the order is in [START-HERE.md](../../../START-HERE.md). Realistic time (E): 5 to 7 hours on a new PC, 2.5 to 4 hours on a known PC. Best in two sittings: (1) PC setup to the repo (A to D), (2) `/kickoff` (E to I).
 
 **Stop rule:** if setup (B to D) passes 4 hours, stop and continue tomorrow. Look in [troubleshooting](../troubleshooting.md) first, then ask Claude.
 
@@ -132,7 +132,7 @@ You should now see "Blocked by .claude/hooks/guard.mjs" for both. If Claude refu
 
 ## I. First push
 
-Type `/wrap-up` (7 steps): checks (plus `/code-review` when code changed), commit and push (you approve), rewrite `docs/now.md`, a log line with hours, your teach-back (two or three sentences on what changed), one "same mistake twice?" question, the `good-YYYY-MM-DD` tag. If `/code-review` asks for a pull request, say "review the unpushed commits on main instead".
+Type `/wrap-up` (3 steps): checks (plus `/code-review low` when code outside `docs/` changed), commit and push (you approve); rewrite `docs/now.md` and a log line; ready-to-paste prompts for the next chat. If `/code-review` asks for a pull request, say "review the unpushed commits on main instead".
 
 You should now see on GitHub: the commit, the tag under **Tags**, and a green check under **Actions**.
 

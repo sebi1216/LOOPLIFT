@@ -25,9 +25,9 @@ The why behind each step is in `docs/playbook/` (start with `docs/playbook/READM
 4. Type `/wrap-up`.
 
 ## Phase 3: code
-1. New session for each screen or feature. Type `/build-screen <screen>` (the first screen of the core loop first). For something bigger, `/spec <feature>` first.
+1. New session for each topic or feature. Type `/build <topic>` (the core loop first), `/build all`, or paste a feature list after `/build`. For something bigger, `/spec <feature>` first.
 2. Look at it in the preview and on your iPhone. Say what you like and what not.
-3. End every session with `/wrap-up` (checks, your 2 sentences on what changed, commit and push, tag, log).
+3. End every session with `/wrap-up` (checks, commit and push, `docs/now.md` and log, prompts for the next chat).
 4. Repeat until the must-haves in `docs/now.md` are ticked.
 
 ## Rules that save you trouble

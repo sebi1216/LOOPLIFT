@@ -22,4 +22,4 @@ Answer them before the next idea starts: short honest answers, or "skip" on purp
 9. **Is this PC also your Accenture work machine? Are there real tokens on it (GitHub, Expo, Supabase secret keys, `ANTHROPIC_API_KEY`)?** An unsandboxed agent is a different risk on a client machine. Keys that are not on the PC can't leak: cheaper than any rule.
 
 ## Learning
-10. **If you can't read the code yet, what is your proof that a feature works, and could you run and change the app without Claude for a week?** "Claude said so" is not proof: a check that ran, a screenshot and a tap on the phone are. In Anthropic's study, full delegation cost the most learning. Will you mark sessions Learn or Ship, and spend 5 minutes per wrap-up explaining the change back?
+10. **If you can't read the code yet, what is your proof that a feature works, and could you run and change the app without Claude for a week?** "Claude said so" is not proof: a check that ran, a screenshot and a tap on the phone are. In Anthropic's study, full delegation cost the most learning. When will you ask Claude to walk you through a change?

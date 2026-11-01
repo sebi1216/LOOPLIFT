@@ -4,7 +4,7 @@ Since 29 Oct 2026 every app goes strategy, then designs, then code ([rule 3](../
 
 ## The rule
 
-**Design first, but small: at most 10 main screens, and the design ends in code.** `/designs` makes 3 key screens in 3 clearly different directions; you comment, mix and pick; the picked direction grows to the remaining main screens; its colours, spacing and type go into `src/ui/tokens.ts`. Then `/build-screen` codes one screen at a time from it. No app screen is coded before a direction is picked.
+**Design first, but small: at most 10 main screens, and the design ends in code.** `/designs` makes 3 key screens in 3 clearly different directions; you comment, mix and pick; the picked direction grows to the remaining main screens; its colours, spacing and type go into `src/ui/tokens.ts`. Then `/build` codes it topic by topic. No app screen is coded before a direction is picked.
 
 **The design tool stays fixed per app.** `/designs` checks first whether Claude Code can create designs in FigCraft on your PC. If not: Figma through its MCP, or coded variants on a `/dev/variants` route. The choice is written into `docs/design/direction.md`. Clou switched from Figma to FigCraft within a day and paid with a file repair.
 
@@ -16,7 +16,7 @@ Since 29 Oct 2026 every app goes strategy, then designs, then code ([rule 3](../
 2. **Directions**: 3 key screens in 3 directions (`/designs`).
 3. **Pick**, then the remaining main screens in the picked direction, plus the empty state and dark mode of the key screens.
 4. **Tokens in code** in `src/ui/tokens.ts`, contrast checked, and `docs/design/direction.md` and `screens.md` filled.
-5. **Screens in code**, one per session with `/build-screen`, from the picked design.
+5. **Screens in code**, one topic per session with `/build`, from the picked design.
 6. **Components on second use**: a pattern becomes a component when it appears twice. Max 5 at first.
 
 ## Direction: decisions, not adjectives
@@ -70,6 +70,6 @@ In a design file: variables for everything, auto layout, size variants instead o
 
 ## Visual check: what it can and can't do
 
-- Claude's screenshot check catches **big** errors (missing elements, overflow, cut text, broken dark mode), not 12 vs 16 px. So `/build-screen` also asks the `design-reviewer` subagent.
+- Claude's screenshot check catches **big** errors (missing elements, overflow, cut text, broken dark mode), not 12 vs 16 px. So `/build` also asks the `design-reviewer` subagent.
 - **Check numbers, not pixels**: a search for hex colours or raw numbers in screens finds drift best.
 - **You are the final judge**, five minutes per screen. Your OK is the gate.

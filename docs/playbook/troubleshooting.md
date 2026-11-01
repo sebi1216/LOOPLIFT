@@ -24,6 +24,10 @@
 | A harmless commit is "Blocked by .claude/hooks/guard.mjs: touches a .env file" | The guard matches text: any command that mentions `.env`, for example a commit message "docs: explain .env handling" | Reword the message ("env file"). Don't loosen the guard | tested in sandbox, 28 Oct 2026 |
 | `npm ci` prints `eslint@9.39.5: This version is no longer supported` | Expo's lint config pins it | Ignore; never upgrade eslint by hand | tested in sandbox, 28 Oct 2026 |
 
+## Notes for you
+
+- PowerShell 7 (`pwsh`) is not installed on this PC (checked 1 Nov 2026); only Windows PowerShell 5.1 is. Claude does not install it. If you want it, run in your own PowerShell: `winget install --id Microsoft.PowerShell --source winget`
+
 ## Known traps on Windows (from docs; move up when it happens, delete if day 0 passes)
 
 | Symptom | Likely cause | Fix to try | Source |

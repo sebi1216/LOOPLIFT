@@ -11,7 +11,7 @@ Plain-words tour. Claude updates it when folders, commands or the data flow chan
 ## The three phases (details: `START-HERE.md`)
 1. **Strategy:** your files in `docs/input/` become `docs/brief.md` (`/kickoff`).
 2. **Designs:** at most 10 main screens in several directions; you pick one (`/designs`). Result: `docs/design/direction.md`, `src/ui/tokens.ts`, pictures in `docs/design/renders/`.
-3. **Code:** one screen at a time from the picked design (`/build-screen`), checked on the iPhone, `/wrap-up` at the end of each session.
+3. **Code:** one topic at a time from the picked design (`/build`), checked on the iPhone, `/wrap-up` at the end of each session.
 
 ## The big picture
 You talk to Claude. Claude changes files. The dev server notices and the preview updates in about a second. Hooks run automatically; the full `npm run check` runs before every commit and in `/wrap-up`. Git keeps every step, and GitHub runs the same checks again.
@@ -35,7 +35,7 @@ you -> Claude Code -> files in src/ -> dev server (npm run start) -> preview, la
 | `public/` | `layout-wall.html` (also copied into a web export: remove it before a public website) | |
 | `docs/` | Brief, now, log, decisions, design, specs, checklists | The only home for written decisions |
 | `docs/input/` | Your strategy files: PowerPoints, documents, PDFs, notes | You put them in; `/kickoff` reads them |
-| `docs/design/` | `direction.md` (the picked look), `screens.md` (every screen and its status), `renders/` (design pictures), `checks/` (screenshots of built screens) | Filled by `/designs` and `/build-screen` |
+| `docs/design/` | `direction.md` (the picked look), `screens.md` (every screen and its status), `renders/` (design pictures), `checks/` (screenshots of built screens) | Filled by `/designs` and `/build` |
 | `docs/playbook/` | Your guide: why the setup is how it is, first day, daily loop, fixes, words | For you; Claude reads it only when asked |
 | `tools/` | `test-hooks.mjs` and `guard-cases.mjs`: tests for the Claude hooks | Never delete a case to make it green |
 | `.claude/` | Settings, hooks, rules, skills, subagents, preview config | Config is code: read every change |
@@ -51,12 +51,12 @@ you -> Claude Code -> files in src/ -> dev server (npm run start) -> preview, la
 | `npm run android` | Dev server plus the Android emulator (start the emulator in Android Studio first) |
 | `npm run check` | TypeScript, ESLint and Jest. Must be green before a commit |
 | `npm run test:e2e` | Own server on port 8099, the web app at iPhone 17 size in Chrome; fails on any console error |
-| `npm run test:hooks` | Runs 472 guard checks (132 sample commands for Bash, PowerShell and Monitor, 74 bypass tricks, 2 fail-closed checks) and tests the lint and type hooks |
+| `npm run test:hooks` | Runs 559 guard checks (161 sample commands for Bash, PowerShell and Monitor, 74 bypass tricks, 2 fail-closed checks) and tests the lint and type hooks |
 
 ## What each hook does
 | Hook | When | What | Cost |
 |---|---|---|---|
-| `guard.mjs` | Before every shell command (Bash, PowerShell, Monitor) | Blocks risky text: secrets, force push, lost work, deleting outside the repo, download-and-run, production, changing safety files from the shell. Fails closed | about 0.1 s |
+| `guard.mjs` | Before every shell command (Bash, PowerShell, Monitor) | Blocks risky commands: git and claude flags as whole tokens per command; secrets, download and delete rules as text. Force push, lost work, deleting outside the repo, download-and-run, production, changing safety files from the shell. Fails closed | about 0.1 s |
 | `lint-edited-file.mjs` | After Claude edits a JS/TS file | ESLint on that one file; Claude sees the problems | 1 to 3 s |
 | `typecheck-on-stop.mjs` | When Claude wants to end a turn | `tsc` once, only if `.ts` files changed since the last clean check; sends Claude back once on errors | 0 to 5 s |
 
@@ -93,10 +93,10 @@ Morning: read the diff with Claude (`/code-review`, then a walk-through) and the
 
 ## Weekly review
 Sunday, 15 minutes. Not part of `/wrap-up`.
-1. Hours logged (a record, no cap); status and phase still right (active, paused, done)?
+1. Status and phase still right (active, paused, done)?
 2. Next problem: is the slice still the smallest thing that proves the core loop? Which problem is biggest now, and what is most fun?
 3. Same mistake twice: add a test, lint rule or hook; name one rule that never caught anything as a deletion candidate.
-4. Mechanics (Claude runs them, you read): `/simplify` on the week's code (duplication, the 3 most confusing files); `git branch -a` and `git worktree list` (only `main` expected); `git diff --stat <last good- tag> -- .claude/ .mcp.json .vscode/ .github/ package.json .npmrc` (anything you did not ask for?); `docs/now.md` under about 60 lines and `CLAUDE.md` under 500 words; Expo Go version on the iPhone = project SDK; next open item in `docs/security-checklist.md`.
+4. Mechanics (Claude runs them, you read): `/simplify` on the week's code (duplication, the 3 most confusing files); `git branch -a` and `git worktree list` (only `main` expected); `git diff --stat <last week's commit> -- .claude/ .mcp.json .vscode/ .github/ package.json .npmrc` (anything you did not ask for?); `docs/now.md` under about 60 lines and `CLAUDE.md` under 500 words; Expo Go version on the iPhone = project SDK; next open item in `docs/security-checklist.md`.
 
 ## Create when (not before)
 | File | Create it when |
@@ -114,7 +114,7 @@ Sunday, 15 minutes. Not part of `/wrap-up`.
 | `docs/now.md` | Every session start (max about 60 lines) |
 | `docs/brief.md` | Scope questions; toy box; budget; lawyer questions |
 | `docs/decisions.md` | "Why is it like this?" (newest row wins) |
-| `docs/log.md` | Weekly review (hours, checked-device) |
+| `docs/log.md` | Weekly review (what was built) |
 | `docs/specs/` | Before building a bigger feature |
 | `docs/design/direction.md`, `screens.md` | Before and after a screen |
 | `docs/security-checklist.md` | At each phase gate |

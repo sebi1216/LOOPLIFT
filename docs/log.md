@@ -1,13 +1,9 @@
 # Log
 
-One entry per session, newest at the bottom. /wrap-up appends here. Hours and checked-device are measured, not felt. They are a record, not a cap.
+One line per session, newest at the bottom. /wrap-up appends here, without hours. Older entries keep the old longer format.
 
 Format:
-## <date> · <Learn | Ship> · <hours> h · checked-device +<n>
-- Built: ...
-- Learned: ...
-- Problems: ...
-- Next: ...
+- <date>: built ...; next ...
 
 ## 2026-10-28 · starter · 0 h · checked-device +0
 - Built: template repo with a running Expo SDK 58 app (2 tabs, tokens, Button, EN/DE, demo cast), checks, hooks, skills, layout wall.
@@ -54,3 +50,5 @@ Format:
 - Problems: FigCraft batch step numbers went wrong 4 times and duplicated frames came back in a different id order (G2/G3 names and PNGs swapped, fixed). FigCraft disconnected at the end, after the last save. Teach-back skipped at Sebastian's request.
 - Next: new session, /build-screen Today in S1; update spec 001 for the new workout flow before Workout, Exercise and Summary.
 - Ratchet (2026-10-30): added tools/figcraft-batch.js (named steps instead of counted $step numbers, 4 tests red/green) and a note in /designs (use it; read a copy's ids after duplicating).
+
+- 2026-11-01: built retro 1 fixes (token-based guard, shell rules, 3-step /wrap-up, /build, Working with me, 48 pt, security review timing); next open the 10 S1 screens on the iPhone.

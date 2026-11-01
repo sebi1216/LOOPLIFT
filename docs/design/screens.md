@@ -2,7 +2,7 @@
 
 One row per screen. `checked-web`: looked right in the web preview and the layout wall (Claude may set it). `checked-device`: Sebastian opened it on the iPhone (only he sets it); if Android is a target in `docs/brief.md`, also on the Android emulator. Done for a screen = `checked-web` + `checked-device`.
 
-Designs: direction S1 Loop orbit, Teal Glow (picked 2026-10-29) in `docs/design/looplift.figcraft`, frames `Final / ...`; PNGs in `docs/design/renders/final/`. The screens built on 2026-10-29 follow the old direction C, so `checked-web` is empty again until `/build-screen` rebuilds each one in S1. Core loop first. Screenshots go to `docs/design/checks/`.
+Designs: direction S1 Loop orbit, Teal Glow (picked 2026-10-29) in `docs/design/looplift.figcraft`, frames `Final / ...`; PNGs in `docs/design/renders/final/`. The screens built on 2026-10-29 follow the old direction C, so `checked-web` is empty again until `/build` rebuilds each one in S1. Core loop first. Screenshots go to `docs/design/checks/`.
 
 10 screens (cap): the exercise screen from the Exercises tab and the one inside a workout are one screen, which frees the slot for Summary.
 
