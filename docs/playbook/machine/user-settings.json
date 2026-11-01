@@ -1,8 +1,20 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
-    "defaultMode": "default",
-    "disableBypassPermissionsMode": "disable",
+    "defaultMode": "auto",
+    "allow": [
+      "Bash(npm test)",
+      "Bash(npm run check)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npx expo lint)",
+      "Bash(npx jest *)",
+      "Bash(npx expo *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)"
+    ],
     "ask": [
       "Bash(git push *)",
       "PowerShell(git push *)"

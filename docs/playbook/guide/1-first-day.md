@@ -144,4 +144,4 @@ You should now see on GitHub: the commit, the tag under **Tags**, and a green ch
 - Stuck (two failed tries or 30 minutes, whichever comes first): write your guess first; Claude tests it before fixing.
 - `/clear` between tasks.
 
-End of week 1: set `"defaultMode": "auto"` in your personal settings file (B7), and pick Auto in the app's mode selector too (it is remembered per folder and wins). Next session: `/designs` ([guide 3](3-design-to-code.md)), then [guide 2](2-daily-loop.md) for every coding session.
+Your personal settings file (B7) already sets `"defaultMode": "auto"`. Pick Auto in the app's mode selector too (it is remembered per folder and wins). Next session: `/designs` ([guide 3](3-design-to-code.md)), then [guide 2](2-daily-loop.md) for every coding session.
