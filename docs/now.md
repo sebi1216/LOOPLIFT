@@ -1,6 +1,6 @@
 # Now
 
-Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-11-01 (retro 1 fixes, decisions #15 to #21)
+Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-11-01 (retro 1 fixes, decisions #15 to #22)
 
 Mode: Business   Phase: 1 strategy | 2 designs | 3 code (now: 3 code)
 Status: active

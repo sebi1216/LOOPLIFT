@@ -4,7 +4,6 @@
   },
   "enableAllProjectMcpServers": false,
   "permissions": {
-    "disableBypassPermissionsMode": "disable",
     "allow": [
       "Bash(npm run check)",
       "PowerShell(npm run check)",
@@ -62,8 +61,8 @@
       "PowerShell(git worktree prune*)",
       "Bash(rm *)",
       "PowerShell(rm *)",
-      "Bash(npx *)",
-      "PowerShell(npx *)",
+      "Bash(npx expo install *)",
+      "PowerShell(npx expo install *)",
       "Bash(npm install *)",
       "PowerShell(npm install *)",
       "Bash(npm i *)",

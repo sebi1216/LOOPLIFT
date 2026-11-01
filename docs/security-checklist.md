@@ -9,7 +9,7 @@ Honest limits: native Windows has no sandbox. The deny rules and the guard hook 
 - [ ] All keys only in the password manager and local `.env` files, never in chats or Project docs
 - [ ] Slice 1: no production secrets on this PC at all (dev keys only; rotate a key at once if it ever shows up in a chat or commit)
 - [ ] Git for Windows installed; Claude Code up to date (`claude doctor` shows no errors)
-- [ ] `~/.claude/settings.json`: bypass mode disabled (this repo also disables it)
+- [ ] Bypass mode stays unused (the setting that disabled it was removed, decision #22; deny rules and the guard still apply)
 - [ ] Separate Chrome profile for Claude in Chrome (no bank, mail or work logins)
 - [ ] Windows device encryption or BitLocker on (E: depends on your Windows edition)
 - [ ] Is this PC also a work machine with client data? If yes: separate Windows user at least
@@ -18,7 +18,7 @@ Honest limits: native Windows has no sandbox. The deny rules and the guard hook 
 - [ ] Trust dialog accepted (allow rules wait for it; deny rules and hooks apply anyway); `/permissions` and `/hooks` show the rules and at least the three starter hooks (plugins may add more)
 - [ ] `npm run test:hooks` passes on this PC (includes the 74-case bypass suite)
 - [ ] Live test (/kickoff step 5): the tool result for `cat .env` and `git push --force --dry-run` shows "Blocked by .claude/hooks/guard.mjs". A polite refusal by Claude does not count
-- [ ] Know your permission mode (week 1 suggestion: `"defaultMode": "default"` in `~/.claude/settings.json`, then auto). Prompts help you learn; they are not the safety
+- [ ] Know your permission mode (`"defaultMode": "auto"` in `~/.claude/settings.json`, decision #22). Prompts are not the safety
 - [ ] `.gitignore` covers `.env`, `.env.*`, `*.p8`, `*.p12`, `*.jks`, `*.keystore`; `env.example` holds names only
 - [ ] `package-lock.json` committed; CI uses `npm ci`. `npm -v` known: 11.10 or newer makes the 7-day delay in `.npmrc` work; older npm ignores it (rule 3 in CLAUDE.md is the stand-in; optional `npm install -g npm@11`, never `npm@latest`)
 - [ ] `npm ci` shows yellow warnings and "N vulnerabilities": normal for Expo today. Never run `npm audit fix --force` (it would install an old Expo and break the app; the guard blocks it)
