@@ -2,6 +2,7 @@ import type { Workout } from './demo';
 import {
   deleteSession,
   doneDates,
+  editKgFollowing,
   editSet,
   finishSession,
   history,
@@ -10,6 +11,7 @@ import {
   restoreSession,
   startSession,
   topSet,
+  volumeOf,
   type Session,
 } from './tracker';
 
@@ -155,4 +157,46 @@ describe('editing past sessions', () => {
     expect(restoreSession(rest, removed!)).toEqual(all);
     expect(deleteSession(all, 'nope')).toEqual([all, null]);
   });
+});
+
+describe('editKgFollowing', () => {
+  const session = (kgs: (number | null)[], done: boolean[] = []): Session => ({
+    id: 's1',
+    date: '2026-11-05',
+    workoutId: 'w1',
+    workoutName: 'Push',
+    finished: false,
+    exercises: [{ exerciseId: 'e1', targetSets: kgs.length, targetReps: 6, sets: kgs.map((kg, i) => ({ kg, reps: 6, done: done[i] ?? false })) }],
+  });
+  const kgs = (s: Session[]) => s[0].exercises[0].sets.map((x) => x.kg);
+
+  test('later open sets with the same weight follow the change', () => {
+    expect(kgs(editKgFollowing([session([60, 60, 60])], 's1', 0, 0, 65))).toEqual([65, 65, 65]);
+  });
+
+  test('earlier sets, ticked sets and sets with their own weight stay', () => {
+    expect(kgs(editKgFollowing([session([60, 60, 60, 55])], 's1', 0, 1, 65))).toEqual([60, 65, 65, 55]);
+    expect(kgs(editKgFollowing([session([60, 60, 60], [false, true])], 's1', 0, 0, 65))).toEqual([65, 60, 65]);
+  });
+
+  test('typing digit by digit ends on the typed weight, also from an empty field', () => {
+    let s = [session([60, 60])];
+    for (const kg of [null, 7, 70, 72.5]) s = editKgFollowing(s, 's1', 0, 0, kg);
+    expect(kgs(s)).toEqual([72.5, 72.5]);
+  });
+});
+
+test('volumeOf adds kg x reps of every set; bodyweight counts 0', () => {
+  const s: Session = {
+    id: 's1',
+    date: '2026-11-05',
+    workoutId: 'w1',
+    workoutName: 'Push',
+    finished: true,
+    exercises: [
+      { exerciseId: 'e1', targetSets: 2, targetReps: 6, sets: [{ kg: 60, reps: 6, done: true }, { kg: 62.5, reps: 4, done: true }] },
+      { exerciseId: 'e5', targetSets: 1, targetReps: 8, sets: [{ kg: 0, reps: 8, done: true }, { kg: null, reps: 8, done: true }] },
+    ],
+  };
+  expect(volumeOf(s)).toBe(610);
 });

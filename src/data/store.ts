@@ -224,6 +224,9 @@ export const ops = {
   setSet(d: AppData, sessionId: string, exIndex: number, setIndex: number, change: Partial<LoggedSet>): AppData {
     return { ...d, sessions: tracker.editSet(d.sessions, sessionId, exIndex, setIndex, change) };
   },
+  setKgFollowing(d: AppData, sessionId: string, exIndex: number, setIndex: number, kg: number | null): AppData {
+    return { ...d, sessions: tracker.editKgFollowing(d.sessions, sessionId, exIndex, setIndex, kg) };
+  },
   addSet(d: AppData, sessionId: string, exIndex: number): AppData {
     return { ...d, sessions: tracker.addSet(d.sessions, sessionId, exIndex) };
   },
@@ -347,6 +350,8 @@ export const actions = {
   startSession: (workoutId: string, date: string) => updateWithId((d) => ops.startSession(d, workoutId, date)),
   setSet: (sessionId: string, exIndex: number, setIndex: number, change: Partial<LoggedSet>) =>
     update((d) => ops.setSet(d, sessionId, exIndex, setIndex, change)),
+  setKgFollowing: (sessionId: string, exIndex: number, setIndex: number, kg: number | null) =>
+    update((d) => ops.setKgFollowing(d, sessionId, exIndex, setIndex, kg)),
   addSet: (sessionId: string, exIndex: number) => update((d) => ops.addSet(d, sessionId, exIndex)),
   finishSession: (sessionId: string) => update((d) => ops.finishSession(d, sessionId)),
   discardSession: (sessionId: string) => update((d) => ops.discardSession(d, sessionId)),

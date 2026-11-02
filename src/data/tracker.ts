@@ -77,6 +77,27 @@ export function editSet(sessions: Session[], id: string, exIndex: number, setInd
   }));
 }
 
+// The weight of one set in a running workout. The later sets that still had the same weight and
+// are not ticked follow, so a new weight is typed once, not once per set.
+export function editKgFollowing(sessions: Session[], id: string, exIndex: number, setIndex: number, kg: number | null): Session[] {
+  return mapSession(sessions, id, (s) => ({
+    ...s,
+    exercises: s.exercises.map((e, i) => {
+      if (i !== exIndex) return e;
+      const before = e.sets[setIndex]?.kg;
+      return {
+        ...e,
+        sets: e.sets.map((x, j) => (j === setIndex || (j > setIndex && !x.done && x.kg === before) ? { ...x, kg } : x)),
+      };
+    }),
+  }));
+}
+
+// All the weight moved in a session: kg x reps of every set. Bodyweight and empty count as 0.
+export function volumeOf(session: Session): number {
+  return session.exercises.reduce((sum, e) => sum + e.sets.reduce((n, x) => n + (x.kg ?? 0) * x.reps, 0), 0);
+}
+
 // One more set, a copy of the lift's last one (not ticked).
 export function addSet(sessions: Session[], id: string, exIndex: number): Session[] {
   return mapSession(sessions, id, (s) => ({
