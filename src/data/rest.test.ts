@@ -32,3 +32,61 @@ test('minus never goes below the shortest rest', () => {
   expect(r.seconds).toBe(15);
   expect(remainingOf(r, T0)).toBe(15);
 });
+
+describe('the timer in the app', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    mockSettings.restEnabled = true;
+    mockSettings.restSeconds = 90;
+    mockSettings.restReminder = false;
+    mockSchedule.mockClear();
+    mockCancel.mockClear();
+    mockBuzz.mockClear();
+    restTimer.stop();
+  });
+  afterEach(() => jest.useRealTimers());
+
+  test('switched off in the settings, a tick starts nothing', () => {
+    mockSettings.restEnabled = false;
+    restTimer.start();
+    expect(currentRest()).toBeNull();
+  });
+
+  test('it starts with the length from the settings', () => {
+    mockSettings.restSeconds = 120;
+    restTimer.start();
+    expect(currentRest()?.seconds).toBe(120);
+  });
+
+  test('plus and minus hold for the next sets, until the setting itself changes', () => {
+    restTimer.start();
+    restTimer.adjust(15);
+    restTimer.start();
+    expect(currentRest()?.seconds).toBe(105);
+    mockSettings.restSeconds = 60;
+    restTimer.start();
+    expect(currentRest()?.seconds).toBe(60);
+  });
+
+  test('the lock-screen reminder is set only when switched on, moves with plus, goes with stop', () => {
+    restTimer.start();
+    expect(mockSchedule).not.toHaveBeenCalled();
+    mockSettings.restReminder = true;
+    restTimer.start();
+    expect(mockSchedule).toHaveBeenLastCalledWith(90);
+    restTimer.adjust(15);
+    expect(mockSchedule).toHaveBeenLastCalledWith(105);
+    mockCancel.mockClear();
+    restTimer.stop();
+    expect(mockCancel).toHaveBeenCalledTimes(1);
+  });
+
+  test('one buzz when the rest ends, "over" stays a moment, then it is gone', () => {
+    restTimer.start();
+    jest.advanceTimersByTime(90_000);
+    expect(mockBuzz).toHaveBeenCalledTimes(1);
+    expect(currentRest()).not.toBeNull();
+    jest.advanceTimersByTime(4000);
+    expect(currentRest()).toBeNull();
+  });
+});
