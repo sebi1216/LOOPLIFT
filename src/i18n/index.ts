@@ -1,6 +1,9 @@
 // All user-facing text lives here, in English and German. Screens call t('key').
 // German is often about 30% longer (E): check each new screen once in German.
+import { formDe, formEn } from './form-strings';
+
 const en = {
+  ...formEn,
   'tab.today': 'Today',
   'tab.calendar': 'Calendar',
   'tab.workouts': 'Workouts',
@@ -331,6 +334,7 @@ const en = {
 export type StringKey = keyof typeof en;
 
 const de: Record<StringKey, string> = {
+  ...formDe,
   'tab.today': 'Heute',
   'tab.calendar': 'Kalender',
   'tab.workouts': 'Workouts',

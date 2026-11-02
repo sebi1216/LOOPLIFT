@@ -18,9 +18,12 @@ const names = {
   loop: { ios: 'arrow.clockwise', android: 'refresh', web: 'refresh' },
   check: { ios: 'checkmark', android: 'check', web: 'check' },
   arrowUp: { ios: 'arrow.up', android: 'arrow_upward', web: 'arrow_upward' },
+  arrowDown: { ios: 'arrow.down', android: 'arrow_downward', web: 'arrow_downward' },
   equal: { ios: 'equal', android: 'equal', web: 'equal' },
   trophy: { ios: 'trophy.fill', android: 'trophy', web: 'trophy' },
   play: { ios: 'play.fill', android: 'play_arrow', web: 'play_arrow' },
+  pause: { ios: 'pause.fill', android: 'pause', web: 'pause' },
+  info: { ios: 'info.circle', android: 'info', web: 'info' },
 } as const satisfies Record<string, ComponentProps<typeof SymbolView>['name']>;
 
 export type IconName = keyof typeof names;

@@ -9,7 +9,7 @@ import { CardRow } from '@/ui/card-row';
 import { confirmDelete } from '@/ui/confirm';
 import { HeaderButton } from '@/ui/header-button';
 import { Icon } from '@/ui/icon';
-import { LiftArt } from '@/ui/lift-art';
+import { LiftArt, workoutArtId } from '@/ui/lift-art';
 import { font, radius, size, space } from '@/ui/tokens';
 import { useColors } from '@/ui/use-colors';
 
@@ -58,7 +58,7 @@ export default function Workouts() {
                   testID={`workout-${w.id}`}
                   leading={
                     <View style={[styles.art, { backgroundColor: c.artTint }]}>
-                      <LiftArt id={w.id} color={c.accent} width={size.touch * 1.5} />
+                      <LiftArt id={workoutArtId(w)} color={c.accent} width={size.touch * 1.5} />
                     </View>
                   }
                   subtitle={

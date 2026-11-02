@@ -78,11 +78,28 @@ export const size = {
   dayBubble: 44,
   // Plot height of the line chart on the exercise screen.
   chart: 160,
+  // The widest a form demo figure gets, and its small version in the Exercise hero.
+  demoMax: 250,
+  demoSmall: 116,
 } as const;
 
 // sm: inputs and day cells, md: grouped lists and set rows, lg: cards and tiles, xl: hero cards,
 // full: pills and buttons.
 export const radius = { sm: 12, md: 16, lg: 24, xl: 32, full: 999 } as const;
+
+// Motion (values from the animate-expo tables; docs/design/rules.md 4).
+// press: press feedback; state: small state changes; enter: things that arrive; celebrate: the
+// rare success moments on Summary. pressScale is how far a pressed thing gives way.
+export const motion = {
+  press: 120,
+  state: 180,
+  enter: 280,
+  celebrate: 600,
+  pressScale: 0.97,
+  // Strong ease-out for UI, ease-in-out for things moving on screen.
+  easeOut: [0.23, 1, 0.32, 1],
+  easeInOut: [0.77, 0, 0.175, 1],
+} as const;
 
 // Type ramp. Font scaling stays on, so never put fixed heights on text containers.
 export const font = {

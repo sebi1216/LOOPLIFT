@@ -17,6 +17,7 @@ export default function RootLayout() {
       <Stack screenOptions={useStackOptions()}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="change-day" options={sheetOptions} />
+        <Stack.Screen name="form" options={sheetOptions} />
         <Stack.Screen name="session/index" options={{ title: '', headerBackTitle: t('tab.today') }} />
         <Stack.Screen name="session/[exerciseId]" options={{ title: '' }} />
         <Stack.Screen name="session/summary" options={{ headerShown: false, gestureEnabled: false }} />

@@ -1,9 +1,14 @@
+import { useMemo } from "react";
 import { View } from "react-native";
-import Svg, { Circle, Polyline, Rect } from "react-native-svg";
+import Svg, { Circle, Path, Polyline, Rect } from "react-native-svg";
+
+import { demos } from "./form-demos";
+import { pathsAt, poseAt, type Demo } from "./form-motion";
 
 // One simple line figure per lift and per workout (decisions #8 and #14): our own drawings in
-// the app's style, never copied, never one drawing for two lifts. Drawn so far: Lena's 8 lifts
-// and her two workouts; everything else shows a neutral dumbbell until the art task draws it.
+// the app's style, never copied, never one drawing for two lifts. Hand-drawn: Lena's 8 lifts and
+// her two workouts. The other starter lifts show a pose from their form demo (form-demos.ts);
+// lifts the user adds show a neutral dumbbell.
 // Each drawing is lines (polylines with round ends), heads (circles) and plates (rects) on a
 // 120 x 100 grid.
 
@@ -172,10 +177,41 @@ const placeholder: Drawing = {
 
 export const hasDrawing = (id: string) => id in drawings;
 
+// A workout you made yourself shows the drawing of its first lift until it has its own.
+export const workoutArtId = (w: { id: string; exercises: { exerciseId: string }[] }) =>
+  hasDrawing(w.id) ? w.id : (w.exercises[0]?.exerciseId ?? w.id);
+
+// Lifts without a hand-made drawing: the key pose from their form demo, cropped to the figure.
+function DemoStill({ demo, color, width }: { demo: Demo; color: string; width: number }) {
+  const { paths, box } = useMemo(() => {
+    const p = poseAt(demo, demo.still);
+    const pts = [p.hip, p.shoulder, p.head, p.hand, p.elbow, p.foot, p.knee, ...[p.hand2, p.elbow2, p.foot2, p.knee2].filter((x) => x !== null)];
+    const xs = pts.map((q) => q[0]);
+    const ys = pts.map((q) => q[1]);
+    const pad = 12;
+    const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+    const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+    // Same shape as the hand-made drawings (6 : 5), big enough for the whole figure.
+    const h = Math.max(Math.max(...ys) - Math.min(...ys) + pad * 2, ((Math.max(...xs) - Math.min(...xs) + pad * 2) * 5) / 6);
+    const w = (h * 6) / 5;
+    return { paths: pathsAt(demo, demo.still), box: `${cx - w / 2} ${cy - h / 2} ${w} ${h}` };
+  }, [demo]);
+  return (
+    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <Svg width={width} height={(width * 100) / 120} viewBox={box}>
+        <Path d={paths.gear} stroke={color} strokeWidth={4} strokeLinecap="round" fill="none" />
+        <Path d={paths.body} stroke={color} strokeWidth={6.5} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <Path d={paths.head} fill={color} />
+      </Svg>
+    </View>
+  );
+}
+
 type Props = { id: string; color: string; width: number };
 
 // Decorative: the name next to it always says what it is.
 export function LiftArt({ id, color, width }: Props) {
+  if (!drawings[id] && demos[id]) return <DemoStill demo={demos[id]} color={color} width={width} />;
   const d = drawings[id] ?? placeholder;
   const sw = 7;
   return (

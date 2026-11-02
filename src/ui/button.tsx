@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Icon, type IconName } from './icon';
+import { PressScale } from './press-scale';
 import { font, radius, size, space } from './tokens';
 import { useColors } from './use-colors';
 
@@ -20,23 +21,22 @@ export function Button({ label, onPress, variant = 'primary', icon, style, testI
   const bg = variant === 'primary' ? c.accent : variant === 'soft' ? c.accentSoft : 'transparent';
   const fg = variant === 'primary' ? c.onAccent : c.accent;
   return (
-    <Pressable
+    <PressScale
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
       testID={testID}
-      style={({ pressed }) => [
+      style={[
         styles.base,
         { backgroundColor: bg },
         variant === 'dashed' && [styles.dashed, { borderColor: c.accent }],
-        pressed && styles.pressed,
         style,
       ]}>
       <View style={styles.row}>
         {icon ? <Icon name={icon} size={17} color={fg} /> : null}
         <Text style={[styles.label, { color: fg }]}>{label}</Text>
       </View>
-    </Pressable>
+    </PressScale>
   );
 }
 
@@ -52,6 +52,5 @@ const styles = StyleSheet.create({
   },
   dashed: { borderWidth: 1.5, borderStyle: 'dashed', borderRadius: radius.md },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  pressed: { opacity: 0.7 },
   label: { ...font.headline, textAlign: 'center', flexShrink: 1 },
 });
