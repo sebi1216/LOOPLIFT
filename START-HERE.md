@@ -20,7 +20,7 @@ The why behind each step is in `docs/playbook/` (start with `docs/playbook/READM
 
 ## Phase 2: designs
 1. New session in the same folder. Type `/designs`.
-2. Claude designs at most 10 main screens: first 3 key screens in 3 different directions, in FigCraft (or Figma, or coded variants if FigCraft can't be used).
+2. Claude designs the main screens (no cap): first 3 key screens in 3 different directions, in FigCraft (or Figma, or coded variants if FigCraft can't be used).
 3. You comment, change or mix, and pick one. Claude finishes the picked direction and writes it into the code's design tokens and `docs/design/`.
 4. Type `/wrap-up`.
 

@@ -7,7 +7,7 @@
 - One sentence: people who train 3 to 6 times a week on a self-chosen split (Push/Pull/Legs, Upper/Lower, Full Body) can set their split up once as a repeating loop so that "what am I doing today and tomorrow?" takes one glance.
 - Core loop: opens the app and sees today's workout (or rest) -> glances at the next 7 days -> skips or moves a day when life happens, without breaking the loop -> gets a plan that is always right. Comes back because every training day starts with "what's today?".
 
-## 2. Main screens (input for /designs, at most 10)
+## 2. Main screens (input for /designs; no screen cap since decision #23)
 | # | Screen | What the user does there |
 |---|---|---|
 | 1 | Today (home) | Sees today's workout or rest as a big card with exercises (sets x reps) and a 7-day strip; opens the workout, skips or swaps today |

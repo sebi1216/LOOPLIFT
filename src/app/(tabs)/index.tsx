@@ -55,6 +55,14 @@ function Header({ date, title, children }: { date: string; title: string; childr
       <View style={styles.headerTop}>
         <Text style={[styles.section, styles.flex, { color: c.textMuted }]}>{longDate(date)}</Text>
         {children}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('settings.open')}
+          onPress={() => router.push('/settings')}
+          style={({ pressed }) => [styles.gear, pressed && styles.pressed]}
+          testID="open-settings">
+          <Icon name="settings" size={22} color={c.accent} />
+        </Pressable>
       </View>
       <Text accessibilityRole="header" style={[styles.title, { color: c.text }]}>
         {title}
@@ -322,6 +330,7 @@ const styles = StyleSheet.create({
   },
   header: { gap: space.xs, paddingTop: space.sm },
   headerTop: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.sm },
+  gear: { width: size.touch, height: size.touch, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center', marginVertical: -space.ms },
   section: { ...font.section, textTransform: 'uppercase' },
   title: { ...font.title },
   heroTop: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: space.sm, zIndex: 1 },

@@ -10,7 +10,7 @@ Plain-words tour. Claude updates it when folders, commands or the data flow chan
 
 ## The three phases (details: `START-HERE.md`)
 1. **Strategy:** your files in `docs/input/` become `docs/brief.md` (`/kickoff`).
-2. **Designs:** at most 10 main screens in several directions; you pick one (`/designs`). Result: `docs/design/direction.md`, `src/ui/tokens.ts`, pictures in `docs/design/renders/`.
+2. **Designs:** the main screens (no cap) in several directions; you pick one (`/designs`). Result: `docs/design/direction.md`, `src/ui/tokens.ts`, pictures in `docs/design/renders/`.
 3. **Code:** one topic at a time from the picked design (`/build`), checked on the iPhone, `/wrap-up` at the end of each session.
 
 ## The big picture

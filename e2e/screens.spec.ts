@@ -548,6 +548,67 @@ test.describe('Rest timer and quick logging', () => {
   });
 });
 
+test.describe('Settings', () => {
+  const settingsBg = (page: Page) => page.getByTestId('settings').evaluate((el) => getComputedStyle(el).backgroundColor);
+
+  test('the gear on Today opens Settings', async ({ page }) => {
+    await page.goto(`/?${LENA}`);
+    await tapUntil(page, 'open-settings', () => expect(page.getByTestId('settings')).toBeVisible({ timeout: 2000 }));
+    await expect(page.getByTestId('setting-rest-length-plus')).toBeVisible();
+    await expect(page.getByText(en('settings.restAlertWeb'))).toBeVisible();
+    await shot(page, 'settings');
+  });
+
+  test('rest timer off: ticking a set starts no rest, and it stays off after a restart', async ({ page }) => {
+    await page.goto('/settings');
+    await tapUntil(page, 'setting-rest', () => expect(page.getByTestId('setting-rest-length-plus')).toHaveCount(0, { timeout: 2000 }));
+    await page.goto(`/session?start=w1&${LENA}`);
+    await tapUntil(page, 'tile-0', () => expect(page.getByTestId('session-exercise')).toBeVisible({ timeout: 2000 }));
+    await page.getByTestId('set-0-0-tick').click();
+    await expect(page.getByTestId('set-0-0-tick')).toHaveAttribute('aria-checked', 'true');
+    await page.waitForTimeout(500);
+    await expect(page.getByTestId('rest-bar')).toHaveCount(0);
+  });
+
+  test('a longer rest length is used by the next rest', async ({ page }) => {
+    await page.goto('/settings');
+    await tapUntil(page, 'setting-rest-length-plus', () => expect(page.getByText('1:45', { exact: true })).toBeVisible({ timeout: 2000 }));
+    await page.goto(`/session?start=w1&${LENA}`);
+    await tapUntil(page, 'tile-0', () => expect(page.getByTestId('session-exercise')).toBeVisible({ timeout: 2000 }));
+    await page.getByTestId('set-0-0-tick').click();
+    await expect(page.getByTestId('rest-time')).toHaveText(/^1:[34]\d$/);
+  });
+
+  test('Dark turns the app dark and stays after a restart; System follows the browser', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.goto('/settings');
+    await expect(page.getByTestId('settings')).toBeVisible();
+    expect(await settingsBg(page)).toBe('rgb(242, 245, 247)');
+    await expect(async () => {
+      await page.getByText(en('settings.themeDark'), { exact: true }).click();
+      expect(await settingsBg(page)).toBe('rgb(10, 18, 21)');
+    }).toPass({ timeout: 30_000 });
+    await shot(page, 'settings-dark');
+    await page.goto(`/?${LENA}`);
+    await page.reload();
+    await expect(page.getByTestId('today-hero')).toBeVisible();
+    await shot(page, 'today-dark-setting');
+    await page.goto('/settings');
+    expect(await settingsBg(page)).toBe('rgb(10, 18, 21)');
+    await page.getByText(en('settings.themeSystem'), { exact: true }).click();
+    await expect.poll(() => settingsBg(page)).toBe('rgb(242, 245, 247)');
+  });
+
+  test.describe('German', () => {
+    test.use({ locale: 'de-DE' });
+    test('labels wrap, nothing is cut', async ({ page }) => {
+      await page.goto('/settings');
+      await expect(page.getByText(t('settings.restTimerSub', {}, 'de'))).toBeVisible();
+      await shot(page, 'settings-de');
+    });
+  });
+});
+
 test('layout wall shows Today in every frame', async ({ page }) => {
   await page.setViewportSize({ width: 1800, height: 1000 });
   await page.goto('/layout-wall.html');

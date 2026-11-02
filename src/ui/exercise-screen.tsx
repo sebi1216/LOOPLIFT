@@ -14,6 +14,7 @@ import { Button } from './button';
 import { FormDemo, FormFigure } from './form-demo';
 import { hasDemo } from './form-demos';
 import { FormNotes } from './form-notes';
+import { haptic } from './haptics';
 import { HeaderButton } from './header-button';
 import { HeroCard } from './hero-card';
 import { kgText } from './hint-chip';
@@ -213,7 +214,10 @@ export function ExerciseScreen({ exerciseId, inSession }: Props) {
                       }
                       actions.setSet(session.id, exIndex, si, change);
                       // Ticking a set starts the rest; unticking it takes the rest back.
-                      if (change.done === true) restTimer.start();
+                      if (change.done === true) {
+                        haptic('tick');
+                        restTimer.start();
+                      }
                       if (change.done === false) restTimer.stop();
                     }}
                     testID={`set-${exIndex}-${si}`}

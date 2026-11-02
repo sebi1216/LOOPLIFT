@@ -14,8 +14,8 @@ const TICK_MS = 250;
 
 const clock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
-// The rest timer, pinned under the workout screens while it runs. It only works with the app
-// open: a reminder on the lock screen needs a notification package (open question in now.md).
+// The rest timer, pinned under the workout screens while it runs. With the Rest alert setting on,
+// the end also reaches the lock screen (src/data/rest-alert.ts).
 export function RestBar({ inFooter = false }: { inFooter?: boolean }) {
   const c = useColors();
   const insets = useSafeAreaInsets();

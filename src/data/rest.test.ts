@@ -1,4 +1,5 @@
-import { adjustRest, DEFAULT_REST, progressOf, remainingOf, startRest } from './rest';
+import { adjustRest, DEFAULT_REST, getRest, progressOf, remainingOf, REST_STEP, restTimer, startRest } from './rest';
+import { DEFAULT_SETTINGS, getSettings, updateSettings } from './settings';
 
 const T0 = 1_000_000;
 
@@ -31,4 +32,34 @@ test('minus never goes below the shortest rest', () => {
   const r = adjustRest(startRest(T0, 15), -15, T0);
   expect(r.seconds).toBe(15);
   expect(remainingOf(r, T0)).toBe(15);
+});
+
+// ---- Settings (rest timer optional, length saved) ----
+
+describe('the running timer follows the settings', () => {
+  afterEach(() => {
+    restTimer.stop();
+    updateSettings(DEFAULT_SETTINGS);
+  });
+
+  test('with the rest timer off, ticking a set starts nothing', () => {
+    updateSettings({ restTimer: false });
+    restTimer.start();
+    expect(getRest()).toBeNull();
+  });
+
+  test('a new rest starts with the saved length', () => {
+    updateSettings({ restSeconds: 120 });
+    restTimer.start();
+    expect(getRest()?.seconds).toBe(120);
+  });
+
+  test('plus and minus save the new length for the next rest', () => {
+    restTimer.start();
+    restTimer.adjust(REST_STEP);
+    expect(getSettings().restSeconds).toBe(DEFAULT_REST + REST_STEP);
+    restTimer.stop();
+    restTimer.start();
+    expect(getRest()?.seconds).toBe(DEFAULT_REST + REST_STEP);
+  });
 });

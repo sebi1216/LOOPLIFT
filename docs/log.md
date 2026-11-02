@@ -54,3 +54,5 @@ Format:
 - 2026-11-01: built retro 1 fixes (token-based guard, shell rules, 3-step /wrap-up, /build, Working with me, 48 pt, security review timing); next open the 10 S1 screens on the iPhone.
 
 - 2026-11-02: built form demos for all 60 lifts (own animated figures, cues, avoid), rest timer, weight carry-over, motion across the app, spec 002; tested on web only, nothing on the iPhone yet; next look at the figures in Expo Go and answer the open questions.
+
+- 2026-11-02 (cloud): built Settings (rest timer optional, saved rest length, Dark / Light / System, haptics via expo-haptics, rest alert on the lock screen via expo-notifications), removed the 10-screen cap (#23, #24); web and iOS bundle only, nothing on the iPhone yet; next the feel check in now.md.

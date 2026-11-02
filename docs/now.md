@@ -1,6 +1,6 @@
 # Now
 
-Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-11-02 (form demos, rest timer, motion; spec 002)
+Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-11-02 (Settings: optional rest timer, dark mode, haptics, rest alert; no screen cap)
 
 Mode: Business   Phase: 1 strategy | 2 designs | 3 code (now: 3 code)
 Status: active
@@ -16,13 +16,13 @@ Slice: slice 1 · card: docs/brief.md section 3
 - [ ] Local persistence: all data survives an app restart; no account
 
 ## Next step (one line)
-On the iPhone in Expo Go: open Exercises, Back Squat (does the figure move?), run one workout with the rest timer, then answer the first four questions below.
+On the iPhone in Expo Go: gear on Today, switch Dark and back, turn on "Alert when rest is over", tick a set, lock the phone and wait for the alert; feel the haptics; then open Exercises, Back Squat (does the figure move?).
 
 ## Open questions (Claude adds here, never invents answers)
 - Form demos (spec 002): animated figures instead of videos, because decision #8 rules out copied clips. Are they enough, or also real videos (options and prices in spec 002)? Poses and cues in `docs/design/checks/form-demos.png` and `src/i18n/form-strings.ts`: not reviewed by anyone who coaches; please look through them.
-- New package OK? Suggestion: `expo-haptics` 58.0.7 (https://www.npmjs.com/package/expo-haptics, 7.0 M downloads a week, published more than 7 days ago) for the tick and the rest end; `expo-notifications` 58.1.7 (https://www.npmjs.com/package/expo-notifications, 8.3 M a week, check its publish date, last registry change 28 Oct) so the rest timer also reaches the lock screen. Neither installed.
-- Rest timer: 90 s for every lift, the length you set resets when the app closes. Keep, or per lift and saved (a data-model change)?
-- Choices made without asking, overnight (Suggestions, say if one is wrong): the form sheet `/form` as an 11th screen on top of the cap of 10; Start workout moved above the lift list; drawings in Today's rows; "2 of 5 this week" on Today; a new weight carries to later open sets; a workout you made shows its first lift's drawing (two workouts starting with one lift then share it, against "never the same" in #14); the 52 new lift drawings are poses of the demos, not separately drawn.
+- Settings (decision #24), choices made without asking (Suggestions, say if one is wrong): a gear on Today opens `/settings` (no design frame); one rest length for every lift, saved, and plus/minus on the timer change it too (per lift would be a data-model change); "Alert when rest is over" is off until you turn it on, then iOS asks once; the alert is silent while the app is open (the bar and a haptic say it); haptics on the set tick (light), plus/minus (selection), rest end and a new record (success); with Haptics off the rest end no longer buzzes at all. No `expo-notifications` config plugin in app.json (local alerts work without it in Expo Go). Settings use their own saved key, so the training data format did not change.
+- Feel check on the iPhone: Dark / Light should also switch the tab bar, menus and date picker (Appearance override). If the tab bar stays light in Dark, tell me.
+- Choices made without asking, overnight (Suggestions, say if one is wrong): the form sheet `/form` as its own screen; Start workout moved above the lift list; drawings in Today's rows; "2 of 5 this week" on Today; a new weight carries to later open sets; a workout you made shows its first lift's drawing (two workouts starting with one lift then share it, against "never the same" in #14); the 52 new lift drawings are poses of the demos, not separately drawn.
 - Route types in `.expo/types` break (`/../ui/...` entries) also with only one dev server: on 2026-10-31 it happened right after new files were added under `src/ui/` while the server ran; a restart fixed it. Restart the dev server after adding files.
 - Should a loop also support weekday plans (Mon Push, Wed Pull every week), or is the N-day loop enough for v1? (from the concept PDF)
 - Business mode needs the Apple Developer Program (about 99 USD per year) before the 10 strangers test; budget cap is 0 EUR. Decide before the stranger check.

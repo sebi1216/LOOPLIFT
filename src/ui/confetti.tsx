@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { Easing, Keyframe, useReducedMotion } from 'react-native-reanimated';
 
+import { haptic } from './haptics';
 import { motion, radius, space } from './tokens';
 import { useColors } from './use-colors';
 
@@ -35,10 +37,11 @@ const burst = (p: (typeof pieces)[number]) =>
 
 // A small burst behind the Summary hero for a new record: the one celebration in the app, and rare
 // because records are. Drawn with plain Views on the UI thread, no package. Decoration only: the
-// record is also written out in words. Reduce Motion: no burst.
+// record is also written out in words. Reduce Motion: no burst, the success haptic still comes.
 export function Confetti() {
   const c = useColors();
   const reduced = useReducedMotion();
+  useEffect(() => haptic('record'), []);
   if (reduced) return null;
   return (
     <View style={styles.origin} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" testID="confetti">

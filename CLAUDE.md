@@ -30,7 +30,7 @@ LoopLift: a workout planner where you set your training split up once as a repea
 - 3+ files: one plan message, no waiting. Wait for OK only for a new dependency or a data-model change.
 - Stuck (a fix failed twice or 30 minutes passed): ask Sebastian's guess first, test it, then fix.
 - Never invent product decisions: ask or log it under "Open questions" in `docs/now.md`. Label proposals "Suggestion:". `docs/decisions.md` only with his wording; newest wins.
-- Order of work: 1. strategy (`/kickoff` turns `docs/input/` into `docs/brief.md`), 2. designs (`/designs`, at most 10 screens, Sebastian picks one direction), 3. code (`/build`, from the picked design). No app screen in code before a direction is picked in `docs/design/direction.md`.
+- Order of work: 1. strategy (`/kickoff` turns `docs/input/` into `docs/brief.md`), 2. designs (`/designs`, main screens, no screen cap, Sebastian picks one direction), 3. code (`/build`, from the picked design). No app screen in code before a direction is picked in `docs/design/direction.md`.
 - No hour cap, timeline or stop rules: never ask for them. Work on Sebastian's biggest current problem. New ideas: toy box in `docs/brief.md`; a changed must-have is logged in `docs/decisions.md`.
 - `docs/playbook/` is Sebastian's guide. Read it only when he asks, or when a skill points to a page in it.
 

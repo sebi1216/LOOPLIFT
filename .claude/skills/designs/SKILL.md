@@ -1,6 +1,6 @@
 ---
 name: designs
-description: Phase 2 (designs) of a new app. Makes several clearly different design directions for the app's main screens (at most 10) in FigCraft, falling back to Figma or coded variants, lets Sebastian compare, comment, mix and pick one, then writes the picked look into src/ui/tokens.ts, docs/design/direction.md and docs/design/screens.md. Builds no app screens in code. Sebastian runs it with /designs after /kickoff (again to continue or to redo the designs).
+description: Phase 2 (designs) of a new app. Makes several clearly different design directions for the app's main screens in FigCraft, falling back to Figma or coded variants, lets Sebastian compare, comment, mix and pick one, then writes the picked look into src/ui/tokens.ts, docs/design/direction.md and docs/design/screens.md. Builds no app screens in code. Sebastian runs it with /designs after /kickoff (again to continue or to redo the designs).
 argument-hint: "[optional: wishes for the look, reference apps, or 'continue']"
 disable-model-invocation: true
 ---
@@ -9,16 +9,16 @@ disable-model-invocation: true
 
 Wishes: $ARGUMENTS
 
-Goal: Sebastian sees what the app will look like and picks one direction before any screen is coded. Designs set the tone; they are not the app. At most 10 screens in total.
+Goal: Sebastian sees what the app will look like and picks one direction before any screen is coded. Designs set the tone; they are not the app. No screen cap (decision #23).
 Work through the steps in order. Say in one line which step you are on. Ask with AskUserQuestion (options plus a default). Plain words.
 
 ## 0. Before you start
 - Read `docs/brief.md` (idea, core loop, main screens list in section 2, must-haves, no-gos), `docs/input/` for any look or brand wishes, `src/data/demo.ts` (the cast), `.claude/rules/ui.md` and `docs/design/direction.md`.
 - If `docs/design/direction.md` already names a picked direction: ask whether to redo the designs or continue an unfinished run. Never overwrite a picked direction without his OK.
-- No main screens in the brief: ask for them (core loop first, at most 10) and add them to the brief.
+- No main screens in the brief: ask for them (core loop first) and add them to the brief.
 
 ## 1. Screens to design
-- Show the list from the brief and confirm it: at most 10 screens in total, core loop first.
+- Show the list from the brief and confirm it, core loop first.
 - Pick the 3 key screens that show the most of the look (usually the home screen of the core loop, one list, one detail or form). The directions in step 3 use only these 3; the picked direction gets the rest in step 5.
 
 ## 2. Design tool (check before designing)
@@ -43,7 +43,7 @@ Work through the steps in order. Say in one line which step you are on. Ask with
 - Write each round in one line into `docs/design/direction.md` under "Design rounds" (date, what changed, why).
 
 ## 5. Finish the picked direction
-- Design the remaining main screens (total at most 10) in the picked direction, plus the empty state of the core loop screen and the picked look in dark mode for the key screens.
+- Design the remaining main screens in the picked direction, plus the empty state of the core loop screen and the picked look in dark mode for the key screens.
 - Show him the full set once; fix what he points out.
 
 ## 6. Hand-off to code (no app screens in code yet)

@@ -21,6 +21,7 @@ export default function RootLayout() {
         <Stack.Screen name="session/index" options={{ title: '', headerBackTitle: t('tab.today') }} />
         <Stack.Screen name="session/[exerciseId]" options={{ title: '' }} />
         <Stack.Screen name="session/summary" options={{ headerShown: false, gestureEnabled: false }} />
+        <Stack.Screen name="settings" options={{ title: t('settings.title'), headerLargeTitle: true, headerBackTitle: t('tab.today') }} />
       </Stack>
     </GestureHandlerRootView>
   );

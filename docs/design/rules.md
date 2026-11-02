@@ -26,7 +26,7 @@ Read before any UI work. On a conflict between skills (`animate-expo`, `hig-*`, 
 - Run its gate first: frequent actions (tabs, toggles, scrolling) get no animation.
 - Reanimated 4 and Gesture Handler are installed. Use spring and easing values from its tables only; never use `ease-in` or `scale(0)`.
 - Reduced motion ships with every animation.
-- Haptics need `expo-haptics`, which is not installed yet. The same goes for `react-native-keyboard-controller`, Lottie and Skia: the skill's `npx expo install` lines never run without Sebastian's OK (CLAUDE.md rule 3).
+- Haptics: `expo-haptics` is installed (decision #24); call them through `src/ui/haptics.ts`, which honours the Haptics setting. Not installed: `react-native-keyboard-controller`, Lottie and Skia: the skill's `npx expo install` lines never run without Sebastian's OK (CLAUDE.md rule 3).
 - Feel is judged on the iPhone. Expo Go shows whether it works; a dev build shows whether it feels right.
 
 ## 5. Always (from CLAUDE.md, repeated so no skill overrides it)

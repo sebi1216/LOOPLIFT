@@ -1,0 +1,147 @@
+import { SegmentedControl } from '@expo/ui/community/segmented-control';
+import { useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+
+import { allowRestAlert, restAlertAvailable } from '@/data/rest-alert';
+import { REST_STEP, updateSettings, useSettings, type Theme } from '@/data/settings';
+import { t } from '@/i18n';
+import { Stepper } from '@/ui/stepper';
+import { font, radius, size, space } from '@/ui/tokens';
+import { useColors, useScheme } from '@/ui/use-colors';
+
+const THEMES: Theme[] = ['system', 'light', 'dark'];
+const clock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+// Settings (from the gear on Today): rest timer on or off, its length, the lock screen alert,
+// haptics, and the look (System, Light, Dark). Saved on the phone (src/data/settings.ts).
+// States: /settings, and /settings?state=denied shows the note for notifications turned off.
+// No design frame: built from the S1 tokens and the platform's own controls (Suggestion).
+export default function Settings() {
+  const c = useColors();
+  const scheme = useScheme();
+  const s = useSettings();
+  const { state } = useLocalSearchParams<{ state?: string }>();
+  const [denied, setDenied] = useState(state === 'denied');
+
+  const setAlert = async (on: boolean) => {
+    if (!on) return updateSettings({ restAlert: false });
+    const ok = await allowRestAlert();
+    setDenied(!ok);
+    updateSettings({ restAlert: ok });
+  };
+
+  return (
+    <ScrollView
+      contentInsetAdjustmentBehavior="automatic"
+      style={{ backgroundColor: c.bg }}
+      contentContainerStyle={styles.content}
+      testID="settings">
+      <Text accessibilityRole="header" style={[styles.section, { color: c.textMuted }]}>
+        {t('settings.workout')}
+      </Text>
+      <View style={[styles.card, { backgroundColor: c.bgRaised }]}>
+        <Row title={t('settings.restTimer')} sub={t('settings.restTimerSub')}>
+          <Toggle label={t('settings.restTimer')} value={s.restTimer} onChange={(v) => updateSettings({ restTimer: v })} testID="setting-rest" />
+        </Row>
+        {s.restTimer ? (
+          <>
+            <Divider />
+            <Row title={t('settings.restLength')}>
+              <Stepper
+                value={clock(s.restSeconds)}
+                onMinus={() => updateSettings({ restSeconds: s.restSeconds - REST_STEP })}
+                onPlus={() => updateSettings({ restSeconds: s.restSeconds + REST_STEP })}
+                minusLabel={t('settings.restShorter')}
+                plusLabel={t('settings.restLonger')}
+                testID="setting-rest-length"
+              />
+            </Row>
+            <Divider />
+            <Row
+              title={t('settings.restAlert')}
+              sub={!restAlertAvailable ? t('settings.restAlertWeb') : denied ? t('settings.restAlertDenied') : t('settings.restAlertSub')}>
+              <Toggle
+                label={t('settings.restAlert')}
+                value={s.restAlert}
+                onChange={setAlert}
+                disabled={!restAlertAvailable}
+                testID="setting-rest-alert"
+              />
+            </Row>
+          </>
+        ) : null}
+        <Divider />
+        <Row title={t('settings.haptics')} sub={t('settings.hapticsSub')}>
+          <Toggle label={t('settings.haptics')} value={s.haptics} onChange={(v) => updateSettings({ haptics: v })} testID="setting-haptics" />
+        </Row>
+      </View>
+
+      <Text accessibilityRole="header" style={[styles.section, { color: c.textMuted }]}>
+        {t('settings.look')}
+      </Text>
+      <View style={[styles.card, styles.pad, { backgroundColor: c.bgRaised }]}>
+        <SegmentedControl
+          values={THEMES.map((x) => t(x === 'system' ? 'settings.themeSystem' : x === 'light' ? 'settings.themeLight' : 'settings.themeDark'))}
+          selectedIndex={THEMES.indexOf(s.theme)}
+          onChange={(e) => updateSettings({ theme: THEMES[e.nativeEvent.selectedSegmentIndex] ?? 'system' })}
+          appearance={scheme}
+          accessibilityLabel={t('settings.themeA11y')}
+          style={styles.segments}
+          testID="setting-theme"
+        />
+      </View>
+    </ScrollView>
+  );
+}
+
+function Row({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
+  const c = useColors();
+  return (
+    <View style={styles.row}>
+      {/* Hidden from screen readers: each control carries the same words as its own label. */}
+      <View style={styles.flex} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+        <Text style={[styles.title, { color: c.text }]}>{title}</Text>
+        {sub ? <Text style={[styles.sub, { color: c.textMuted }]}>{sub}</Text> : null}
+      </View>
+      {children}
+    </View>
+  );
+}
+
+// React Native's Switch: the platform's own UISwitch / Material switch. Not @expo/ui's Switch,
+// because that one takes its accessibility label only as visible SwiftUI text beside it.
+function Toggle({ label, value, onChange, disabled, testID }: { label: string; value: boolean; onChange: (v: boolean) => void; disabled?: boolean; testID: string }) {
+  const c = useColors();
+  return (
+    <View style={styles.toggle}>
+      <Switch
+        accessibilityLabel={label}
+        value={value}
+        onValueChange={onChange}
+        disabled={disabled}
+        trackColor={{ true: c.accent, false: c.field }}
+        testID={testID}
+      />
+    </View>
+  );
+}
+
+function Divider() {
+  const c = useColors();
+  return <View style={[styles.divider, { backgroundColor: c.border }]} />;
+}
+
+const styles = StyleSheet.create({
+  content: { padding: space.md, paddingBottom: space.xxl, gap: space.sm, width: '100%', maxWidth: size.maxContent, alignSelf: 'center' },
+  section: { ...font.section, textTransform: 'uppercase', marginTop: space.sm, paddingHorizontal: space.xs },
+  card: { borderRadius: radius.md, overflow: 'hidden' },
+  pad: { padding: space.ms },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.ms, paddingHorizontal: space.md, paddingVertical: space.ms, minHeight: size.touch + space.md },
+  flex: { flex: 1, gap: space.xxs },
+  title: { ...font.body },
+  sub: { ...font.caption },
+  toggle: { minWidth: size.touch, minHeight: size.touch, alignItems: 'center', justifyContent: 'center' },
+  divider: { height: StyleSheet.hairlineWidth, marginLeft: space.md },
+  segments: { minHeight: size.touch },
+});
