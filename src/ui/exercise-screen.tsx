@@ -1,22 +1,29 @@
 import { router, Stack } from 'expo-router';
 import { useState, useSyncExternalStore } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
 
 import { hintFor, type Hint } from '@/data/hints';
+import { restTimer } from '@/data/rest';
 import { actions, useAppData, useToday } from '@/data/store';
 import { history, openSession, type Removed } from '@/data/tracker';
 import { formatKg, fullDate, hasString, shortDate, shortWeekday, t } from '@/i18n';
 
 import { ActionMenu } from './action-menu';
 import { Button } from './button';
+import { FormDemo, FormFigure } from './form-demo';
+import { hasDemo } from './form-demos';
+import { FormNotes } from './form-notes';
 import { HeaderButton } from './header-button';
 import { HeroCard } from './hero-card';
 import { kgText } from './hint-chip';
 import { Icon, type IconName } from './icon';
 import { LiftArt } from './lift-art';
 import { LineChart } from './line-chart';
+import { PressScale } from './press-scale';
+import { RestBar } from './rest-bar';
 import { SetHeader, SetRow } from './set-row';
-import { font, radius, size, space } from './tokens';
+import { font, motion, radius, size, space } from './tokens';
 import { UndoBar } from './undo-bar';
 import { useColors } from './use-colors';
 
@@ -61,6 +68,9 @@ export function ExerciseScreen({ exerciseId, inSession }: Props) {
   const exIndex = session ? session.exercises.findIndex((e) => e.exerciseId === exerciseId) : -1;
   const hintKey = `${session?.id}:${exerciseId}`;
   const hintClosed = useClosed(hintKey);
+  const reduced = useReducedMotion();
+  // Set rows beyond this many were added just now and slide in; the first ones are simply there.
+  const [sets0] = useState(session && exIndex >= 0 ? session.exercises[exIndex].sets.length : 0);
 
   if (!exercise || (inSession && exIndex < 0)) {
     return (
@@ -78,6 +88,7 @@ export function ExerciseScreen({ exerciseId, inSession }: Props) {
   const cues = hasString(cueKey) ? t(cueKey).split('|') : [];
   const sx = session && exIndex >= 0 ? session.exercises[exIndex] : null;
   const first = h[0];
+  const gain = first && last ? (last.top.kg ?? 0) - (first.top.kg ?? 0) : 0;
 
   const chartLabel = !last
     ? ''
@@ -141,10 +152,36 @@ export function ExerciseScreen({ exerciseId, inSession }: Props) {
               </View>
             ) : null}
           </View>
-          <View style={[styles.art, { backgroundColor: c.heroChip }]}>
-            <LiftArt id={exercise.id} color={c.onHero} width={size.touch * 1.5} />
-          </View>
+          {!hasDemo(exercise.id) ? (
+            <View style={[styles.art, { backgroundColor: c.heroChip }]}>
+              <LiftArt id={exercise.id} color={c.onHero} width={size.touch * 1.5} />
+            </View>
+          ) : inSession ? (
+            // While you train the demo stays small so the sets stay in view; tap for the big one.
+            <PressScale
+              accessibilityRole="button"
+              accessibilityLabel={t('form.show')}
+              onPress={() => router.push({ pathname: '/form', params: { id: exercise.id } })}
+              style={[styles.demoSmall, { backgroundColor: c.heroChip }]}
+              testID="show-form">
+              <FormFigure id={exercise.id} color={c.onHero} width={size.demoSmall} />
+              <View style={styles.demoSmallLabel}>
+                <Icon name="info" size={13} color={c.onHero} />
+                <Text style={[styles.caption, { color: c.onHero }]}>{t('form.show')}</Text>
+              </View>
+            </PressScale>
+          ) : null}
         </HeroCard>
+
+        {hasDemo(exercise.id) && !inSession ? (
+          <View style={[styles.card, styles.demoCard, { backgroundColor: c.bgRaised }]}>
+            <Text accessibilityRole="header" style={[styles.headline, { color: c.text }]}>
+              {t('form.title')}
+            </Text>
+            <FormDemo id={exercise.id} name={exercise.name} testID="form-demo" />
+            <FormNotes id={exercise.id} cues={false} />
+          </View>
+        ) : null}
 
         {hint && hint.kind !== 'same' && !(inSession && hintClosed) ? (
           <HintCard hint={hint} name={exercise.name} sets={last?.sets.length ?? 0} onUse={sx ? useKg : undefined} onKeep={sx ? () => closeHint(hintKey) : undefined} />
@@ -165,7 +202,23 @@ export function ExerciseScreen({ exerciseId, inSession }: Props) {
             <View style={[styles.card, { backgroundColor: c.bgRaised }]}>
               <SetHeader />
               {sx.sets.map((set, si) => (
-                <SetRow key={si} n={si + 1} set={set} onChange={(change) => actions.setSet(session.id, exIndex, si, change)} testID={`set-${exIndex}-${si}`} />
+                <Animated.View key={si} entering={si >= sets0 && !reduced ? FadeInDown.duration(motion.enter) : undefined}>
+                  <SetRow
+                    n={si + 1}
+                    set={set}
+                    onChange={(change) => {
+                      if (change.kg !== undefined) {
+                        actions.setKgFollowing(session.id, exIndex, si, change.kg);
+                        return;
+                      }
+                      actions.setSet(session.id, exIndex, si, change);
+                      // Ticking a set starts the rest; unticking it takes the rest back.
+                      if (change.done === true) restTimer.start();
+                      if (change.done === false) restTimer.stop();
+                    }}
+                    testID={`set-${exIndex}-${si}`}
+                  />
+                </Animated.View>
               ))}
               <Button label={t('session.addSet')} icon="plus" variant="soft" onPress={() => actions.addSet(session.id, exIndex)} testID={`add-set-${exIndex}`} />
             </View>
@@ -184,7 +237,17 @@ export function ExerciseScreen({ exerciseId, inSession }: Props) {
         ) : (
           <>
             <View style={[styles.card, { backgroundColor: c.bgRaised }]}>
-              <Text style={[styles.caption, { color: c.textMuted }]}>{t('exercise.chartTitle')}</Text>
+              <View style={styles.chartHead}>
+                <Text style={[styles.caption, styles.flex, { color: c.textMuted }]}>{t('exercise.chartTitle')}</Text>
+                {gain !== 0 ? (
+                  <View style={[styles.gain, { backgroundColor: c.accentSoft }]} testID="chart-gain">
+                    <Icon name={gain > 0 ? 'arrowUp' : 'arrowDown'} size={13} color={c.accent} />
+                    <Text style={[styles.gainText, { color: c.accent }]}>
+                      {t('exercise.change', { kg: kgText(Math.abs(gain)), date: shortDate(first.session.date) })}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
               <LineChart
                 points={h.map((x) => ({ date: x.session.date, value: x.top.kg ?? 0 }))}
                 formatValue={kgText}
@@ -264,6 +327,7 @@ export function ExerciseScreen({ exerciseId, inSession }: Props) {
           </>
         )}
       </ScrollView>
+      {inSession ? <RestBar /> : null}
       {removed ? (
         <UndoBar
           key={removed.session.id}
@@ -341,6 +405,12 @@ const styles = StyleSheet.create({
   heroText: { flex: 1, minWidth: size.ring * 0.75, gap: space.sm },
   heroTitle: { ...font.title },
   art: { borderRadius: radius.full, padding: space.md },
+  demoSmall: { borderRadius: radius.md, padding: space.xs, alignItems: 'center', gap: space.xs, minHeight: size.touch },
+  demoSmallLabel: { flexDirection: 'row', alignItems: 'center', gap: space.xs, paddingBottom: space.xs },
+  demoCard: { gap: space.ms },
+  chartHead: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.sm },
+  gain: { flexDirection: 'row', alignItems: 'center', gap: space.xs, borderRadius: radius.full, paddingHorizontal: space.sm, paddingVertical: space.xxs },
+  gainText: { ...font.caption, fontWeight: '600' },
   cues: { gap: space.xs },
   cue: { flexDirection: 'row', gap: space.sm },
   card: { borderRadius: radius.lg, padding: space.md, gap: space.sm },

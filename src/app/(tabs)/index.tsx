@@ -5,16 +5,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { resolveDay, resolveRange } from '@/data/schedule';
 import { actions, useAppData, useToday, type AppData } from '@/data/store';
 import { doneDates, history, openSession } from '@/data/tracker';
+import { weekProgress } from '@/data/week';
 import { fullDate, longDate, shortWeekday, dayOfMonth, t } from '@/i18n';
 import { ActionMenu } from '@/ui/action-menu';
 import { Button } from '@/ui/button';
+import { hasDemo } from '@/ui/form-demos';
 import { HeroCard } from '@/ui/hero-card';
 import { kgText } from '@/ui/hint-chip';
 import { Icon } from '@/ui/icon';
-import { LiftArt } from '@/ui/lift-art';
+import { LiftArt, workoutArtId } from '@/ui/lift-art';
 import { LoopRing } from '@/ui/loop-ring';
 import { NumberBubble } from '@/ui/number-bubble';
 import { planLabel, slotLabel } from '@/ui/plan-label';
+import { PressScale } from '@/ui/press-scale';
 import { font, radius, size, space } from '@/ui/tokens';
 import { useColors } from '@/ui/use-colors';
 
@@ -45,11 +48,14 @@ function Screen({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Header({ date, title }: { date: string; title: string }) {
+function Header({ date, title, children }: { date: string; title: string; children?: React.ReactNode }) {
   const c = useColors();
   return (
     <View style={styles.header}>
-      <Text style={[styles.section, { color: c.textMuted }]}>{longDate(date)}</Text>
+      <View style={styles.headerTop}>
+        <Text style={[styles.section, styles.flex, { color: c.textMuted }]}>{longDate(date)}</Text>
+        {children}
+      </View>
       <Text accessibilityRole="header" style={[styles.title, { color: c.text }]}>
         {title}
       </Text>
@@ -62,6 +68,7 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
   const rotation = d.schedule.rotation!;
   const day = resolveDay(d.schedule, today);
   const week = resolveRange(d.schedule, today, 7);
+  const week7 = weekProgress(d.schedule, d.sessions, today);
   const plan = day.plan;
   const workout = plan?.kind === 'workout' ? d.workouts.find((w) => w.id === plan.workoutId) : undefined;
   const name = day.plan ? planLabel(d, day.plan) : t('today.freeTitle');
@@ -84,7 +91,18 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
 
   return (
     <Screen>
-      <Header date={today} title={greeting(d.userName)} />
+      <Header date={today} title={greeting(d.userName)}>
+        {week7.total > 0 ? (
+          <View
+            style={[styles.weekPill, { backgroundColor: c.accentSoft }]}
+            accessible
+            accessibilityLabel={t('today.weekA11y', { n: week7.done, total: week7.total })}
+            testID="today-week">
+            <Icon name="check" size={13} color={c.accent} />
+            <Text style={[styles.weekText, { color: c.accent }]}>{t('today.week', { n: week7.done, total: week7.total })}</Text>
+          </View>
+        ) : null}
+      </Header>
 
       <HeroCard testID="today-hero">
         <View style={styles.heroTop}>
@@ -98,7 +116,7 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
           </Pressable>
           {workout ? (
             <View style={[styles.sticker, { backgroundColor: c.heroChip }]}>
-              <LiftArt id={workout.id} color={c.onHero} width={size.touch + space.md} />
+              <LiftArt id={workoutArtId(workout)} color={c.onHero} width={size.touch + space.md} />
             </View>
           ) : null}
         </View>
@@ -170,6 +188,18 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
         </View>
       </HeroCard>
 
+      {/* Right under the hero: the one thing you came for stays above the fold. */}
+      {open ? (
+        <Button label={t('today.continue')} icon="play" onPress={() => router.push('/session')} testID="continue-workout" />
+      ) : todayDone ? null : workout ? (
+        <Button label={t('today.start')} icon="play" onPress={() => start(workout.id)} testID="lets-go" />
+      ) : (
+        // Rest or free day: any workout can still be started, today only.
+        <ActionMenu items={d.workouts.map((w) => ({ id: w.id, title: w.name }))} onSelect={start} testID="start-other-menu">
+          <Button label={t('today.startOther')} variant="soft" testID="start-other" />
+        </ActionMenu>
+      )}
+
       <View style={[styles.card, { backgroundColor: c.bgRaised }]} testID="today-card">
         {workout ? (
           workout.exercises.length > 0 ? (
@@ -177,16 +207,32 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
               const ex = d.exercises.find((x) => x.id === e.exerciseId);
               const last = history(d.sessions, e.exerciseId).at(-1);
               const kg = last ? kgText(last.top.kg ?? 0) : '';
-              return (
-                <View
-                  key={`${e.exerciseId}-${i}`}
-                  style={styles.exRow}
-                  accessible
-                  accessibilityLabel={[ex?.name, t('common.setsRepsA11y', { sets: e.targetSets, reps: e.targetReps }), kg].filter(Boolean).join(', ')}>
+              const label = [ex?.name, t('common.setsRepsA11y', { sets: e.targetSets, reps: e.targetReps }), kg].filter(Boolean).join(', ');
+              const row = (
+                <>
+                  <View style={[styles.exArt, { backgroundColor: c.artTint }]}>
+                    <LiftArt id={e.exerciseId} color={c.accent} width={size.touch * 0.75} />
+                  </View>
                   <Text style={[styles.body, styles.flex, { color: c.text }]}>{ex?.name}</Text>
                   {/* Quiet on purpose: after a few weeks you know the targets by heart. */}
                   <Text style={[styles.body, { color: c.textMuted }]}>{t('common.setsReps', { sets: e.targetSets, reps: e.targetReps })}</Text>
                   {kg ? <Text style={[styles.kg, { color: c.text }]}>{kg}</Text> : null}
+                </>
+              );
+              // Starter lifts open their form demo; a lift you added has none, so nothing to tap.
+              return hasDemo(e.exerciseId) ? (
+                <PressScale
+                  key={`${e.exerciseId}-${i}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${label}. ${t('form.show')}`}
+                  onPress={() => router.push({ pathname: '/form', params: { id: e.exerciseId } })}
+                  style={styles.exRow}
+                  testID={`today-ex-${e.exerciseId}`}>
+                  {row}
+                </PressScale>
+              ) : (
+                <View key={`${e.exerciseId}-${i}`} style={styles.exRow} accessible accessibilityLabel={label}>
+                  {row}
                 </View>
               );
             })
@@ -201,17 +247,6 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
           <Text style={[styles.body, { color: c.textMuted }]}>{t('today.beforeStart', { date: fullDate(rotation.startDate) })}</Text>
         )}
       </View>
-
-      {open ? (
-        <Button label={t('today.continue')} icon="play" onPress={() => router.push('/session')} testID="continue-workout" />
-      ) : todayDone ? null : workout ? (
-        <Button label={t('today.start')} icon="play" onPress={() => start(workout.id)} testID="lets-go" />
-      ) : (
-        // Rest or free day: any workout can still be started, today only.
-        <ActionMenu items={d.workouts.map((w) => ({ id: w.id, title: w.name }))} onSelect={start} testID="start-other-menu">
-          <Button label={t('today.startOther')} variant="soft" testID="start-other" />
-        </ActionMenu>
-      )}
     </Screen>
   );
 }
@@ -286,6 +321,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   header: { gap: space.xs, paddingTop: space.sm },
+  headerTop: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.sm },
   section: { ...font.section, textTransform: 'uppercase' },
   title: { ...font.title },
   heroTop: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: space.sm, zIndex: 1 },
@@ -320,7 +356,10 @@ const styles = StyleSheet.create({
   card: { borderRadius: radius.lg, padding: space.md, gap: space.ms },
   steps: { gap: space.md },
   step: { flexDirection: 'row', alignItems: 'center', gap: space.ms },
-  exRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexWrap: 'wrap' },
+  exRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: size.touch },
+  exArt: { borderRadius: radius.sm, padding: space.xs },
+  weekPill: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: space.xs, borderRadius: radius.full, paddingHorizontal: space.ms, paddingVertical: space.xs },
+  weekText: { ...font.caption, fontWeight: '600' },
   kg: { ...font.headline },
   heroButton: { minHeight: size.touch, borderRadius: radius.full, paddingHorizontal: space.lg, paddingVertical: space.ms, justifyContent: 'center' },
   flex: { flex: 1 },

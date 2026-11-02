@@ -1,10 +1,11 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Animated, { Easing, Keyframe, useReducedMotion } from 'react-native-reanimated';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import type { Slot } from '@/data/schedule';
 
-import { font, space } from './tokens';
+import { font, motion, space } from './tokens';
 import { useColors } from './use-colors';
 
 type Props = {
@@ -30,10 +31,25 @@ const HERO_PULL = 0.35;
 const HERO_REST = 0.15;
 const HERO_ORBIT = 0.18;
 
+// Today opens many times a day, so the arrival plays only on the first one per app run.
+const RING_IN = new Keyframe({
+  from: { opacity: 0, transform: [{ rotate: '-24deg' }, { scale: 0.96 }] },
+  to: { opacity: 1, transform: [{ rotate: '0deg' }, { scale: 1 }], easing: Easing.bezier(...motion.easeOut) },
+}).duration(motion.celebrate);
+let ringShown = false;
+
+function RingShownOnce({ active }: { active: boolean }) {
+  useEffect(() => {
+    if (active) ringShown = true;
+  }, [active]);
+  return null;
+}
+
 // The loop as a ring: one arc per day in the loop, a small gap between arcs, the current slot
 // at 12 o'clock and the loop running clockwise. No slots: a dashed circle.
 export function LoopRing({ slots, current, diameter, stroke, tone = 'surface', labels, children }: Props) {
   const c = useColors();
+  const reduced = useReducedMotion();
   const hero = tone === 'hero';
   const pad = hero ? ORBIT : 0;
   const outer = diameter + pad * 2;
@@ -63,7 +79,12 @@ export function LoopRing({ slots, current, diameter, stroke, tone = 'surface', l
 
   return (
     <View style={{ width: outer, height: outer }}>
-      <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+      {/* Once per app run the ring turns into place as the loop arrives, on the hero only. */}
+      <Animated.View
+        importantForAccessibility="no-hide-descendants"
+        accessibilityElementsHidden
+        entering={hero && n > 1 && !reduced && !ringShown ? RING_IN : undefined}>
+        <RingShownOnce active={hero} />
         <Svg width={outer} height={outer}>
           {hero ? (
             <Circle cx={mid} cy={mid} r={mid - 1} stroke={c.onHero} strokeOpacity={HERO_ORBIT} strokeWidth={1.5} strokeDasharray="2 6" fill="none" />
@@ -118,7 +139,7 @@ export function LoopRing({ slots, current, diameter, stroke, tone = 'surface', l
               );
             })
           : null}
-      </View>
+      </Animated.View>
       <View style={[StyleSheet.absoluteFill, styles.center, { padding: pad + stroke + space.sm }]}>{children}</View>
     </View>
   );

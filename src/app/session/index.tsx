@@ -1,9 +1,10 @@
 import { router, Stack, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useRef } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { hintFor } from '@/data/hints';
+import { restTimer } from '@/data/rest';
 import { actions, useAppData, useToday } from '@/data/store';
 import { history, openSession } from '@/data/tracker';
 import { t } from '@/i18n';
@@ -14,6 +15,8 @@ import { HeaderButton } from '@/ui/header-button';
 import { HintChip, hintShort, kgText } from '@/ui/hint-chip';
 import { Icon } from '@/ui/icon';
 import { LiftArt } from '@/ui/lift-art';
+import { PressScale } from '@/ui/press-scale';
+import { RestBar } from '@/ui/rest-bar';
 import { font, radius, size, space } from '@/ui/tokens';
 import { useColors } from '@/ui/use-colors';
 
@@ -63,6 +66,7 @@ export default function SessionScreen() {
   const tileBasis = fontScale > 1.5 ? '100%' : '40%';
 
   const finish = () => {
+    restTimer.stop();
     actions.finishSession(s.id);
     if (anyTicked) router.replace({ pathname: '/session/summary', params: { id: s.id } });
     else leave();
@@ -86,6 +90,7 @@ export default function SessionScreen() {
                   t('session.discardTitle'),
                   t('session.discardBody'),
                   () => {
+                    restTimer.stop();
                     actions.discardSession(s.id);
                     leave();
                   },
@@ -121,16 +126,15 @@ export default function SessionScreen() {
             : t('session.firstTime');
           const status = isDone ? t('common.done') : ticked > 0 ? t('session.setsDone', { n: ticked, total: e.sets.length }) : '';
           return (
-            <Pressable
+            <PressScale
               key={`${e.exerciseId}-${ei}`}
               accessibilityRole="button"
               accessibilityLabel={t('session.tileA11y', { name: ex?.name ?? '', last, hint: hint ? hintShort(hint) : '', status })}
               onPress={() => router.push({ pathname: '/session/[exerciseId]', params: { exerciseId: e.exerciseId } })}
-              style={({ pressed }) => [
+              style={[
                 styles.tile,
                 { flexBasis: tileBasis, backgroundColor: c.bgRaised },
                 isDone && [styles.tileDone, { borderColor: c.accent }],
-                pressed && styles.pressed,
               ]}
               testID={`tile-${ei}`}>
               <View style={[styles.art, { backgroundColor: c.artTint }]}>
@@ -146,7 +150,7 @@ export default function SessionScreen() {
               ) : hint ? (
                 <HintChip hint={hint} testID={`tile-${ei}-hint`} />
               ) : null}
-            </Pressable>
+            </PressScale>
           );
         })}
       </View>
@@ -157,6 +161,8 @@ export default function SessionScreen() {
       </View>
 
     </ScrollView>
+    {/* A rest started on a lift keeps counting here. */}
+    <RestBar inFooter />
     {/* Pinned to the bottom like in the design: always one tap away, quiet until a set is ticked. */}
     <View style={[styles.footer, { paddingBottom: insets.bottom + space.md }]}>
       <Button label={t('session.finish')} variant={anyTicked ? 'primary' : 'soft'} onPress={finish} testID="finish-workout" />
@@ -185,5 +191,4 @@ const styles = StyleSheet.create({
   body: { ...font.body },
   callout: { ...font.callout },
   caption: { ...font.caption },
-  pressed: { opacity: 0.7 },
 });

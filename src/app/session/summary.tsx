@@ -1,21 +1,33 @@
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown, Keyframe, useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { hintFor, newRecords, type Hint } from '@/data/hints';
 import { addDays, resolveRange } from '@/data/schedule';
 import { useAppData } from '@/data/store';
-import { history } from '@/data/tracker';
-import { longDate, t, weekdayName } from '@/i18n';
+import { history, volumeOf } from '@/data/tracker';
+import { formatKg, longDate, t, weekdayName } from '@/i18n';
 import { Button } from '@/ui/button';
+import { Confetti } from '@/ui/confetti';
 import { HeroCard } from '@/ui/hero-card';
 import { kgText } from '@/ui/hint-chip';
 import { Icon } from '@/ui/icon';
 import { planLabel } from '@/ui/plan-label';
-import { font, radius, size, space } from '@/ui/tokens';
+import { font, motion, radius, size, space } from '@/ui/tokens';
 import { useColors } from '@/ui/use-colors';
 
 const HOME = '/' as Href;
+
+// Finishing a workout is the rare moment that may take its time: the result arrives piece by
+// piece. Reduce Motion: everything is simply there.
+const STAGGER = 70;
+const POP_IN = new Keyframe({
+  from: { opacity: 0, transform: [{ scale: 0.7 }] },
+  60: { opacity: 1, transform: [{ scale: 1.1 }] },
+  to: { opacity: 1, transform: [{ scale: 1 }] },
+}).duration(motion.celebrate);
+const rise = (order: number, reduced: boolean) => (reduced ? undefined : FadeInDown.duration(motion.enter).delay(order * STAGGER));
 
 // Summary after Finish workout (decision #11): lifts and sets done, new records (heaviest set
 // ever, decision #12), what to try next time per lift (add weight or stay), and the next day in
@@ -24,6 +36,7 @@ const HOME = '/' as Href;
 export default function Summary() {
   const c = useColors();
   const insets = useSafeAreaInsets();
+  const reduced = useReducedMotion();
   const d = useAppData();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const s = d.sessions.find((x) => x.id === id && x.finished);
@@ -40,6 +53,7 @@ export default function Summary() {
 
   const nameOf = (exerciseId: string) => d.exercises.find((e) => e.id === exerciseId)?.name ?? '';
   const sets = s.exercises.reduce((n, e) => n + e.sets.length, 0);
+  const volume = volumeOf(s);
   const records = newRecords(d.sessions, s.id);
   const next = s.exercises.flatMap((e) => {
     const ex = d.exercises.find((x) => x.id === e.exerciseId);
@@ -54,52 +68,57 @@ export default function Summary() {
   return (
     <ScrollView style={{ backgroundColor: c.bg }} contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + space.lg }]} testID="summary">
       <HeroCard style={[styles.hero, { paddingTop: insets.top + space.xl }]}>
+        {records.length > 0 ? <Confetti /> : null}
         <View style={styles.inner}>
-          <View style={[styles.check, { backgroundColor: c.onHero }]}>
+          <Animated.View entering={reduced ? undefined : POP_IN} style={[styles.check, { backgroundColor: c.onHero }]}>
             <Icon name="check" size={28} color={c.heroFrom} />
-          </View>
-          <Text accessibilityRole="header" style={[styles.title, { color: c.onHero }]}>
+          </Animated.View>
+          <Animated.Text entering={rise(1, reduced)} accessibilityRole="header" style={[styles.title, { color: c.onHero }]}>
             {t('summary.title')}
-          </Text>
-          <Text style={[styles.body, { color: c.onHero }]}>{`${s.workoutName} · ${longDate(s.date)}`}</Text>
-          <View style={styles.stats}>
+          </Animated.Text>
+          <Animated.Text entering={rise(2, reduced)} style={[styles.body, { color: c.onHero }]}>{`${s.workoutName} · ${longDate(s.date)}`}</Animated.Text>
+          <Animated.View entering={rise(3, reduced)} style={styles.stats}>
             <Stat n={s.exercises.length} label={t('summary.lifts')} />
             <Stat n={sets} label={t('summary.sets')} />
+            <Stat n={formatKg(volume)} label={t('summary.volume')} testID="summary-volume" />
             <Stat n={records.length} label={t(records.length === 1 ? 'summary.recordOne' : 'summary.recordMany')} bright={records.length > 0} testID="summary-records" />
-          </View>
+          </Animated.View>
         </View>
       </HeroCard>
 
       <View style={styles.inner}>
         {records.length > 0 ? (
           <>
-            <Text accessibilityRole="header" style={[styles.section, { color: c.text }]}>
+            <Animated.Text entering={rise(4, reduced)} accessibilityRole="header" style={[styles.section, { color: c.text }]}>
               {t(records.length === 1 ? 'summary.recordsOne' : 'summary.records')}
-            </Text>
-            {records.map((r) => (
-              <Row
-                key={r.exerciseId}
-                icon="trophy"
-                tone="soft"
-                title={nameOf(r.exerciseId)}
-                body={
-                  r.overBy > 0
-                    ? t('summary.recordBody', { kg: kgText(r.kg), reps: r.reps, over: kgText(r.overBy) })
-                    : t('summary.recordReps', { kg: kgText(r.kg), reps: r.reps })
-                }
-                testID={`record-${r.exerciseId}`}
-              />
+            </Animated.Text>
+            {records.map((r, i) => (
+              <Animated.View key={r.exerciseId} entering={rise(5 + i, reduced)}>
+                <Row
+                  icon="trophy"
+                  tone="soft"
+                  title={nameOf(r.exerciseId)}
+                  body={
+                    r.overBy > 0
+                      ? t('summary.recordBody', { kg: kgText(r.kg), reps: r.reps, over: kgText(r.overBy) })
+                      : t('summary.recordReps', { kg: kgText(r.kg), reps: r.reps })
+                  }
+                  testID={`record-${r.exerciseId}`}
+                />
+              </Animated.View>
             ))}
           </>
         ) : null}
 
         {next.length > 0 ? (
           <>
-            <Text accessibilityRole="header" style={[styles.section, { color: c.text }]}>
+            <Animated.Text entering={rise(5 + records.length, reduced)} accessibilityRole="header" style={[styles.section, { color: c.text }]}>
               {t('summary.next')}
-            </Text>
-            {next.map(({ exerciseId, hint }) => (
-              <NextRow key={exerciseId} name={nameOf(exerciseId)} hint={hint} />
+            </Animated.Text>
+            {next.map(({ exerciseId, hint }, i) => (
+              <Animated.View key={exerciseId} entering={rise(6 + records.length + i, reduced)}>
+                <NextRow name={nameOf(exerciseId)} hint={hint} />
+              </Animated.View>
             ))}
           </>
         ) : null}
@@ -115,7 +134,7 @@ export default function Summary() {
   );
 }
 
-function Stat({ n, label, bright, testID }: { n: number; label: string; bright?: boolean; testID?: string }) {
+function Stat({ n, label, bright, testID }: { n: number | string; label: string; bright?: boolean; testID?: string }) {
   const c = useColors();
   // The record tile is the one bright tile (accent on bgRaised, 6.41:1); the others sit on heroChip.
   const fg = bright ? c.accent : c.onHero;
@@ -178,7 +197,7 @@ const styles = StyleSheet.create({
   check: { width: size.touch + space.md, height: size.touch + space.md, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center', marginBottom: space.sm },
   title: { ...font.hero },
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: space.ms, marginTop: space.md },
-  stat: { flexGrow: 1, flexBasis: '28%', borderRadius: radius.lg, padding: space.md, gap: space.xxs },
+  stat: { flexGrow: 1, flexBasis: '40%', borderRadius: radius.lg, padding: space.md, gap: space.xxs },
   statN: { ...font.title },
   section: { ...font.titleSmall, marginTop: space.sm },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.ms, borderRadius: radius.lg, padding: space.md },

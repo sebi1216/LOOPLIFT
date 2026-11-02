@@ -25,7 +25,11 @@ const DAY = 'date=2026-11-05';
 // Lena's demo data. A plain URL is the real app: empty on first launch, then saved.
 const LENA = `state=filled&${DAY}`;
 const en = (key: Parameters<typeof t>[0], vars: Record<string, string | number> = {}) => t(key, vars, 'en');
-const shot = (page: Page, name: string) => page.screenshot({ path: `docs/design/checks/${name}.png` });
+// Waits for arrivals to finish (ring, Summary), so the picture shows the settled screen.
+const shot = async (page: Page, name: string) => {
+  await page.waitForTimeout(1400);
+  await page.screenshot({ path: `docs/design/checks/${name}.png` });
+};
 
 // The first tap can land before React is ready, so retry it until the expected change shows.
 async function tapUntil(page: Page, testId: string, check: () => Promise<void>) {
@@ -285,6 +289,7 @@ test.describe('Workout (spec 001 update 2)', () => {
     await page.getByTestId('finish-exercise').click();
     await tapUntil(page, 'finish-workout', () => expect(page.getByTestId('summary')).toBeVisible({ timeout: 2000 }));
     await expect(page.getByTestId('summary-records')).toContainText('1');
+    await expect(page.getByTestId('summary-volume')).toContainText(en('summary.volume'));
     await expect(page.getByTestId('record-e1')).toContainText(en('summary.recordBody', { kg: '67.5 kg', reps: 6, over: '2.5 kg' }));
     await expect(page.getByTestId('summary-next-day')).toHaveText(en('summary.nextLoop', { plan: 'Pull', when: en('summary.tomorrow') }));
     await shot(page, 'summary');
@@ -440,6 +445,106 @@ test.describe('Saved on the device (web preview: localStorage)', () => {
     await tapUntil(page, 'tile-0', () => expect(page.getByTestId('session-exercise')).toBeVisible({ timeout: 2000 }));
     await expect(page.getByTestId('set-0-0-kg')).toHaveValue('72.5');
     await expect(page.getByTestId('set-0-0-tick')).toHaveAttribute('aria-checked', 'true');
+  });
+});
+
+const figure = (page: Page, id: string) =>
+  page.getByTestId(id).locator('svg path').evaluateAll((paths) => paths.map((p) => p.getAttribute('d')).join('|'));
+
+test.describe('Form demos', () => {
+  test('a lift without history shows the moving figure, cues and what to avoid; Pause stops it', async ({ page }) => {
+    await page.goto(`/exercises/e9?${LENA}`);
+    await expect(page.getByTestId('form-demo')).toBeVisible();
+    await expect(page.getByTestId('form-avoid')).toContainText(en('avoid.e9'));
+    await expect(page.getByText(en('cue.e9').split('|')[0])).toBeVisible();
+    const before = await figure(page, 'form-demo');
+    await expect.poll(() => figure(page, 'form-demo')).not.toBe(before);
+    await page.getByTestId('form-demo-toggle').click();
+    await page.waitForTimeout(100);
+    const paused = await figure(page, 'form-demo');
+    await page.waitForTimeout(400);
+    expect(await figure(page, 'form-demo')).toBe(paused);
+    await shot(page, 'form-demo');
+  });
+
+  test('every lift in the library has one, here in the last and a machine lift', async ({ page }) => {
+    for (const id of ['e60', 'e28']) {
+      await page.goto(`/exercises/${id}?${LENA}`);
+      await expect(page.getByTestId('form-demo')).toBeVisible();
+      await expect(page.getByTestId('form-avoid')).toContainText(en(`avoid.${id}` as Parameters<typeof t>[0]));
+    }
+  });
+
+  test('a row on Today opens the form sheet', async ({ page }) => {
+    await page.goto(`/?${LENA}`);
+    await tapUntil(page, 'today-ex-e1', () => expect(page.getByTestId('form-sheet')).toBeVisible({ timeout: 2000 }));
+    await expect(page.getByTestId('form-demo')).toBeVisible();
+    await expect(page.getByText(en('cue.e1').split('|')[0])).toBeVisible();
+    await shot(page, 'form-sheet');
+  });
+
+  test('in a workout the small figure opens the sheet and the sets stay as they were', async ({ page }) => {
+    await page.goto(`/session?start=w1&${LENA}`);
+    await tapUntil(page, 'tile-0', () => expect(page.getByTestId('session-exercise')).toBeVisible({ timeout: 2000 }));
+    await tapUntil(page, 'show-form', () => expect(page.getByTestId('form-sheet')).toBeVisible({ timeout: 2000 }));
+  });
+
+  test('Reduce Motion: first and last pose side by side, nothing moves', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto(`/exercises/e9?${LENA}`);
+    await expect(page.getByText(en('form.start'), { exact: true })).toBeVisible();
+    await expect(page.getByText(en('form.end'), { exact: true })).toBeVisible();
+    await expect(page.getByTestId('form-demo-toggle')).toHaveCount(0);
+    const before = await figure(page, 'form-demo');
+    await page.waitForTimeout(500);
+    expect(await figure(page, 'form-demo')).toBe(before);
+    await shot(page, 'form-demo-reduced');
+  });
+
+  test.describe('German', () => {
+    test.use({ locale: 'de-DE' });
+    test('cues and the moment in words are in German', async ({ page }) => {
+      await page.goto(`/form?id=e9&${LENA}`);
+      await expect(page.getByTestId('form-avoid')).toContainText(t('avoid.e9', {}, 'de'));
+      await expect(page.getByText(t('cue.e9', {}, 'de').split('|')[0])).toBeVisible();
+      await shot(page, 'form-sheet-de');
+    });
+  });
+});
+
+test.describe('Rest timer and quick logging', () => {
+  test('ticking a set starts the rest; plus, tiles, skip', async ({ page }) => {
+    await page.goto(`/session?start=w1&${LENA}`);
+    await tapUntil(page, 'tile-0', () => expect(page.getByTestId('session-exercise')).toBeVisible({ timeout: 2000 }));
+    await expect(page.getByTestId('rest-bar')).toHaveCount(0);
+    await page.getByTestId('set-0-0-tick').click();
+    await expect(page.getByTestId('rest-time')).toHaveText(/^1:[23]\d$/);
+    await shot(page, 'rest-timer');
+    await page.getByTestId('rest-plus').click();
+    await expect(page.getByTestId('rest-time')).toHaveText(/^1:[34]\d$/);
+    // It keeps counting on the tiles, one level up.
+    await page.getByTestId('finish-exercise').click();
+    await expect(page.getByTestId('session')).toBeVisible();
+    await expect(page.getByTestId('rest-bar')).toBeVisible();
+    await page.getByTestId('rest-skip').click();
+    await expect(page.getByTestId('rest-bar')).toHaveCount(0);
+  });
+
+  test('unticking takes the rest back', async ({ page }) => {
+    await page.goto(`/session?start=w1&${LENA}`);
+    await tapUntil(page, 'tile-0', () => expect(page.getByTestId('session-exercise')).toBeVisible({ timeout: 2000 }));
+    await page.getByTestId('set-0-0-tick').click();
+    await expect(page.getByTestId('rest-bar')).toBeVisible();
+    await page.getByTestId('set-0-0-tick').click();
+    await expect(page.getByTestId('rest-bar')).toHaveCount(0);
+  });
+
+  test('a new weight on the first set carries to the open sets below', async ({ page }) => {
+    await page.goto(`/session?start=w1&${LENA}`);
+    await tapUntil(page, 'tile-0', () => expect(page.getByTestId('session-exercise')).toBeVisible({ timeout: 2000 }));
+    await page.getByTestId('set-0-0-kg').fill('70');
+    await expect(page.getByTestId('set-0-1-kg')).toHaveValue('70');
+    await expect(page.getByTestId('set-0-3-kg')).toHaveValue('70');
   });
 });
 

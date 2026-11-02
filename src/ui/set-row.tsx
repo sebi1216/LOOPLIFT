@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import Animated, { useReducedMotion, type CSSAnimationProperties } from 'react-native-reanimated';
 
 import { parseKg, parseReps, type LoggedSet } from '@/data/tracker';
 import { formatKg, t } from '@/i18n';
 
 import { Icon } from './icon';
-import { font, radius, size, space } from './tokens';
+import { font, motion, radius, size, space } from './tokens';
 import { useColors } from './use-colors';
 
 type Props = {
@@ -21,8 +22,16 @@ type Props = {
 // anything else (62.3, 1000, letters) is not, and the field shows the last saved value on blur.
 export function SetRow({ n, set, onChange, tickable = true, testID }: Props) {
   const c = useColors();
+  const reduced = useReducedMotion();
+  const [justTicked, setJustTicked] = useState(false);
   return (
-    <View style={[styles.row, styles.card, { backgroundColor: set.done && tickable ? c.accentSoft : c.field }]} testID={testID}>
+    <Animated.View
+      style={[
+        styles.row,
+        styles.card,
+        { backgroundColor: set.done && tickable ? c.accentSoft : c.field, transitionProperty: 'backgroundColor', transitionDuration: motion.state },
+      ]}
+      testID={testID}>
       <Text style={[styles.n, { color: set.done && tickable ? c.accent : c.textMuted }]} importantForAccessibility="no" accessibilityElementsHidden>
         {n}
       </Text>
@@ -49,20 +58,34 @@ export function SetRow({ n, set, onChange, tickable = true, testID }: Props) {
           accessibilityRole="checkbox"
           accessibilityLabel={t('session.tickA11y', { n })}
           aria-checked={set.done}
-          onPress={() => onChange({ done: !set.done })}
-          style={({ pressed }) => [
-            styles.tick,
-            // Unticked: a bgRaised circle with a restOutline ring and a muted check (3:1+ on field).
-            set.done ? { backgroundColor: c.accent } : [styles.open, { borderColor: c.restOutline, backgroundColor: c.bgRaised }],
-            pressed && styles.pressed,
-          ]}
+          onPress={() => {
+            // The pop plays for the tick you just made, not for sets that were already ticked.
+            setJustTicked(!set.done);
+            onChange({ done: !set.done });
+          }}
+          style={({ pressed }) => pressed && styles.pressed}
           testID={`${testID}-tick`}>
-          <Icon name="check" size={22} color={set.done ? c.onAccent : c.textMuted} />
+          <Animated.View
+            style={[
+              styles.tick,
+              // Unticked: a bgRaised circle with a restOutline ring and a muted check (3:1+ on field).
+              set.done ? { backgroundColor: c.accent } : [styles.open, { borderColor: c.restOutline, backgroundColor: c.bgRaised }],
+              justTicked && set.done && !reduced ? POP : null,
+            ]}>
+            <Icon name="check" size={22} color={set.done ? c.onAccent : c.textMuted} />
+          </Animated.View>
         </Pressable>
       ) : null}
-    </View>
+    </Animated.View>
   );
 }
+
+// Outside StyleSheet.create: these are Reanimated's own style keys, react-native-web rejects them.
+const POP: CSSAnimationProperties = {
+  animationName: { from: { transform: [{ scale: 0.82 }] }, '60%': { transform: [{ scale: 1.08 }] }, to: { transform: [{ scale: 1 }] } },
+  animationDuration: motion.enter,
+  animationTimingFunction: 'ease-out',
+};
 
 const wrap = (v: number | null): { ok: boolean; v: number | null } => (v === null ? { ok: false, v: null } : { ok: true, v });
 

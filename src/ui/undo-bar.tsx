@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
+import Animated, { FadeInDown, FadeOutDown, useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { t } from '@/i18n';
 
-import { font, radius, size, space } from './tokens';
+import { font, motion, radius, size, space } from './tokens';
 import { useColors } from './use-colors';
 
 type Props = { message: string; onUndo: () => void; onTimeout: () => void; testID?: string };
@@ -16,13 +17,16 @@ const SHOW_MS = 6000;
 export function UndoBar({ message, onUndo, onTimeout, testID }: Props) {
   const c = useColors();
   const insets = useSafeAreaInsets();
+  const reduced = useReducedMotion();
   useEffect(() => {
     const timer = setTimeout(onTimeout, SHOW_MS);
     return () => clearTimeout(timer);
   }, [onTimeout]);
 
   return (
-    <View
+    <Animated.View
+      entering={reduced ? undefined : FadeInDown.duration(motion.enter)}
+      exiting={reduced ? undefined : FadeOutDown.duration(motion.state)}
       accessibilityLiveRegion="polite"
       style={[styles.bar, { backgroundColor: c.bgRaised, borderColor: c.border, bottom: insets.bottom + space.md }]}
       testID={testID}>
@@ -35,7 +39,7 @@ export function UndoBar({ message, onUndo, onTimeout, testID }: Props) {
         testID={testID ? `${testID}-undo` : undefined}>
         <Text style={[styles.undoText, { color: c.accent }]}>{t('common.undo')}</Text>
       </Pressable>
-    </View>
+    </Animated.View>
   );
 }
 

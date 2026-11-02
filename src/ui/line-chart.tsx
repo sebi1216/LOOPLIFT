@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Animated, { Easing, useAnimatedProps, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Circle, Line, Polyline } from 'react-native-svg';
 
 import { daysBetween } from '@/data/schedule';
 
-import { font, size, space } from './tokens';
+import { font, motion, size, space } from './tokens';
 import { useColors } from './use-colors';
 
 type Point = { date: string; value: number };
@@ -20,6 +21,32 @@ type Props = {
 
 const HEIGHT = size.chart;
 const DOT = space.xs;
+
+const AnimatedPolyline = Animated.createAnimatedComponent(Polyline);
+
+// The line draws itself from the first workout to the last when the chart appears: it shows the
+// direction of travel. Reduce Motion: it is simply there. A later change (an edit) just redraws.
+function ChartLine({ xy, color }: { xy: { x: number; y: number }[]; color: string }) {
+  const reduced = useReducedMotion();
+  const length = xy.reduce((sum, p, i) => (i === 0 ? 0 : sum + Math.hypot(p.x - xy[i - 1].x, p.y - xy[i - 1].y)), 0);
+  const drawn = useSharedValue(reduced ? 1 : 0);
+  useEffect(() => {
+    drawn.set(withTiming(1, { duration: motion.celebrate, easing: Easing.bezier(...motion.easeInOut) }));
+  }, [drawn]);
+  const animatedProps = useAnimatedProps(() => ({ strokeDashoffset: length * (1 - drawn.get()) }));
+  return (
+    <AnimatedPolyline
+      animatedProps={animatedProps}
+      points={xy.map((p) => `${p.x},${p.y}`).join(' ')}
+      fill="none"
+      stroke={color}
+      strokeWidth={2.5}
+      strokeLinejoin="round"
+      strokeLinecap="round"
+      strokeDasharray={[length, length]}
+    />
+  );
+}
 
 // A small line chart: one dot per point, spaced by date, scaled from the lowest to the highest
 // value. Drawn with react-native-svg (decision #3), no chart package.
@@ -53,16 +80,7 @@ export function LineChart({ points, formatValue, formatDate, accessibilityLabel,
             <Svg width={width} height={HEIGHT}>
               <Line x1={0} x2={width} y1={pad} y2={pad} stroke={c.border} strokeWidth={1} />
               <Line x1={0} x2={width} y1={HEIGHT - pad} y2={HEIGHT - pad} stroke={c.border} strokeWidth={1} />
-              {xy.length > 1 ? (
-                <Polyline
-                  points={xy.map((p) => `${p.x},${p.y}`).join(' ')}
-                  fill="none"
-                  stroke={c.accent}
-                  strokeWidth={2.5}
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                />
-              ) : null}
+              {xy.length > 1 ? <ChartLine xy={xy} color={c.accent} /> : null}
               {xy.map((p, i) => (
                 <Circle key={points[i].date + i} cx={p.x} cy={p.y} r={DOT} fill={c.accent} />
               ))}
