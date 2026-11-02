@@ -1,6 +1,6 @@
 # Now
 
-Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-11-01 (retro 1 fixes, decisions #15 to #22)
+Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-11-02 (form demos, rest timer, motion; spec 002)
 
 Mode: Business   Phase: 1 strategy | 2 designs | 3 code (now: 3 code)
 Status: active
@@ -16,9 +16,13 @@ Slice: slice 1 · card: docs/brief.md section 3
 - [ ] Local persistence: all data survives an app restart; no account
 
 ## Next step (one line)
-Open all 10 S1 screens on the iPhone in Expo Go (taps in the build report), set `checked-device` in `docs/design/screens.md`, then answer the open questions below.
+On the iPhone in Expo Go: open Exercises, Back Squat (does the figure move?), run one workout with the rest timer, then answer the first four questions below.
 
 ## Open questions (Claude adds here, never invents answers)
+- Form demos (spec 002): animated figures instead of videos, because decision #8 rules out copied clips. Are they enough, or also real videos (options and prices in spec 002)? Poses and cues in `docs/design/checks/form-demos.png` and `src/i18n/form-strings.ts`: not reviewed by anyone who coaches; please look through them.
+- New package OK? Suggestion: `expo-haptics` 58.0.7 (https://www.npmjs.com/package/expo-haptics, 7.0 M downloads a week, published more than 7 days ago) for the tick and the rest end; `expo-notifications` 58.1.7 (https://www.npmjs.com/package/expo-notifications, 8.3 M a week, check its publish date, last registry change 28 Oct) so the rest timer also reaches the lock screen. Neither installed.
+- Rest timer: 90 s for every lift, the length you set resets when the app closes. Keep, or per lift and saved (a data-model change)?
+- Choices made without asking, overnight (Suggestions, say if one is wrong): the form sheet `/form` as an 11th screen on top of the cap of 10; Start workout moved above the lift list; drawings in Today's rows; "2 of 5 this week" on Today; a new weight carries to later open sets; a workout you made shows its first lift's drawing (two workouts starting with one lift then share it, against "never the same" in #14); the 52 new lift drawings are poses of the demos, not separately drawn.
 - Route types in `.expo/types` break (`/../ui/...` entries) also with only one dev server: on 2026-10-31 it happened right after new files were added under `src/ui/` while the server ran; a restart fixed it. Restart the dev server after adding files.
 - Should a loop also support weekday plans (Mon Push, Wed Pull every week), or is the N-day loop enough for v1? (from the concept PDF)
 - Business mode needs the Apple Developer Program (about 99 USD per year) before the 10 strangers test; budget cap is 0 EUR. Decide before the stranger check.
@@ -34,7 +38,6 @@ Open all 10 S1 screens on the iPhone in Expo Go (taps in the build report), set 
 - 2026-10-29: a dev server on 8081 (`expo start -c`, not started by Claude) was running next to your 8082 one; the route types in `.expo/types` came out broken (`/../data/...` paths). Stop it when you are done with it.
 - Two Expo integrations load here (the `expo` plugin and a claude.ai Expo connector); keep the plugin, turn the connector off for this folder.
 
-- Drawings (#14): Lena's 8 lifts plus Push and Pull are drawn in code (`src/ui/lift-art.tsx`); the other 52 lifts and any new workout show a neutral dumbbell. New workouts get no drawing of their own yet: how should a user-made workout get one?
 - Hero gradient: built with React Native's own `backgroundImage` (no package). If the iPhone shows a flat teal card instead of a gradient, decide on `expo-linear-gradient`.
 - Workout editor: also shows the native tab bar on a pushed screen (frame has none), like the Rotation editor. Same answer for both?
 - Change-a-day sheet keeps the Pull / Rest choice pills under "Replace this day only" (the frame shows none; without them there is no way to pick the replacement). Keep, or design how the choice works?

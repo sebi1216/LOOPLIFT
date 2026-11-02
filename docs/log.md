@@ -52,3 +52,5 @@ Format:
 - Ratchet (2026-10-30): added tools/figcraft-batch.js (named steps instead of counted $step numbers, 4 tests red/green) and a note in /designs (use it; read a copy's ids after duplicating).
 
 - 2026-11-01: built retro 1 fixes (token-based guard, shell rules, 3-step /wrap-up, /build, Working with me, 48 pt, security review timing); next open the 10 S1 screens on the iPhone.
+
+- 2026-11-02: built form demos for all 60 lifts (own animated figures, cues, avoid), rest timer, weight carry-over, motion across the app, spec 002; tested on web only, nothing on the iPhone yet; next look at the figures in Expo Go and answer the open questions.

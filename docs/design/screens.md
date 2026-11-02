@@ -18,3 +18,4 @@ Designs: direction S1 Loop orbit, Teal Glow (picked 2026-10-29) in `docs/design/
 | Workouts | `/workouts` | `Final / Workouts`, `workouts.png` | 2026-10-31 | | One drawing per workout |
 | Workout editor | `/workouts/[id]` (picker sheet `/workouts/add?id=`) | `Final / Workout editor`, `workout-editor.png` | 2026-10-31 | | Tap a target to edit sets x reps |
 | Exercises | `/exercises` (add/rename sheet `/exercises/edit`) | `Final / Exercises`, `exercises.png` | 2026-10-31 | | Last weight per lift, hint chip; delete warns if used |
+| Form sheet (11th, Suggestion, see now.md) | `/form?id=e9` (from a Today row and inside a workout); demo also on the Exercise screen | No design frame, built in code (spec 002) | 2026-11-02 | | Moving figure, moment in words, Pause, cues, what to avoid; Reduce Motion shows two still poses |
