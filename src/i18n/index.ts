@@ -1,9 +1,11 @@
 // All user-facing text lives here, in English and German. Screens call t('key').
 // German is often about 30% longer (E): check each new screen once in German.
 import { formDe, formEn } from './form-strings';
+import { progressDe, progressEn } from './progress-strings';
 
 const en = {
   ...formEn,
+  ...progressEn,
   'tab.today': 'Today',
   'tab.calendar': 'Calendar',
   'tab.workouts': 'Workouts',
@@ -335,6 +337,7 @@ export type StringKey = keyof typeof en;
 
 const de: Record<StringKey, string> = {
   ...formDe,
+  ...progressDe,
   'tab.today': 'Heute',
   'tab.calendar': 'Kalender',
   'tab.workouts': 'Workouts',

@@ -609,6 +609,62 @@ test.describe('Settings', () => {
   });
 });
 
+test.describe('Progress', () => {
+  test('gym days: a box per day, trained days ticked, months page back', async ({ page }) => {
+    await page.goto(`/progress?${LENA}`);
+    await expect(page.getByTestId('gym-month')).toBeVisible();
+    await expect(page.getByTestId('day-2026-11-02')).toHaveAttribute('aria-label', /trained/);
+    await expect(page.getByTestId('day-2026-11-04')).toHaveAttribute('aria-label', /rest day/);
+    await expect(page.getByTestId('month-count')).toHaveText(en('progress.monthCount', { n: 2, planned: 2 }));
+    await expect(page.getByTestId('stat-streak')).toContainText(en('progress.streak', { n: 7 }));
+    await shot(page, 'progress');
+    await page.getByTestId('month-prev').click();
+    await expect(page.getByTestId('month-title')).toHaveText(/October/);
+    await expect(page.getByTestId('day-2026-10-03')).toHaveAttribute('aria-label', /trained/);
+    await expect(page.getByTestId('month-count')).toHaveText(en('progress.monthCountFree', { n: 21 }));
+  });
+
+  test('strength balance: now against start, no fake 0 kg for groups without data, the period changes it', async ({ page }) => {
+    await page.goto(`/progress?${LENA}`);
+    const strength = page.getByTestId('strength');
+    await strength.scrollIntoViewIfNeeded();
+    await expect(page.getByTestId('strength-change')).toContainText(/\+\d+\s?%/);
+    await expect(page.getByTestId('group-legs')).toContainText(en('progress.noData'));
+    await expect(page.getByTestId('group-chest')).toContainText('kg');
+    await expect(page.getByTestId('strength-callout')).toContainText(en('progress.missing', { group: en('muscle.core') }));
+    await page.waitForTimeout(900);
+    await strength.screenshot({ path: 'docs/design/checks/progress-strength.png' });
+    const all = await page.getByTestId('strength-period').textContent();
+    await page.getByText(en('progress.period.week'), { exact: true }).click();
+    await expect(page.getByTestId('strength-period')).not.toHaveText(all ?? '');
+  });
+
+  test('first launch: a friendly note, no strength chart', async ({ page }) => {
+    await page.goto('/progress?state=empty');
+    await expect(page.getByTestId('progress-empty')).toBeVisible();
+    await expect(page.getByTestId('strength')).toHaveCount(0);
+    await shot(page, 'progress-empty');
+  });
+
+  test('dark', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto(`/progress?${LENA}`);
+    await expect(page.getByTestId('gym-month')).toBeVisible();
+    await shot(page, 'progress-dark');
+  });
+
+  test.describe('German', () => {
+    test.use({ locale: 'de-DE' });
+    test('labels in German, Kraftverteilung', async ({ page }) => {
+      await page.goto(`/progress?${LENA}`);
+      await expect(page.getByText(t('progress.strength', {}, 'de'))).toBeVisible();
+      await page.getByTestId('strength').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(900);
+      await page.getByTestId('strength').screenshot({ path: 'docs/design/checks/progress-strength-de.png' });
+    });
+  });
+});
+
 test('layout wall shows Today in every frame', async ({ page }) => {
   await page.setViewportSize({ width: 1800, height: 1000 });
   await page.goto('/layout-wall.html');

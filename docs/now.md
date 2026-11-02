@@ -1,6 +1,6 @@
 # Now
 
-Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-11-02 (Settings: optional rest timer, dark mode, haptics, rest alert; no screen cap)
+Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-11-02 (Progress tab: gym days calendar, streaks, strength balance)
 
 Mode: Business   Phase: 1 strategy | 2 designs | 3 code (now: 3 code)
 Status: active
@@ -16,9 +16,10 @@ Slice: slice 1 · card: docs/brief.md section 3
 - [ ] Local persistence: all data survives an app restart; no account
 
 ## Next step (one line)
-On the iPhone in Expo Go: gear on Today, switch Dark and back, turn on "Alert when rest is over", tick a set, lock the phone and wait for the alert; feel the haptics; then open Exercises, Back Squat (does the figure move?).
+On the iPhone in Expo Go: open the new Progress tab (boxes, strip, strength web), then gear on Today, switch Dark and back, turn on "Alert when rest is over", tick a set, lock the phone and wait for the alert; feel the haptics; then open Exercises, Back Squat (does the figure move?).
 
 ## Open questions (Claude adds here, never invents answers)
+- Progress tab (built 2026-11-02 from your screenshot), choices made without asking (Suggestions, say if one is wrong): a 5th tab between Calendar and Workouts (not inside Calendar); a trained day = a finished workout on that day; a missed day = a past loop workout day without one (days before the loop started stay plain); streak counts weeks in a row with at least one workout, not days; strength = estimated 1-rep max per lift (Epley, kg x reps), summed per muscle group; the web shows growth per group (start = even shape) instead of raw kg, kg in the list below; bodyweight lifts (Pull-up) are left out because body weight is unknown; no training time (we do not record how long a workout takes). Week / Month / Year compare with the best before the last 7 / 30 / 365 days.
 - Form demos (spec 002): animated figures instead of videos, because decision #8 rules out copied clips. Are they enough, or also real videos (options and prices in spec 002)? Poses and cues in `docs/design/checks/form-demos.png` and `src/i18n/form-strings.ts`: not reviewed by anyone who coaches; please look through them.
 - Settings (decision #24), choices made without asking (Suggestions, say if one is wrong): a gear on Today opens `/settings` (no design frame); one rest length for every lift, saved, and plus/minus on the timer change it too (per lift would be a data-model change); "Alert when rest is over" is off until you turn it on, then iOS asks once; the alert is silent while the app is open (the bar and a haptic say it); haptics on the set tick (light), plus/minus (selection), rest end and a new record (success); with Haptics off the rest end no longer buzzes at all. No `expo-notifications` config plugin in app.json (local alerts work without it in Expo Go). Settings use their own saved key, so the training data format did not change.
 - Feel check on the iPhone: Dark / Light should also switch the tab bar, menus and date picker (Appearance override). If the tab bar stays light in Dark, tell me.

@@ -19,6 +19,10 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>{t('tab.calendar')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="calendar" md="calendar_month" />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="progress">
+        <NativeTabs.Trigger.Label>{t('tab.progress')}</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="chart.bar.xaxis" md="bar_chart" />
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="workouts">
         <NativeTabs.Trigger.Label>{t('tab.workouts')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="list.bullet" md="list" />
