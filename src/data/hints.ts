@@ -4,6 +4,7 @@
 import type { MuscleGroup } from './demo';
 import { daysBetween } from './schedule';
 import { topSet, type HistoryEntry, type Session } from './tracker';
+import { kgToLb, lbToKg, type Unit } from './units';
 
 export type Hint =
   // Every rep at `from` kg for `sessions` sessions in a row (at least 2): try `kg`.
@@ -15,10 +16,12 @@ export type Hint =
   | { kind: 'same'; kg: number };
 
 const STEP = 2.5;
+const STEP_LB = 5;
 
-export function roundKg(kg: number, mode: 'nearest' | 'down' = 'nearest'): number {
-  const n = kg / STEP;
-  return (mode === 'down' ? Math.floor(n + 1e-9) : Math.round(n)) * STEP;
+// To the next weight you can really load: 2.5 kg, or 5 lb when you train in pounds.
+export function roundKg(kg: number, mode: 'nearest' | 'down' = 'nearest', unit: Unit = 'kg'): number {
+  const whole = (n: number) => (mode === 'down' ? Math.floor(n + 1e-9) : Math.round(n));
+  return unit === 'kg' ? whole(kg / STEP) * STEP : lbToKg(whole(kgToLb(kg) / STEP_LB) * STEP_LB);
 }
 
 function allReps(e: HistoryEntry): boolean {
@@ -27,7 +30,7 @@ function allReps(e: HistoryEntry): boolean {
 }
 
 // entries: history(sessions, exerciseId), oldest first.
-export function hintFor(entries: HistoryEntry[], group: MuscleGroup, today: string): Hint | null {
+export function hintFor(entries: HistoryEntry[], group: MuscleGroup, today: string, unit: Unit = 'kg'): Hint | null {
   const last = entries[entries.length - 1];
   if (!last) return null;
   const kg = last.top.kg ?? 0;
@@ -36,7 +39,7 @@ export function hintFor(entries: HistoryEntry[], group: MuscleGroup, today: stri
   const days = daysBetween(last.session.date, today);
   if (days >= 14) {
     const percent = days >= 28 ? 80 : 90;
-    return { kind: 'comeback', kg: roundKg((kg * percent) / 100, 'down'), from: kg, days, percent };
+    return { kind: 'comeback', kg: roundKg((kg * percent) / 100, 'down', unit), from: kg, days, percent };
   }
 
   // The sessions in a row (newest back) at this same top weight.
@@ -46,9 +49,9 @@ export function hintFor(entries: HistoryEntry[], group: MuscleGroup, today: stri
   const full = run.findIndex((e) => !allReps(e));
   const fullRun = full < 0 ? run.length : full;
   if (fullRun >= 2) {
-    const add = group === 'legs' ? 5 : STEP;
+    const add = unit === 'kg' ? (group === 'legs' ? 5 : STEP) : lbToKg(group === 'legs' ? 2 * STEP_LB : STEP_LB);
     const reps = last.session.exercises[last.exIndex].targetReps;
-    return { kind: 'up', kg: roundKg(kg + add), from: kg, sessions: fullRun, reps };
+    return { kind: 'up', kg: roundKg(kg + add, 'nearest', unit), from: kg, sessions: fullRun, reps };
   }
   if (fullRun === 0 && run.length >= 3) {
     return { kind: 'stay', kg, reps: Math.min(...last.sets.map((s) => s.reps)) + 1, sessions: run.length };

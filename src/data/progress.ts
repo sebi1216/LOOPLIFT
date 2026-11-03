@@ -2,7 +2,7 @@
 // and strength per muscle group now against a start. Pure functions, no state, no React, so
 // progress.test.ts covers every rule. Nothing new is saved; it all comes from finished sessions.
 import { muscleGroups, type Exercise, type MuscleGroup } from './demo';
-import { addDays, resolveDay, type Schedule } from './schedule';
+import { addDays } from './schedule';
 import type { Session } from './tracker';
 
 // Estimated one-rep max (Epley): kg x (1 + reps / 30), rounded to 0.5 kg. Lets 5 heavy reps and
@@ -94,23 +94,26 @@ const weekday = (date: string) => (new Date(`${date}T00:00:00Z`).getUTCDay() + 6
 
 export const mondayOf = (date: string) => addDays(date, -weekday(date));
 
-// One month as calendar cells, Monday first; null fills the gaps before day 1 and after the end.
-export function monthCells(year: number, month: number): (string | null)[] {
-  const first = `${year}-${String(month).padStart(2, '0')}-01`;
-  const length = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  const days = Array.from({ length }, (_, i) => addDays(first, i));
-  const cells: (string | null)[] = [...Array(weekday(first)).fill(null), ...days];
-  while (cells.length % 7 !== 0) cells.push(null);
-  return cells;
+// One year as week columns, Monday on top; null fills the days of the years before and after.
+export function yearWeeks(year: number): (string | null)[][] {
+  const first = `${year}-01-01`;
+  const last = `${year}-12-31`;
+  const weeks: (string | null)[][] = [];
+  for (let monday = mondayOf(first); monday <= last; monday = addDays(monday, 7)) {
+    weeks.push(
+      Array.from({ length: 7 }, (_, i) => {
+        const d = addDays(monday, i);
+        return d >= first && d <= last ? d : null;
+      }),
+    );
+  }
+  return weeks;
 }
 
-// The last n weeks as columns of Monday to Sunday; the last column holds today.
-export function heatWeeks(today: string, n: number): string[][] {
-  const last = mondayOf(today);
-  return Array.from({ length: n }, (_, i) => {
-    const monday = addDays(last, -7 * (n - 1 - i));
-    return Array.from({ length: 7 }, (_, d) => addDays(monday, d));
-  });
+// The years with at least one workout, newest first.
+export function activeYears(days: Map<string, number>, today: string): number[] {
+  const years = new Set([...days.keys()].filter((d) => d <= today).map((d) => Number(d.slice(0, 4))));
+  return [...years].sort((x, y) => y - x);
 }
 
 // Weeks in a row with at least one workout, counting back from this week. This week may still
@@ -125,18 +128,4 @@ export function weekStreak(done: Set<string>, today: string): number {
     monday = addDays(monday, -7);
   }
   return n;
-}
-
-export type DayStatus = 'done' | 'missed' | 'rest' | 'free' | 'today' | 'future';
-
-// One calendar box. Done wins over everything; a past day with a planned workout and no session
-// is missed; today and later days are not judged yet.
-export function dayStatus(date: string, today: string, done: Set<string>, schedule: Schedule): DayStatus {
-  if (done.has(date)) return 'done';
-  if (date === today) return 'today';
-  if (date > today) return 'future';
-  const plan = resolveDay(schedule, date).plan;
-  if (plan?.kind === 'workout') return 'missed';
-  if (plan?.kind === 'rest') return 'rest';
-  return 'free';
 }

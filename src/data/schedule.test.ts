@@ -1,4 +1,4 @@
-import { addDays, clearDay, daysBetween, pushBack, replaceDay, resolveDay, resolveRange, type Schedule } from './schedule';
+import { addDays, applySkips, clearDay, daysBetween, pushBack, recentSkips, replaceDay, resolveDay, resolveRange, type Schedule } from './schedule';
 
 // The example loop from the brief: Push, Pull, Rest starting Monday 2 Nov 2026.
 const lena: Schedule = {
@@ -100,5 +100,75 @@ describe('Push the loop back', () => {
   test('clearDay on a pushed-back day undoes the push', () => {
     const s = clearDay(pushBack(lena, '2026-11-05'), '2026-11-05');
     expect(names(s, '2026-11-05', 3)).toEqual(['w1', 'w2', 'rest']);
+  });
+});
+
+describe('skipped days', () => {
+  const start = (checkedUntil?: string): Schedule => ({
+    rotation: { startDate: '2026-11-02', slots: ['w1', 'w2', 'rest'] },
+    entries: {},
+    shifts: [],
+    ...(checkedUntil ? { checkedUntil } : {}),
+  });
+  const plan = (s: Schedule, date: string) => {
+    const p = resolveDay(s, date).plan;
+    return p?.kind === 'workout' ? p.workoutId : p?.kind;
+  };
+
+  test('a past workout day without a workout becomes Rest and the loop waits', () => {
+    const s = applySkips(start('2026-11-02'), new Set(), '2026-11-03');
+    expect(s.shifts).toEqual(['2026-11-02']);
+    expect(plan(s, '2026-11-02')).toBe('rest');
+    expect(plan(s, '2026-11-03')).toBe('w1');
+    expect(s.checkedUntil).toBe('2026-11-03');
+  });
+
+  test('several days away: each one skips, and the loop is still on the same workout', () => {
+    const s = applySkips(start('2026-11-02'), new Set(), '2026-11-06');
+    expect(s.shifts).toEqual(['2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05']);
+    expect(plan(s, '2026-11-06')).toBe('w1');
+  });
+
+  test('a day you trained stays, and today is never judged', () => {
+    const s = applySkips(start('2026-11-02'), new Set(['2026-11-02']), '2026-11-03');
+    expect(s.shifts).toEqual([]);
+    expect(plan(s, '2026-11-03')).toBe('w2');
+  });
+
+  test('a rest day in the loop is not a skip', () => {
+    const s = applySkips(start('2026-11-04'), new Set(), '2026-11-05');
+    expect(s.shifts).toEqual([]);
+  });
+
+  test('a day set by hand is left alone', () => {
+    const s = applySkips({ ...start('2026-11-02'), entries: { '2026-11-02': { kind: 'workout', workoutId: 'w2' } } }, new Set(), '2026-11-03');
+    expect(s.shifts).toEqual([]);
+  });
+
+  test('put back: the day is not skipped again and the loop moves back', () => {
+    const skipped = applySkips(start('2026-11-02'), new Set(), '2026-11-03');
+    const back = applySkips(clearDay(skipped, '2026-11-02'), new Set(), '2026-11-03');
+    expect(back.shifts).toEqual([]);
+    expect(plan(back, '2026-11-03')).toBe('w2');
+    const nextDay = applySkips(back, new Set(), '2026-11-04');
+    expect(nextDay.shifts).toEqual(['2026-11-03']);
+  });
+
+  test('a save from before this feature only starts counting from today', () => {
+    const s = applySkips(start(), new Set(), '2026-11-10');
+    expect(s.shifts).toEqual([]);
+    expect(s.checkedUntil).toBe('2026-11-10');
+  });
+
+  test('nothing to do returns the same object, so nothing is saved', () => {
+    const s = start('2026-11-05');
+    expect(applySkips(s, new Set(), '2026-11-05')).toBe(s);
+    const none: Schedule = { rotation: null, entries: {}, shifts: [] };
+    expect(applySkips(none, new Set(), '2026-11-05')).toBe(none);
+  });
+
+  test('recentSkips: the last 7 days, oldest first, never today', () => {
+    const s = { ...start(), shifts: ['2026-10-20', '2026-10-29', '2026-11-04', '2026-11-05'] };
+    expect(recentSkips(s, '2026-11-05')).toEqual(['2026-10-29', '2026-11-04']);
   });
 });
