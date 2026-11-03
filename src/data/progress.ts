@@ -6,12 +6,14 @@ import { addDays, resolveDay, type Schedule } from './schedule';
 import type { Session } from './tracker';
 
 // Estimated one-rep max (Epley): kg x (1 + reps / 30), rounded to 0.5 kg. Lets 5 heavy reps and
-// 12 light ones be compared on one scale. Bodyweight sets (0 kg) give 0: the body's weight is
-// not known, so those lifts are left out of the strength numbers.
+// 12 light ones be compared on one scale. Reps above 12 add nothing: the estimate stops being
+// useful there, and a light set of 30 must not beat a real heavy one. Bodyweight sets (0 kg) give
+// 0: the body's weight is not known, so they count as reps instead (strengthByGroup).
+const MAX_E1RM_REPS = 12;
 export function e1rm(kg: number | null, reps: number): number {
   if (!kg || kg <= 0 || reps <= 0) return 0;
   if (reps === 1) return kg;
-  return Math.round(kg * (1 + reps / 30) * 2) / 2;
+  return Math.round(kg * (1 + Math.min(reps, MAX_E1RM_REPS) / 30) * 2) / 2;
 }
 
 export type Period = 'week' | 'month' | 'year' | 'all';
@@ -21,7 +23,9 @@ const periodDays: Record<Exclude<Period, 'all'>, number> = { week: 7, month: 30,
 export type GroupStrength = { start: number; now: number } | null;
 export type Strength = {
   groups: Record<MuscleGroup, GroupStrength>;
-  // Now against start over all groups with data; null with no data.
+  // Groups with bodyweight sets only: their start and now are best reps, not kg.
+  repsOnly: MuscleGroup[];
+  // Now against start over all groups in kg; null with no kg data.
   change: number | null;
   workouts: number;
   sets: number;
@@ -30,30 +34,44 @@ export type Strength = {
 const sessionBest = (s: Session, exerciseId: string) =>
   s.exercises.filter((e) => e.exerciseId === exerciseId).reduce((m, e) => Math.max(m, ...e.sets.map((x) => e1rm(x.kg, x.reps))), 0);
 
+const sessionBestReps = (s: Session, exerciseId: string) =>
+  s.exercises.filter((e) => e.exerciseId === exerciseId).reduce((m, e) => Math.max(m, ...e.sets.map((x) => (x.kg === 0 ? x.reps : 0))), 0);
+
 // Per lift: now = its best estimated max up to today. Start = its best before the period began;
 // a lift first done inside the period starts at its first session. Per group: the sum over its
-// lifts. A group with no weighted set is null ("no data"), never a fake 0 kg.
+// lifts. A group with no set at all is null ("no data"), never a fake 0 kg. A group with only
+// bodyweight sets does the same with best reps, so doing pull-ups never reads as "nothing for
+// Back"; once it has a weighted lift it is in kg and the bodyweight lifts are left out.
 export function strengthByGroup(sessions: Session[], exercises: Exercise[], period: Period, today: string): Strength {
   const done = sessions.filter((s) => s.finished && s.date <= today).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
   const from = period === 'all' ? null : addDays(today, -(periodDays[period] - 1));
-  const groups = Object.fromEntries(muscleGroups.map((g) => [g, null])) as Record<MuscleGroup, GroupStrength>;
+  const empty = () => Object.fromEntries(muscleGroups.map((g) => [g, null])) as Record<MuscleGroup, GroupStrength>;
+  const groups = empty();
+  const reps = empty();
 
-  for (const ex of exercises) {
-    const dated = done.map((s) => ({ date: s.date, best: sessionBest(s, ex.id) })).filter((x) => x.best > 0);
-    if (dated.length === 0) continue;
+  const add = (into: Record<MuscleGroup, GroupStrength>, ex: Exercise, best: (s: Session, id: string) => number) => {
+    const dated = done.map((s) => ({ date: s.date, best: best(s, ex.id) })).filter((x) => x.best > 0);
+    if (dated.length === 0) return;
     const now = Math.max(...dated.map((x) => x.best));
     const before = from ? dated.filter((x) => x.date < from) : [];
     const start = before.length > 0 ? Math.max(...before.map((x) => x.best)) : dated[0].best;
-    const g = groups[ex.muscleGroup] ?? { start: 0, now: 0 };
-    groups[ex.muscleGroup] = { start: g.start + start, now: g.now + now };
+    const g = into[ex.muscleGroup] ?? { start: 0, now: 0 };
+    into[ex.muscleGroup] = { start: g.start + start, now: g.now + now };
+  };
+  for (const ex of exercises) {
+    add(groups, ex, sessionBest);
+    add(reps, ex, sessionBestReps);
   }
 
   const withData = Object.values(groups).filter((g): g is { start: number; now: number } => g !== null);
   const start = withData.reduce((n, g) => n + g.start, 0);
   const now = withData.reduce((n, g) => n + g.now, 0);
+  const repsOnly = muscleGroups.filter((g) => groups[g] === null && reps[g] !== null);
+  for (const g of repsOnly) groups[g] = reps[g];
   const inPeriod = done.filter((s) => !from || s.date >= from);
   return {
     groups,
+    repsOnly,
     change: start > 0 ? (now - start) / start : null,
     workouts: inPeriod.length,
     sets: inPeriod.reduce((n, s) => n + s.exercises.reduce((m, e) => m + e.sets.length, 0), 0),

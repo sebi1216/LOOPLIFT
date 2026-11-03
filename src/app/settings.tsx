@@ -1,11 +1,13 @@
 import { SegmentedControl } from '@expo/ui/community/segmented-control';
 import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
-import { allowRestAlert, restAlertAvailable } from '@/data/rest-alert';
-import { REST_STEP, updateSettings, useSettings, type Theme } from '@/data/settings';
+import { restTimer } from '@/data/rest';
+import { allowRestAlert, cancelRestAlert, openPhoneSettings, restAlertAllowed, restAlertAvailable } from '@/data/rest-alert';
+import { getSettings, REST_STEP, updateSettings, useSettings, type Theme } from '@/data/settings';
 import { t } from '@/i18n';
+import { Button } from '@/ui/button';
 import { Stepper } from '@/ui/stepper';
 import { font, radius, size, space } from '@/ui/tokens';
 import { useColors, useScheme } from '@/ui/use-colors';
@@ -24,11 +26,29 @@ export default function Settings() {
   const { state } = useLocalSearchParams<{ state?: string }>();
   const [denied, setDenied] = useState(state === 'denied');
 
+  // Notifications can be turned off in the phone's Settings: the switch must not stay on then.
+  useEffect(() => {
+    if (!getSettings().restAlert) return;
+    restAlertAllowed().then((ok) => {
+      if (ok) return;
+      setDenied(true);
+      updateSettings({ restAlert: false });
+    });
+  }, []);
+
   const setAlert = async (on: boolean) => {
-    if (!on) return updateSettings({ restAlert: false });
+    if (!on) {
+      cancelRestAlert();
+      return updateSettings({ restAlert: false });
+    }
     const ok = await allowRestAlert();
     setDenied(!ok);
     updateSettings({ restAlert: ok });
+  };
+
+  const setRestTimer = (on: boolean) => {
+    if (!on) restTimer.stop();
+    updateSettings({ restTimer: on });
   };
 
   return (
@@ -42,7 +62,7 @@ export default function Settings() {
       </Text>
       <View style={[styles.card, { backgroundColor: c.bgRaised }]}>
         <Row title={t('settings.restTimer')} sub={t('settings.restTimerSub')}>
-          <Toggle label={t('settings.restTimer')} value={s.restTimer} onChange={(v) => updateSettings({ restTimer: v })} testID="setting-rest" />
+          <Toggle label={t('settings.restTimer')} value={s.restTimer} onChange={setRestTimer} testID="setting-rest" />
         </Row>
         {s.restTimer ? (
           <>
@@ -60,7 +80,7 @@ export default function Settings() {
             <Divider />
             <Row
               title={t('settings.restAlert')}
-              sub={!restAlertAvailable ? t('settings.restAlertWeb') : denied ? t('settings.restAlertDenied') : t('settings.restAlertSub')}>
+              sub={denied ? t('settings.restAlertDenied') : !restAlertAvailable ? t('settings.restAlertWeb') : t('settings.restAlertSub')}>
               <Toggle
                 label={t('settings.restAlert')}
                 value={s.restAlert}
@@ -69,6 +89,11 @@ export default function Settings() {
                 testID="setting-rest-alert"
               />
             </Row>
+            {denied ? (
+              <View style={styles.action}>
+                <Button label={t('settings.restAlertOpen')} variant="soft" onPress={openPhoneSettings} testID="open-phone-settings" />
+              </View>
+            ) : null}
           </>
         ) : null}
         <Divider />
@@ -141,6 +166,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1, gap: space.xxs },
   title: { ...font.body },
   sub: { ...font.caption },
+  action: { paddingHorizontal: space.md, paddingBottom: space.ms },
   toggle: { minWidth: size.touch, minHeight: size.touch, alignItems: 'center', justifyContent: 'center' },
   divider: { height: StyleSheet.hairlineWidth, marginLeft: space.md },
   segments: { minHeight: size.touch },

@@ -31,6 +31,10 @@ describe('e1rm (estimated one-rep max, Epley)', () => {
     expect(e1rm(null, 8)).toBe(0);
     expect(e1rm(50, 0)).toBe(0);
   });
+  test('reps above 12 add nothing: a light set of 30 never beats a real heavy one', () => {
+    expect(e1rm(20, 12)).toBe(28);
+    expect(e1rm(20, 30)).toBe(28);
+  });
 });
 
 describe('strengthByGroup', () => {
@@ -66,11 +70,31 @@ describe('strengthByGroup', () => {
     expect(r.change).toBe(0);
   });
 
-  test('a group with no weighted sets has no data (null), never 0 kg; open sessions do not count', () => {
+  test('a group with no sets has no data (null), never 0 kg; open sessions do not count', () => {
     const r = strengthByGroup(sessions, lib, 'all', today);
-    expect(r.groups.back).toBeNull();
     expect(r.groups.core).toBeNull();
     expect(r.groups.chest?.now).toBe(130);
+  });
+
+  test('a group with only bodyweight sets counts its best reps, marked as reps, and stays out of the kg change', () => {
+    const pullups = [s('p1', '2026-09-01', [['pullup', 0, 6]]), s('p2', '2026-11-04', [['pullup', 0, 10]])];
+    const r = strengthByGroup([...sessions, ...pullups], lib, 'all', today);
+    expect(r.groups.back).toEqual({ start: 6, now: 10 });
+    expect(r.repsOnly).toEqual(['back']);
+    expect(r.change).toBeCloseTo((230 - 210) / 210);
+  });
+
+  test('a group with a weighted lift stays in kg, its bodyweight lifts left out', () => {
+    const backLib: Exercise[] = [...lib, { id: 'row', name: 'Row', muscleGroup: 'back' }];
+    const r = strengthByGroup([s('r', '2026-11-04', [['row', 50, 1], ['pullup', 0, 8]])], backLib, 'all', today);
+    expect(r.groups.back).toEqual({ start: 50, now: 50 });
+    expect(r.repsOnly).toEqual([]);
+  });
+
+  test('only bodyweight sets at all: reps per group, no overall kg change', () => {
+    const r = strengthByGroup([s('p', '2026-11-04', [['pullup', 0, 8]])], lib, 'all', today);
+    expect(r.groups.back).toEqual({ start: 8, now: 8 });
+    expect(r.change).toBeNull();
   });
 
   test('no sessions at all: every group null, no change', () => {

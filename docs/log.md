@@ -58,3 +58,5 @@ Format:
 - 2026-11-02 (cloud): built Settings (rest timer optional, saved rest length, Dark / Light / System, haptics via expo-haptics, rest alert on the lock screen via expo-notifications), removed the 10-screen cap (#23, #24); web and iOS bundle only, nothing on the iPhone yet; next the feel check in now.md.
 
 - 2026-11-02 (cloud): built the Progress tab from Sebastian's screenshot: gym days as a month of boxes (trained, missed, rest), last 6 months strip, week streak, strength balance per muscle group with Week/Month/Year/All (progress.ts, 14 tests red/green); web only; next look at it on the iPhone.
+
+- 2026-11-02: solved the Progress and Settings open questions at Sebastian's request: bodyweight-only groups count reps, reps capped at 12 in the estimate, rest alert fixes (stale switch, late alert, lock screen pile-up, Android channel, way to phone Settings), no push entitlement in iOS builds; web and tests only; next the iPhone list, and a yes or no on training time and rest per lift.

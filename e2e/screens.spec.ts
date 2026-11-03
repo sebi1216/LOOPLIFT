@@ -551,6 +551,13 @@ test.describe('Rest timer and quick logging', () => {
 test.describe('Settings', () => {
   const settingsBg = (page: Page) => page.getByTestId('settings').evaluate((el) => getComputedStyle(el).backgroundColor);
 
+  test('notifications refused: the note and a way to the phone Settings', async ({ page }) => {
+    await page.goto('/settings?state=denied');
+    await expect(page.getByText(en('settings.restAlertDenied'))).toBeVisible();
+    await expect(page.getByTestId('open-phone-settings')).toBeVisible();
+    await shot(page, 'settings-denied');
+  });
+
   test('the gear on Today opens Settings', async ({ page }) => {
     await page.goto(`/?${LENA}`);
     await tapUntil(page, 'open-settings', () => expect(page.getByTestId('settings')).toBeVisible({ timeout: 2000 }));
@@ -637,6 +644,35 @@ test.describe('Progress', () => {
     const all = await page.getByTestId('strength-period').textContent();
     await page.getByText(en('progress.period.week'), { exact: true }).click();
     await expect(page.getByTestId('strength-period')).not.toHaveText(all ?? '');
+  });
+
+  test('a group with only bodyweight lifts shows reps, not "no data", and no "nothing for Back" callout', async ({ page }) => {
+    await page.addInitScript(() => {
+      const session = (id: string, date: string, reps: number) => ({
+        id,
+        date,
+        workoutId: 'w1',
+        workoutName: 'Pull',
+        finished: true,
+        exercises: [{ exerciseId: 'e5', targetSets: 1, targetReps: reps, sets: [{ kg: 0, reps, done: true }] }],
+      });
+      const data = {
+        userName: null,
+        libraryVersion: 2,
+        exercises: [{ id: 'e5', name: 'Pull-up', muscleGroup: 'back' }],
+        workouts: [{ id: 'w1', name: 'Pull', exercises: [{ exerciseId: 'e5', targetSets: 1, targetReps: 8 }] }],
+        schedule: { rotation: null, entries: {}, shifts: [] },
+        sessions: [session('a', '2026-09-01', 6), session('b', '2026-10-20', 10)],
+      };
+      localStorage.setItem('looplift.data', JSON.stringify({ v: 1, data }));
+    });
+    await page.goto('/progress');
+    await page.getByTestId('strength').scrollIntoViewIfNeeded();
+    const back = page.getByTestId('group-back');
+    await expect(back).toContainText(en('progress.reps', { n: 10 }));
+    await expect(back).not.toContainText(en('progress.noData'));
+    await expect(page.getByTestId('strength-callout')).not.toContainText(en('muscle.back'));
+    await expect(page.getByTestId('strength-change')).toHaveCount(0);
   });
 
   test('first launch: a friendly note, no strength chart', async ({ page }) => {

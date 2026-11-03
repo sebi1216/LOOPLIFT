@@ -125,6 +125,7 @@ export default function Progress() {
             <View style={styles.list}>
               {muscleGroups.map((g) => {
                 const x = strength.groups[g];
+                const inReps = strength.repsOnly.includes(g);
                 return (
                   <View
                     key={g}
@@ -132,7 +133,12 @@ export default function Progress() {
                     accessible
                     accessibilityLabel={
                       x
-                        ? t('progress.groupA11y', { group: groupName(g), now: kg(x.now), start: kg(x.start), change: pct(growth(g)) })
+                        ? t(inReps ? 'progress.groupRepsA11y' : 'progress.groupA11y', {
+                            group: groupName(g),
+                            now: inReps ? x.now : kg(x.now),
+                            start: inReps ? x.start : kg(x.start),
+                            change: pct(growth(g)),
+                          })
                         : t('progress.groupNoneA11y', { group: groupName(g) })
                     }
                     testID={`group-${g}`}>
@@ -140,7 +146,8 @@ export default function Progress() {
                     {x ? (
                       <>
                         <Text style={[styles.kg, { color: c.textMuted }]}>
-                          {kg(x.start)} → <Text style={{ color: c.text }}>{kg(x.now)} kg</Text>
+                          {inReps ? x.start : kg(x.start)} →{' '}
+                          <Text style={{ color: c.text }}>{inReps ? t('progress.reps', { n: x.now }) : `${kg(x.now)} kg`}</Text>
                         </Text>
                         <Text style={[styles.groupPct, { color: g === lagging ? c.textMuted : c.accent }]}>{pct(growth(g))}</Text>
                       </>
