@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import { View } from "react-native";
 import Svg, { Circle, Path, Polyline, Rect } from "react-native-svg";
 
+import { starterLifts } from "@/data/demo";
+
 import { demos } from "./form-demos";
 import { pathsAt, poseAt, type Demo } from "./form-motion";
 
@@ -177,9 +179,17 @@ const placeholder: Drawing = {
 
 export const hasDrawing = (id: string) => id in drawings;
 
+// The pictures a lift you add can pick from: every starter lift's drawing, in library order.
+export const artChoices: string[] = starterLifts.map((l) => l.id).filter((id) => hasDrawing(id) || id in demos);
+
+type ArtLookup = { id: string; art?: string }[];
+
+// The picture a lift shows: the one picked for it (exercise.art), else its own.
+export const exerciseArtId = (exercises: ArtLookup, id: string) => exercises.find((e) => e.id === id)?.art ?? id;
+
 // A workout you made yourself shows the drawing of its first lift until it has its own.
-export const workoutArtId = (w: { id: string; exercises: { exerciseId: string }[] }) =>
-  hasDrawing(w.id) ? w.id : (w.exercises[0]?.exerciseId ?? w.id);
+export const workoutArtId = (w: { id: string; exercises: { exerciseId: string }[] }, exercises: ArtLookup = []) =>
+  hasDrawing(w.id) ? w.id : w.exercises[0] ? exerciseArtId(exercises, w.exercises[0].exerciseId) : w.id;
 
 // Lifts without a hand-made drawing: the key pose from their form demo, cropped to the figure.
 function DemoStill({ demo, color, width }: { demo: Demo; color: string; width: number }) {

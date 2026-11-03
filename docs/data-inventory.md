@@ -1,17 +1,17 @@
 # Data inventory
 
-Everything LoopLift stores, where, and why. CLAUDE.md rule 7: personal data only as listed here; none in logs, tests or demo data. Change this file before the app stores anything new. Last changed: 2026-11-02.
+Everything LoopLift stores, where, and why. CLAUDE.md rule 7: personal data only as listed here; none in logs, tests or demo data. Change this file before the app stores anything new. Last changed: 2026-11-03.
 
 Status: Suggestion by Claude, written while building persistence (decision #6). Sebastian confirms or changes it. Whether a workout plan on the device counts as personal or health data under GDPR is a lawyer question in `docs/brief.md` section 8.
 
 | What | Example | Where | Leaves the phone? | Why | Code |
 |---|---|---|---|---|---|
-| Exercise library (names, muscle group) | "Bench Press", chest | expo-sqlite key-value store on the phone, key `looplift.data` | No | Workouts are built from it | `src/data/store.ts`, `src/data/persist.ts` |
+| Exercise library (names, muscle group, the picture picked for a lift you added) | "Bench Press", chest; "Sled Push", legs, picture of Back Squat | expo-sqlite key-value store on the phone, key `looplift.data` | No | Workouts are built from it | `src/data/store.ts`, `src/data/persist.ts` |
 | Workouts (name, exercises, target sets x reps) | Push: Bench Press 4 x 6 | same key | No | Today shows them | same |
-| Schedule (loop slots and start date, days set by hand, push-back dates) | Push, Pull, Rest from 2026-11-02 | same key | No | The Calendar and Today are computed from it | same |
+| Schedule (loop slots and start date, days set by hand, push-back dates incl. days the app marked as rest, the last day checked for skips) | Push, Pull, Rest from 2026-11-02 | same key | No | The Calendar and Today are computed from it | same |
 | Workout log (date, workout name, lifts, kg and reps per set, ticked or not) (Suggestion, spec 001) | 2026-11-05 Push: Bench Press 65 kg x 6 | same key | No | Prefills the next session, Done days, the graph per lift | `src/data/tracker.ts`, `src/data/store.ts` |
 
-| Settings (Suggestion, decision #24): rest timer on/off, rest length, rest alert on/off, haptics on/off, Appearance | restTimer true, 90 s, Dark | expo-sqlite key-value store, key `looplift.settings` | No | The app behaves the way you set it | `src/data/settings.ts` |
+| Settings (Suggestion, decision #24): rest timer on/off, rest length, rest alert on/off, haptics on/off, Appearance, weight unit (kg / lb), show both units, standard reps | restTimer true, 90 s, Dark, lb, both on, 8 reps | expo-sqlite key-value store, key `looplift.settings` | No | The app behaves the way you set it | `src/data/settings.ts` |
 | Rest alert (only with the setting on and notifications allowed) | "Rest over. Next set!" in 90 s | The phone's own notification scheduler (local notification) | No: local only, no push token, no server | Reaches you with the phone locked | `src/data/rest-alert.ts` |
 
 Not stored: name, email, account, device id, push token, location, health data, analytics, crash reports. The running rest timer lives in memory only. The demo casts (Lena, Mia) are made up and never saved.

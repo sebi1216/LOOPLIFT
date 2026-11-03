@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useSettings } from '@/data/settings';
 import { hintFor } from '@/data/hints';
 import { restTimer } from '@/data/rest';
 import { actions, useAppData, useToday } from '@/data/store';
@@ -14,7 +15,7 @@ import { confirmDelete } from '@/ui/confirm';
 import { HeaderButton } from '@/ui/header-button';
 import { HintChip, hintShort, kgText } from '@/ui/hint-chip';
 import { Icon } from '@/ui/icon';
-import { LiftArt } from '@/ui/lift-art';
+import { exerciseArtId, LiftArt } from '@/ui/lift-art';
 import { PressScale } from '@/ui/press-scale';
 import { RestBar } from '@/ui/rest-bar';
 import { font, radius, size, space } from '@/ui/tokens';
@@ -32,6 +33,7 @@ const HOME = '/' as Href;
 // filled state has a URL: /session?start=w1&state=filled&date=2026-11-05.
 export default function SessionScreen() {
   const c = useColors();
+  const { unit } = useSettings();
   const insets = useSafeAreaInsets();
   const { fontScale } = useWindowDimensions();
   const d = useAppData();
@@ -118,7 +120,7 @@ export default function SessionScreen() {
           const ex = d.exercises.find((x) => x.id === e.exerciseId);
           const h = history(d.sessions, e.exerciseId);
           const lastEntry = h.at(-1);
-          const hint = ex ? hintFor(h, ex.muscleGroup, today) : null;
+          const hint = ex ? hintFor(h, ex.muscleGroup, today, unit) : null;
           const ticked = e.sets.filter((x) => x.done).length;
           const isDone = ticked > 0 && ticked === e.sets.length;
           const last = lastEntry
@@ -138,7 +140,7 @@ export default function SessionScreen() {
               ]}
               testID={`tile-${ei}`}>
               <View style={[styles.art, { backgroundColor: c.artTint }]}>
-                <LiftArt id={e.exerciseId} color={c.accent} width={size.touch * 2.5} />
+                <LiftArt id={exerciseArtId(d.exercises, e.exerciseId)} color={c.accent} width={size.touch * 2.5} />
               </View>
               <Text style={[styles.headline, { color: c.text }]}>{ex?.name}</Text>
               <Text style={[styles.caption, { color: c.textMuted }]}>{last}</Text>

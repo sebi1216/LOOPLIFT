@@ -2,7 +2,8 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { resolveDay, resolveRange } from '@/data/schedule';
+import { useSettings } from '@/data/settings';
+import { recentSkips, resolveDay, resolveRange } from '@/data/schedule';
 import { actions, useAppData, useToday, type AppData } from '@/data/store';
 import { doneDates, history, openSession } from '@/data/tracker';
 import { weekProgress } from '@/data/week';
@@ -13,7 +14,7 @@ import { hasDemo } from '@/ui/form-demos';
 import { HeroCard } from '@/ui/hero-card';
 import { kgText } from '@/ui/hint-chip';
 import { Icon } from '@/ui/icon';
-import { LiftArt, workoutArtId } from '@/ui/lift-art';
+import { exerciseArtId, LiftArt, workoutArtId } from '@/ui/lift-art';
 import { LoopRing } from '@/ui/loop-ring';
 import { NumberBubble } from '@/ui/number-bubble';
 import { planLabel, slotLabel } from '@/ui/plan-label';
@@ -22,9 +23,11 @@ import { font, radius, size, space } from '@/ui/tokens';
 import { useColors } from '@/ui/use-colors';
 
 // Today (direction S1 Loop orbit): the loop as a hero card with today on the ring, the next 6
-// days under it, today's lifts with last time's weight, and Start workout.
+// days under it, today's lifts with last time's weight, and Start workout. Below: days the app
+// marked as rest because no workout was logged (each can be put back), and the loop card that
+// opens the Rotation editor (Edit loop; it used to sit on the Calendar tab).
 // States: filled (/?state=filled&date=2026-11-05, Lena) and empty (/?state=empty, Mia on first
-// launch). Data is local, so there is no loading or error state.
+// launch), skipped (/?state=skipped&date=2026-11-05). Data is local: no loading or error state.
 export default function Today() {
   const d = useAppData();
   const today = useToday();
@@ -73,6 +76,7 @@ function Header({ date, title, children }: { date: string; title: string; childr
 
 function TodayFilled({ d, today }: { d: AppData; today: string }) {
   const c = useColors();
+  useSettings(); // weights redraw in a new unit
   const rotation = d.schedule.rotation!;
   const day = resolveDay(d.schedule, today);
   const week = resolveRange(d.schedule, today, 7);
@@ -124,7 +128,7 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
           </Pressable>
           {workout ? (
             <View style={[styles.sticker, { backgroundColor: c.heroChip }]}>
-              <LiftArt id={workoutArtId(workout)} color={c.onHero} width={size.touch + space.md} />
+              <LiftArt id={workoutArtId(workout, d.exercises)} color={c.onHero} width={size.touch + space.md} />
             </View>
           ) : null}
         </View>
@@ -219,7 +223,7 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
               const row = (
                 <>
                   <View style={[styles.exArt, { backgroundColor: c.artTint }]}>
-                    <LiftArt id={e.exerciseId} color={c.accent} width={size.touch * 0.75} />
+                    <LiftArt id={exerciseArtId(d.exercises, e.exerciseId)} color={c.accent} width={size.touch * 0.75} />
                   </View>
                   <Text style={[styles.body, styles.flex, { color: c.text }]}>{ex?.name}</Text>
                   {/* Quiet on purpose: after a few weeks you know the targets by heart. */}
@@ -255,7 +259,66 @@ function TodayFilled({ d, today }: { d: AppData; today: string }) {
           <Text style={[styles.body, { color: c.textMuted }]}>{t('today.beforeStart', { date: fullDate(rotation.startDate) })}</Text>
         )}
       </View>
+
+      <Skipped dates={recentSkips(d.schedule, today)} />
+      <LoopCard d={d} current={day.source === 'loop' ? (day.slotIndex ?? null) : null} />
     </Screen>
+  );
+}
+
+// Days the loop waited on (applySkips in schedule.ts): no workout logged on a workout day, so
+// it became Rest. Put back undoes it for that day, and the loop moves on as planned again.
+function Skipped({ dates }: { dates: string[] }) {
+  const c = useColors();
+  if (dates.length === 0) return null;
+  return (
+    <View style={[styles.card, { backgroundColor: c.bgRaised }]} testID="skipped">
+      <View style={styles.exRow}>
+        <Icon name="info" size={18} color={c.accent} />
+        <Text accessibilityRole="header" style={[styles.headline, styles.flex, { color: c.text }]}>
+          {t('today.skippedTitle')}
+        </Text>
+      </View>
+      <Text style={[styles.callout, { color: c.textMuted }]}>{t('today.skippedBody')}</Text>
+      {dates.map((date) => (
+        <View key={date} style={styles.exRow}>
+          <Text style={[styles.body, styles.flex, { color: c.text }]}>{longDate(date)}</Text>
+          <Button
+            label={t('today.putBack')}
+            variant="soft"
+            accessibilityLabel={t('today.putBackA11y', { date: longDate(date) })}
+            onPress={() => actions.clearDay(date)}
+            testID={`put-back-${date}`}
+          />
+        </View>
+      ))}
+    </View>
+  );
+}
+
+// The loop in order, with today's day on a small ring. Opens the Rotation editor.
+function LoopCard({ d, current }: { d: AppData; current: number | null }) {
+  const c = useColors();
+  const rotation = d.schedule.rotation!;
+  const names = rotation.slots.map((x) => slotLabel(d, x));
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={t('calendar.loopA11y', { slots: names.join(', '), date: fullDate(rotation.startDate) })}
+      onPress={() => router.push('/loop')}
+      style={({ pressed }) => [styles.card, styles.loopCard, { backgroundColor: c.bgRaised }, pressed && styles.pressed]}
+      testID="edit-loop">
+      <LoopRing slots={rotation.slots} current={current} diameter={size.ringSmall} stroke={size.ringStrokeSmall} />
+      <View style={styles.flex}>
+        <Text style={[styles.caption, { color: c.textMuted }]}>{t('calendar.yourLoop')}</Text>
+        <Text style={[styles.headline, { color: c.text }]}>{names.join(' → ')}</Text>
+        <Text style={[styles.caption, { color: c.textMuted }]}>{t('calendar.since', { date: fullDate(rotation.startDate) })}</Text>
+      </View>
+      <View style={[styles.editPill, { backgroundColor: c.accentSoft }]}>
+        <Icon name="loop" size={15} color={c.accent} />
+        <Text style={[styles.weekText, { color: c.accent }]}>{t('calendar.editLoop')}</Text>
+      </View>
+    </Pressable>
   );
 }
 
@@ -272,7 +335,7 @@ function TodayEmpty({ d, today }: { d: AppData; today: string }) {
 
   const start = () => {
     if (hasWorkout) {
-      router.push('/calendar/loop');
+      router.push('/loop');
       return;
     }
     const id = actions.addWorkout(t('workouts.newName'));
@@ -364,6 +427,8 @@ const styles = StyleSheet.create({
   dayPlan: { ...font.callout, fontWeight: '600' },
   card: { borderRadius: radius.lg, padding: space.md, gap: space.ms },
   steps: { gap: space.md },
+  loopCard: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  editPill: { flexDirection: 'row', alignItems: 'center', gap: space.xs, borderRadius: radius.full, paddingHorizontal: space.ms, paddingVertical: space.xs },
   step: { flexDirection: 'row', alignItems: 'center', gap: space.ms },
   exRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: size.touch },
   exArt: { borderRadius: radius.sm, padding: space.xs },

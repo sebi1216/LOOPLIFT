@@ -14,6 +14,9 @@ export type Schedule = {
   entries: Record<string, Plan>;
   // "Push the loop back" dates: that day becomes Rest and the loop continues one day later.
   shifts: string[];
+  // Days before this one were already checked for skips (applySkips), so a skip you put back
+  // stays put back. Missing in older saves.
+  checkedUntil?: string;
 };
 
 export type DaySource = 'loop' | 'manual' | 'shift' | 'beforeStart' | 'none';
@@ -88,6 +91,28 @@ export function pushBack(s: Schedule, date: string): Schedule {
   const { [date]: _removed, ...entries } = s.entries;
   const shifts = s.shifts.includes(date) ? s.shifts : [...s.shifts, date].sort();
   return { ...s, entries, shifts };
+}
+
+// Past workout days of the loop with no workout become Rest and the loop waits, like a push-back.
+// Each day is judged once, after it is over; clearDay puts one back. `trained`: dates with a
+// session. An older save starts counting from today, so its past is not rewritten.
+export function applySkips(s: Schedule, trained: Set<string>, today: string): Schedule {
+  const r = s.rotation;
+  if (!r || r.slots.length === 0) return s;
+  const from = s.checkedUntil ?? today;
+  if (from >= today) return s.checkedUntil ? s : { ...s, checkedUntil: today };
+  let next = s;
+  for (let date = from > r.startDate ? from : r.startDate; date < today; date = addDays(date, 1)) {
+    const day = resolveDay(next, date);
+    if (day.source === 'loop' && day.plan?.kind === 'workout' && !trained.has(date)) next = pushBack(next, date);
+  }
+  return { ...next, checkedUntil: today };
+}
+
+// The push-backs of the last 7 days, to show on Today so they can be put back.
+export function recentSkips(s: Schedule, today: string): string[] {
+  const from = addDays(today, -7);
+  return s.shifts.filter((d) => d >= from && d < today).sort();
 }
 
 export function samePlan(a: Plan | null, b: Plan | null): boolean {

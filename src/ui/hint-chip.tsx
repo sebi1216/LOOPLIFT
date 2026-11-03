@@ -1,13 +1,25 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { Hint } from '@/data/hints';
+import { getSettings } from '@/data/settings';
+import { inUnit, otherUnit, type Unit } from '@/data/units';
 import { formatKg, t } from '@/i18n';
 
 import { Icon } from './icon';
 import { font, radius, space } from './tokens';
 import { useColors } from './use-colors';
 
-export const kgText = (kg: number) => t('exercise.kg', { kg: formatKg(kg) });
+// A weight (saved in kg) as the Settings want it: "62.5 kg", "138 lb", or with Show both units
+// "62.5 kg · 138 lb". It reads the settings at call time: a screen using it calls useSettings()
+// so it redraws when the unit changes.
+export function weightIn(kg: number, unit: Unit): string {
+  return t(unit === 'kg' ? 'exercise.kg' : 'exercise.lb', { kg: formatKg(inUnit(kg, unit)) });
+}
+
+export function kgText(kg: number): string {
+  const s = getSettings();
+  return s.showBoth ? `${weightIn(kg, s.unit)} · ${weightIn(kg, otherUnit(s.unit))}` : weightIn(kg, s.unit);
+}
 
 // The short form of a hint, for chips and labels ("Try 67.5 kg").
 export function hintShort(h: Hint): string {

@@ -5,9 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { muscleGroups, type MuscleGroup } from '@/data/demo';
 import { gymDays, periods, strengthByGroup, weekStreak, type Period } from '@/data/progress';
+import { useSettings } from '@/data/settings';
 import { useAppData, useToday } from '@/data/store';
-import { formatKg, getLocale, t, type StringKey } from '@/i18n';
-import { GymMonth, GymStrip } from '@/ui/gym-days';
+import { getLocale, t, type StringKey } from '@/i18n';
+import { GymYears } from '@/ui/gym-days';
+import { kgText } from '@/ui/hint-chip';
 import { Icon, type IconName } from '@/ui/icon';
 import { RadarChart } from '@/ui/radar-chart';
 import { font, radius, size, space } from '@/ui/tokens';
@@ -15,16 +17,17 @@ import { useColors, useScheme } from '@/ui/use-colors';
 
 const pct = (x: number) =>
   new Intl.NumberFormat(getLocale() === 'de' ? 'de-DE' : 'en-GB', { style: 'percent', signDisplay: 'exceptZero', maximumFractionDigits: 0 }).format(x);
-const kg = (x: number) => formatKg(Math.round(x));
+// Strength in the unit from Settings, whole numbers.
+const kg = (x: number) => kgText(Math.round(x));
 const groupName = (g: MuscleGroup) => t(`muscle.${g}` as StringKey);
 
-// Progress (Suggestion, no design frame): gym days as a month of boxes plus the last 6 months at a
-// glance, streaks, and strength balance per muscle group (estimated 1-rep max, now against the
-// start of the chosen period). All worked out from finished workouts; nothing new is saved.
+// Progress (Suggestion, no design frame): gym days as one row per year with workouts, streaks,
+// and strength balance per muscle group (estimated 1-rep max, now against the start of the chosen period). All worked out from finished workouts; nothing new is saved.
 // States: /progress?state=filled&date=2026-11-05 (Lena), /progress?state=empty (Mia).
 export default function Progress() {
   const c = useColors();
   const scheme = useScheme();
+  useSettings(); // weights redraw in a new unit
   const d = useAppData();
   const today = useToday();
   const [period, setPeriod] = useState<Period>('all');
@@ -64,21 +67,14 @@ export default function Progress() {
           <Stat icon="check" text={t('progress.total', { n: done.size })} testID="stat-total" />
         </View>
 
-        {done.size === 0 ? (
-          <View style={[styles.card, { backgroundColor: c.bgRaised }]} testID="progress-empty">
-            <Text style={[styles.body, { color: c.textMuted }]}>{t('progress.empty')}</Text>
+        {done.size > 0 ? (
+          <View style={[styles.card, { backgroundColor: c.bgRaised }]}>
+            <Text accessibilityRole="header" style={[styles.section, { color: c.textMuted }]}>
+              {t('progress.gymDays')}
+            </Text>
+            <GymYears days={days} today={today} />
           </View>
         ) : null}
-
-        <View style={[styles.card, { backgroundColor: c.bgRaised }]}>
-          <Text accessibilityRole="header" style={[styles.section, { color: c.textMuted }]}>
-            {t('progress.gymDays')}
-          </Text>
-          <GymMonth days={days} schedule={d.schedule} today={today} />
-          <View style={[styles.divider, { backgroundColor: c.border }]} />
-          <Text style={[styles.caption, { color: c.textMuted }]}>{t('progress.last26')}</Text>
-          <GymStrip days={days} today={today} />
-        </View>
 
         {done.size > 0 ? (
           <View style={[styles.card, { backgroundColor: c.bgRaised }]} testID="strength">
@@ -147,7 +143,7 @@ export default function Progress() {
                       <>
                         <Text style={[styles.kg, { color: c.textMuted }]}>
                           {inReps ? x.start : kg(x.start)} →{' '}
-                          <Text style={{ color: c.text }}>{inReps ? t('progress.reps', { n: x.now }) : `${kg(x.now)} kg`}</Text>
+                          <Text style={{ color: c.text }}>{inReps ? t('progress.reps', { n: x.now }) : kg(x.now)}</Text>
                         </Text>
                         <Text style={[styles.groupPct, { color: g === lagging ? c.textMuted : c.accent }]}>{pct(growth(g))}</Text>
                       </>
@@ -166,7 +162,15 @@ export default function Progress() {
             ) : null}
             <Text style={[styles.caption, { color: c.textMuted }]}>{t('progress.method')}</Text>
           </View>
-        ) : null}
+        ) : (
+          // No finished workout yet: the analysis still has its place, so it is never missing.
+          <View style={[styles.card, { backgroundColor: c.bgRaised }]} testID="progress-empty">
+            <Text accessibilityRole="header" style={[styles.section, { color: c.textMuted }]}>
+              {t('progress.strength')}
+            </Text>
+            <Text style={[styles.body, { color: c.textMuted }]}>{t('progress.empty')}</Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -203,7 +207,6 @@ const styles = StyleSheet.create({
   section: { ...font.section, textTransform: 'uppercase' },
   body: { ...font.body },
   caption: { ...font.caption },
-  divider: { height: StyleSheet.hairlineWidth },
   segments: { minHeight: size.touch },
   headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: space.sm },
   keys: { flexDirection: 'row', gap: space.md },

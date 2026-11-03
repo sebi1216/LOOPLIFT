@@ -60,3 +60,6 @@ Format:
 - 2026-11-02 (cloud): built the Progress tab from Sebastian's screenshot: gym days as a month of boxes (trained, missed, rest), last 6 months strip, week streak, strength balance per muscle group with Week/Month/Year/All (progress.ts, 14 tests red/green); web only; next look at it on the iPhone.
 
 - 2026-11-02: solved the Progress and Settings open questions at Sebastian's request: bodyweight-only groups count reps, reps capped at 12 in the estimate, rest alert fixes (stale switch, late alert, lock screen pile-up, Android channel, way to phone Settings), no push entitlement in iOS builds; web and tests only; next the iPhone list, and a yes or no on training time and rest per lift.
+
+- 2026-11-03 (cloud, added afterwards by Claude: the session before had no entry): Sebastian listed 8 requests (remove a lift, calendar as year rows, lift pictures, auto rest days, Edit loop on Today, kg / lb, standard reps, analysis page not visible); logic and tests written (units, skips, settings, year rows), screens not yet.
+- 2026-11-03 (cloud): built the 8 screens on that logic: Calendar tab gone, Edit loop on Today, skipped days with Put back, year rows on Progress, Strength balance always visible, kg / lb with both, standard reps 8, Remove from workout, lift pictures; npm run check and test:e2e (67) green; web only; next the iPhone list in now.md.

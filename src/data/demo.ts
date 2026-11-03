@@ -16,7 +16,8 @@ export const cast = {
 export const muscleGroups = ['arms', 'back', 'chest', 'core', 'legs', 'shoulders'] as const;
 export type MuscleGroup = (typeof muscleGroups)[number];
 
-export type Exercise = { id: string; name: string; muscleGroup: MuscleGroup };
+// art: the drawing a lift you added shows (the id of a starter lift). Missing: a dumbbell.
+export type Exercise = { id: string; name: string; muscleGroup: MuscleGroup; art?: string };
 export type WorkoutExercise = { exerciseId: string; targetSets: number; targetReps: number };
 export type Workout = { id: string; name: string; exercises: WorkoutExercise[] };
 
@@ -113,11 +114,12 @@ export const demoWorkouts: Workout[] = [
 ];
 
 // The example loop from the concept: Push, Pull, Rest starting Monday 2 Nov 2026.
-// One day set by hand (Fri 20 Nov: Rest) so the Calendar shows the "set by you" look.
+// One day set by hand (Fri 20 Nov: Rest), for the "set by you" look.
 export const demoSchedule: Schedule = {
   rotation: { startDate: '2026-11-02', slots: ['w1', 'w2', 'rest'] },
   entries: { '2026-11-20': { kind: 'rest' } },
   shifts: [],
+  checkedUntil: '2026-11-02',
 };
 
 // The day the designs show (Thursday 5 Nov). Open any screen with ?date=2026-11-05 to see it.
@@ -164,6 +166,12 @@ export function demoSessions(): Session[] {
     const day = addDays('2026-09-24', i * 3);
     return [demoSession(push, i, day, `d${i * 2 + 1}`), demoSession(pull, i, addDays(day, 1), `d${i * 2 + 2}`)];
   }).flat();
+}
+
+// The skipped state (?state=skipped): Lena's log without her last workouts, so on Thu 5 Nov she has
+// missed Mon, Tue and Wed, and Today offers them to put back.
+export function skippedSessions(): Session[] {
+  return demoSessions().filter((s) => s.date < '2026-11-02');
 }
 
 // The comeback state (?state=comeback): Lena's same log, 23 days earlier, so on Thu 5 Nov her

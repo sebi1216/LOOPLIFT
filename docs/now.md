@@ -1,6 +1,6 @@
 # Now
 
-Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-11-02 (Progress and Settings open questions solved; two need a yes)
+Max about 60 lines. Rewrite, never append (re-read this file right before rewriting it). Updated: 2026-11-03 (your 8 requests built: web and tests only)
 
 Mode: Business   Phase: 1 strategy | 2 designs | 3 code (now: 3 code)
 Status: active
@@ -16,9 +16,13 @@ Slice: slice 1 · card: docs/brief.md section 3
 - [ ] Local persistence: all data survives an app restart; no account
 
 ## Next step (one line)
-On the iPhone in Expo Go: open the new Progress tab (boxes, strip, strength web), then gear on Today, switch Dark and back, turn on "Alert when rest is over", tick a set, lock the phone and wait for the alert; feel the haptics; then open Exercises, Back Squat (does the figure move?).
+On the iPhone in Expo Go: Today (scroll down: loop card, Edit loop), Settings > Weights (lb, Show both, Standard reps), a workout in lb, Workouts > Push > tap 4 × 6 > Remove from workout, Exercises > + (pick a picture), Progress (one row per year); then the older feel checks below.
 
 ## Open questions (Claude adds here, never invents answers)
+- Built 2026-11-03 from your 8 requests (Suggestions where I chose, say if one is wrong). Calendar tab removed; its loop card with Edit loop sits at the bottom of Today. Progress keeps only the year rows, one per year with a workout, newest first. A past loop workout day with no logged workout becomes Rest and the loop waits (like Push the loop back); Today lists the last 7 such days with Put back; days set by hand and older saves' past are left alone. Lift pictures: pick any starter lift's drawing or the dumbbell; starter lifts keep their own. Weights saved in kg, shown in your unit; "Show both units" adds the other one, with its own field when you log a set; hints round to 5 lb in pounds. Standard reps: 8, used when you add a lift to a workout (was 3 × 10, sets stay 3). Remove a lift: tap its target, "Remove from workout" (swipe still works).
+- Analysis page not visible: on your real (empty) app the Strength balance card was hidden until the first finished workout. Now it always shows, with a note. If you meant something else, tell me where you looked.
+- Please write decision rows in your own words for these 8 (decisions.md takes only your wording). Note: lb replaces "kg only" in #9.
+- "Show both units" is off by default (you only switch your main unit). Turn it on by default? Paste: "both units on by default" or "keep it off".
 - Progress tab, reviewed 2026-11-02 at Sebastian's request (Suggestions, say if one is wrong). Kept: 5th tab; trained day = a finished workout with at least one ticked set; missed day = a past loop workout day without one; streak in weeks; strength = estimated 1-rep max per lift, summed per group, shown as growth; Week / Month / Year against the best before that period. Changed: reps above 12 no longer raise the estimate; a group with only bodyweight lifts counts best reps (never asks for body weight, which would be new personal data); next to weighted lifts they stay left out.
 - Needs your yes (data-model change): record workout start and end, so Progress can show training time? Paste: "yes, record training time" or "no training time".
 - "Now" is the best so far, so strength never shows a drop after a break. Keep, or compare recent weeks only?
