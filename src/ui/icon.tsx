@@ -25,6 +25,8 @@ const names = {
   pause: { ios: 'pause.fill', android: 'pause', web: 'pause' },
   info: { ios: 'info.circle', android: 'info', web: 'info' },
   settings: { ios: 'gearshape', android: 'settings', web: 'settings' },
+  flame: { ios: 'flame.fill', android: 'local_fire_department', web: 'local_fire_department' },
+  calendar: { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' },
 } as const satisfies Record<string, ComponentProps<typeof SymbolView>['name']>;
 
 export type IconName = keyof typeof names;

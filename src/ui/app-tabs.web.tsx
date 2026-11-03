@@ -19,6 +19,7 @@ export default function AppTabs() {
       }}>
       <Tabs.Screen name="index" options={{ title: t('tab.today') }} />
       <Tabs.Screen name="calendar" options={{ title: t('tab.calendar') }} />
+      <Tabs.Screen name="progress" options={{ title: t('tab.progress') }} />
       <Tabs.Screen name="workouts" options={{ title: t('tab.workouts') }} />
       <Tabs.Screen name="exercises" options={{ title: t('tab.exercises') }} />
     </Tabs>
