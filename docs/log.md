@@ -63,3 +63,4 @@ Format:
 
 - 2026-11-03 (cloud, added afterwards by Claude: the session before had no entry): Sebastian listed 8 requests (remove a lift, calendar as year rows, lift pictures, auto rest days, Edit loop on Today, kg / lb, standard reps, analysis page not visible); logic and tests written (units, skips, settings, year rows), screens not yet.
 - 2026-11-03 (cloud): built the 8 screens on that logic: Calendar tab gone, Edit loop on Today, skipped days with Put back, year rows on Progress, Strength balance always visible, kg / lb with both, standard reps 8, Remove from workout, lift pictures; npm run check and test:e2e (67) green; web only; next the iPhone list in now.md.
+- 2026-11-04 (cloud): Show both units on by default (settings test red/green, 5 e2e texts now show both units), decisions #25 and #26 written; npm run check and test:e2e (67) green; next the iPhone list in now.md.

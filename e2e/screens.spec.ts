@@ -226,8 +226,8 @@ test.describe('Workout editor', () => {
 test.describe('Exercises', () => {
   test('grouped library, last time, next-weight chip, search', async ({ page }) => {
     await page.goto(`/exercises?${LENA}`);
-    await expect(page.getByTestId('exercise-e1')).toContainText(en('exercises.last', { kg: '65 kg', reps: 6, date: '2 Nov' }));
-    await expect(page.getByTestId('next-e1')).toContainText(en('exercises.next', { kg: '67.5 kg' }));
+    await expect(page.getByTestId('exercise-e1')).toContainText(en('exercises.last', { kg: '65 kg · 143.5 lb', reps: 6, date: '2 Nov' }));
+    await expect(page.getByTestId('next-e1')).toContainText(en('exercises.next', { kg: '67.5 kg · 149 lb' }));
     await expect(page.getByTestId('exercise-e9')).toContainText(en('exercises.notLogged'));
     await shot(page, 'exercises');
     await page.getByTestId('exercise-search').fill('curl');
@@ -254,9 +254,9 @@ test.describe('Workout (spec 001 update 2)', () => {
   test('Start workout on Push: 4 tiles with last time and hints', async ({ page }) => {
     await openPush(page);
     await expect(page.locator('[data-testid^="tile-"][data-testid$="-hint"]')).toHaveCount(4);
-    await expect(page.getByTestId('tile-0')).toContainText(en('session.last', { sets: 4, reps: 6, kg: '65 kg' }));
-    await expect(page.getByTestId('tile-0-hint')).toContainText(en('hint.try', { kg: '67.5 kg' }));
-    await expect(page.getByTestId('tile-1-hint')).toHaveText(en('hint.stay', { kg: '24 kg' }));
+    await expect(page.getByTestId('tile-0')).toContainText(en('session.last', { sets: 4, reps: 6, kg: '65 kg · 143.5 lb' }));
+    await expect(page.getByTestId('tile-0-hint')).toContainText(en('hint.try', { kg: '67.5 kg · 149 lb' }));
+    await expect(page.getByTestId('tile-1-hint')).toHaveText(en('hint.stay', { kg: '24 kg · 53 lb' }));
     await expect(page.getByTestId('session-done-count')).toHaveText(en('session.doneCount', { n: 0, total: 4 }));
     await shot(page, 'workout');
   });
@@ -299,7 +299,7 @@ test.describe('Workout (spec 001 update 2)', () => {
     await tapUntil(page, 'finish-workout', () => expect(page.getByTestId('summary')).toBeVisible({ timeout: 2000 }));
     await expect(page.getByTestId('summary-records')).toContainText('1');
     await expect(page.getByTestId('summary-volume')).toContainText(en('summary.volume'));
-    await expect(page.getByTestId('record-e1')).toContainText(en('summary.recordBody', { kg: '67.5 kg', reps: 6, over: '2.5 kg' }));
+    await expect(page.getByTestId('record-e1')).toContainText(en('summary.recordBody', { kg: '67.5 kg · 149 lb', reps: 6, over: '2.5 kg · 5.5 lb' }));
     await expect(page.getByTestId('summary-next-day')).toHaveText(en('summary.nextLoop', { plan: 'Pull', when: en('summary.tomorrow') }));
     await shot(page, 'summary');
     await page.getByTestId('summary-done').click();
@@ -341,7 +341,7 @@ test.describe('Exercise screen (spec 001)', () => {
     await page.goto(`/session?start=w1&state=comeback&${DAY}`);
     await tapUntil(page, 'tile-0', () => expect(page.getByTestId('session-exercise')).toBeVisible({ timeout: 2000 }));
     await expect(page.getByTestId('hint-comeback')).toContainText(en('hint.comebackTitle'));
-    await expect(page.getByTestId('hint-use')).toHaveText(en('hint.use', { kg: '57.5 kg' }));
+    await expect(page.getByTestId('hint-use')).toHaveText(en('hint.use', { kg: '57.5 kg · 127 lb' }));
     await shot(page, 'exercise-comeback');
   });
 
@@ -360,7 +360,7 @@ test.describe('Exercise screen (spec 001)', () => {
     await page.getByTestId('past-2026-11-02-set-0-kg').fill('67,5');
     await page.getByTestId('past-2026-11-02-done').click();
     await expect(page.getByTestId('past-2026-11-02')).toContainText('4 × 6 · 67.5 kg');
-    await expect(page.getByTestId('chart')).toHaveAttribute('aria-label', /to 67.5\skg on 2 Nov/);
+    await expect(page.getByTestId('chart')).toHaveAttribute('aria-label', /to 67.5\skg · 149\slb on 2 Nov/);
 
     await page.getByTestId('past-2026-11-02-more').click();
     await page.getByRole('menuitem', { name: en('exercise.deleteSession') }).click();
@@ -580,7 +580,7 @@ test.describe('Settings', () => {
     await page.goto(`/settings?${LENA}`);
     await expect(page.getByTestId('setting-reps-value')).toHaveText(en('settings.repsValue', { n: 8 }));
     await page.getByText(en('settings.unitLb'), { exact: true }).click();
-    await page.getByTestId('setting-both').click();
+    // Show both units is on by default, so it is not touched here.
     await page.getByTestId('setting-reps-minus').click();
     await expect(page.getByTestId('setting-reps-value')).toHaveText(en('settings.repsValue', { n: 7 }));
     await shot(page, 'settings-weights');
