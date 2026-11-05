@@ -1,6 +1,5 @@
 import type { Exercise } from './demo';
-import { dayStatus, e1rm, gymDays, heatWeeks, monthCells, mondayOf, strengthByGroup, weekStreak } from './progress';
-import type { Schedule } from './schedule';
+import { activeYears, e1rm, gymDays, mondayOf, strengthByGroup, weekStreak, yearWeeks } from './progress';
 import type { Session } from './tracker';
 
 const set = (kg: number | null, reps: number) => ({ kg, reps, done: true });
@@ -122,20 +121,20 @@ describe('gym days', () => {
     expect(mondayOf('2026-11-08')).toBe('2026-11-02');
   });
 
-  test('month cells start on Monday, padded with nulls', () => {
-    const cells = monthCells(2026, 11);
-    // 1 Nov 2026 is a Sunday: six empty cells first
-    expect(cells.slice(0, 7)).toEqual([null, null, null, null, null, null, '2026-11-01']);
-    expect(cells.filter(Boolean)).toHaveLength(30);
-    expect(cells.length % 7).toBe(0);
+  test('a year as week columns: Monday on top, every day once, nothing from the next year', () => {
+    const weeks = yearWeeks(2026);
+    // 1 Jan 2026 is a Thursday: three empty cells first
+    expect(weeks[0].slice(0, 4)).toEqual([null, null, null, '2026-01-01']);
+    expect(weeks.flat().filter(Boolean)).toHaveLength(365);
+    expect(weeks.at(-1)!.filter(Boolean).at(-1)).toBe('2026-12-31');
+    expect(weeks.every((w) => w.length === 7)).toBe(true);
+    expect(yearWeeks(2024).flat().filter(Boolean)).toHaveLength(366);
   });
 
-  test('heat weeks: n columns of Monday to Sunday, the last one holds today', () => {
-    const weeks = heatWeeks('2026-11-05', 3);
-    expect(weeks).toHaveLength(3);
-    expect(weeks[2][0]).toBe('2026-11-02');
-    expect(weeks[0][0]).toBe('2026-10-19');
-    expect(weeks[2]).toHaveLength(7);
+  test('only the years with a workout, newest first, up to today', () => {
+    const days = new Map([['2024-03-01', 5], ['2026-11-02', 5], ['2026-01-02', 5], ['2027-01-01', 5]]);
+    expect(activeYears(days, '2026-11-05')).toEqual([2026, 2024]);
+    expect(activeYears(new Map(), '2026-11-05')).toEqual([]);
   });
 
   test('week streak: weeks in a row with at least one workout; this week may still be empty', () => {
@@ -146,18 +145,5 @@ describe('gym days', () => {
     // nothing yet this week: the streak up to last week still counts
     expect(weekStreak(new Set(['2026-10-28']), '2026-11-05')).toBe(1);
     expect(weekStreak(new Set(), '2026-11-05')).toBe(0);
-  });
-
-  test('day status: done, missed (a planned workout in the past), rest, today, future', () => {
-    const schedule: Schedule = { rotation: { startDate: '2026-11-01', slots: ['w1', 'rest'] }, entries: {}, shifts: [] };
-    const done = new Set(['2026-11-01']);
-    expect(dayStatus('2026-11-01', '2026-11-05', done, schedule)).toBe('done');
-    expect(dayStatus('2026-11-02', '2026-11-05', done, schedule)).toBe('rest');
-    expect(dayStatus('2026-11-03', '2026-11-05', done, schedule)).toBe('missed');
-    expect(dayStatus('2026-11-05', '2026-11-05', done, schedule)).toBe('today');
-    expect(dayStatus('2026-11-07', '2026-11-05', done, schedule)).toBe('future');
-    expect(dayStatus('2026-10-20', '2026-11-05', done, schedule)).toBe('free');
-    // done beats everything, also on a rest day
-    expect(dayStatus('2026-11-02', '2026-11-05', new Set(['2026-11-02']), schedule)).toBe('done');
   });
 });
