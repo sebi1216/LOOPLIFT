@@ -114,3 +114,20 @@ describe("Lena's demo log on Thu 5 Nov", () => {
     expect(hintFor(history(comebackSessions(), 'e1'), 'chest', '2026-11-05')).toEqual({ kind: 'comeback', kg: 57.5, from: 65, days: 26, percent: 90 });
   });
 });
+
+describe('in pounds', () => {
+  const lb = (n: number) => (n * 453.59237) / 1000;
+  const pounds = (kg: number) => Math.round((kg * 1000) / 453.59237);
+
+  it('rounds to 5 lb, adds 5 lb upper body and 10 lb legs', () => {
+    const at135 = (group: 'chest' | 'legs') =>
+      hintFor(history([s('a', '2026-11-01', four(lb(135))), s('b', '2026-11-03', four(lb(135)))], 'e1'), group, '2026-11-05', 'lb');
+    expect(pounds((at135('chest') as { kg: number }).kg)).toBe(140);
+    expect(pounds((at135('legs') as { kg: number }).kg)).toBe(145);
+  });
+
+  it('a comeback rounds down to 5 lb', () => {
+    const h = hintFor(history([s('a', '2026-10-10', four(lb(135)))], 'e1'), 'chest', '2026-11-05', 'lb');
+    expect(pounds((h as { kg: number }).kg)).toBe(120);
+  });
+});

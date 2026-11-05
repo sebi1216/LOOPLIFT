@@ -101,45 +101,30 @@ test.describe('Change-a-day sheet', () => {
   });
 });
 
-test.describe('Calendar', () => {
-  test('November with the loop, rest dashed, Fri 20 set by hand', async ({ page }) => {
-    await page.goto(`/calendar?${LENA}`);
-    await expect(page.getByTestId('month-title')).toHaveText('November');
-    // Lena trained on 2 Nov (her demo history): a check in front of Push; the label says Done.
-    await expect(page.getByTestId('day-2026-11-02')).toContainText('Push');
-    await expect(page.getByTestId('day-2026-11-02')).toHaveAttribute('aria-label', /Push, Done/);
-    await expect(page.getByTestId('loop-card')).toContainText('Push → Pull → Rest');
-    await expect(page.getByTestId('day-2026-11-04')).toContainText('Rest');
-    await expect(page.getByTestId('day-2026-11-20')).toHaveAttribute('aria-label', /Set by you/);
-    await shot(page, 'calendar');
+test.describe('Loop on Today (the Calendar tab is gone)', () => {
+  test('the loop card shows the loop and opens the Rotation editor', async ({ page }) => {
+    await page.goto(`/?${LENA}`);
+    await expect(page.getByTestId('edit-loop')).toContainText('Push → Pull → Rest');
+    await expect(page.getByRole('tab', { name: 'Calendar' })).toHaveCount(0);
+    await tapUntil(page, 'edit-loop', () => expect(page.getByTestId('rotation-editor')).toBeVisible({ timeout: 2000 }));
   });
 
-  test('dark', async ({ page }) => {
-    await page.emulateMedia({ colorScheme: 'dark' });
-    await page.goto(`/calendar?${LENA}`);
-    await expect(page.getByTestId('month-title')).toHaveText('November');
-    await shot(page, 'calendar-dark');
-  });
-
-  test('next month keeps the loop going', async ({ page }) => {
-    await page.goto(`/calendar?${LENA}`);
-    await tapUntil(page, 'month-next', () =>
-      expect(page.getByTestId('month-title')).toHaveText('December', { timeout: 2000 }),
-    );
-    // 2 Nov + 30 days = 2 Dec: 30 mod 3 = 0, so Push again
-    await expect(page.getByTestId('day-2026-12-02')).toContainText('Push');
-  });
-
-  test('empty (?state=empty)', async ({ page }) => {
-    await page.goto(`/calendar?state=empty&${DAY}`);
-    await expect(page.getByTestId('empty-state')).toBeVisible();
-    await shot(page, 'calendar-empty');
+  test('skipped (?state=skipped): three days marked as rest, one put back moves the loop', async ({ page }) => {
+    await page.goto(`/?state=skipped&${DAY}`);
+    await expect(page.getByTestId('skipped')).toContainText(en('today.skippedTitle'));
+    await expect(page.locator('[data-testid^="put-back-"]')).toHaveCount(3);
+    await expect(page.getByTestId('today-plan')).toHaveText('Push');
+    await page.getByTestId('skipped').scrollIntoViewIfNeeded();
+    await shot(page, 'today-skipped');
+    // Wed 4 Nov back in the loop: Push was that day, so today is Pull.
+    await tapUntil(page, 'put-back-2026-11-04', () => expect(page.getByTestId('today-plan')).toHaveText('Pull', { timeout: 2000 }));
+    await expect(page.locator('[data-testid^="put-back-"]')).toHaveCount(2);
   });
 });
 
 test.describe('Rotation editor', () => {
   test('three days; adding Pull makes four', async ({ page }) => {
-    await page.goto(`/calendar/loop?${LENA}`);
+    await page.goto(`/loop?${LENA}`);
     await expect(page.getByTestId('loop-count')).toHaveText(en('loop.daysCount', { n: 3 }));
     await shot(page, 'rotation-editor');
     await tapUntil(page, 'add-slot', () => expect(page.getByTestId('add-w2')).toBeVisible({ timeout: 2000 }));
@@ -148,7 +133,7 @@ test.describe('Rotation editor', () => {
   });
 
   test('empty (?state=empty)', async ({ page }) => {
-    await page.goto(`/calendar/loop?state=empty&${DAY}`);
+    await page.goto(`/loop?state=empty&${DAY}`);
     await expect(page.getByTestId('empty-state')).toBeVisible();
     await shot(page, 'rotation-editor-empty');
   });
@@ -208,17 +193,41 @@ test.describe('Workout editor', () => {
     await tapUntil(page, 'add-exercise', () => expect(page.getByTestId('pick-search')).toBeVisible({ timeout: 2000 }));
     await page.getByTestId('pick-search').fill('Sled Push');
     await expect(page.getByTestId('pick-create')).toContainText(en('pick.create', { name: 'Sled Push' }));
+    await page.getByTestId('art-e9').click();
+    await expect(page.getByTestId('art-e9')).toHaveAttribute('aria-checked', 'true');
     await shot(page, 'exercise-picker-create');
     await page.getByTestId('create-legs').click();
     await expect(page.getByTestId('editor-row-4')).toContainText('Sled Push');
+    // Standard reps from Settings: 8 unless changed.
+    await expect(page.getByTestId('target-4')).toHaveText(en('common.setsReps', { sets: 3, reps: 8 }));
+  });
+
+  test('a lift can be removed: tap its target, then Remove from workout', async ({ page }) => {
+    await page.goto(`/workouts/w1?${LENA}`);
+    await expect(page.locator('[data-testid^="editor-row-"]')).toHaveCount(4);
+    await tapUntil(page, 'target-0', () => expect(page.getByTestId('remove-0')).toBeVisible({ timeout: 2000 }));
+    await shot(page, 'workout-editor-remove');
+    await page.getByTestId('remove-0').click();
+    await expect(page.locator('[data-testid^="editor-row-"]')).toHaveCount(3);
+    await expect(page.getByTestId('editor-row-0')).toContainText('Incline DB Press');
+  });
+
+  test('a new lift picks its picture and keeps it', async ({ page }) => {
+    await page.goto(`/exercises/edit?${LENA}`);
+    await page.getByTestId('exercise-name').fill('Sled Push');
+    await page.getByTestId('art-e10').click();
+    await shot(page, 'exercise-new-picture');
+    await page.getByTestId('exercise-save').click();
+    await page.goto(`/exercises/edit?${LENA}`);
+    await expect(page.getByTestId('art-none')).toHaveAttribute('aria-checked', 'true');
   });
 });
 
 test.describe('Exercises', () => {
   test('grouped library, last time, next-weight chip, search', async ({ page }) => {
     await page.goto(`/exercises?${LENA}`);
-    await expect(page.getByTestId('exercise-e1')).toContainText(en('exercises.last', { kg: '65 kg', reps: 6, date: '2 Nov' }));
-    await expect(page.getByTestId('next-e1')).toContainText(en('exercises.next', { kg: '67.5 kg' }));
+    await expect(page.getByTestId('exercise-e1')).toContainText(en('exercises.last', { kg: '65 kg · 143.5 lb', reps: 6, date: '2 Nov' }));
+    await expect(page.getByTestId('next-e1')).toContainText(en('exercises.next', { kg: '67.5 kg · 149 lb' }));
     await expect(page.getByTestId('exercise-e9')).toContainText(en('exercises.notLogged'));
     await shot(page, 'exercises');
     await page.getByTestId('exercise-search').fill('curl');
@@ -245,9 +254,9 @@ test.describe('Workout (spec 001 update 2)', () => {
   test('Start workout on Push: 4 tiles with last time and hints', async ({ page }) => {
     await openPush(page);
     await expect(page.locator('[data-testid^="tile-"][data-testid$="-hint"]')).toHaveCount(4);
-    await expect(page.getByTestId('tile-0')).toContainText(en('session.last', { sets: 4, reps: 6, kg: '65 kg' }));
-    await expect(page.getByTestId('tile-0-hint')).toContainText(en('hint.try', { kg: '67.5 kg' }));
-    await expect(page.getByTestId('tile-1-hint')).toHaveText(en('hint.stay', { kg: '24 kg' }));
+    await expect(page.getByTestId('tile-0')).toContainText(en('session.last', { sets: 4, reps: 6, kg: '65 kg · 143.5 lb' }));
+    await expect(page.getByTestId('tile-0-hint')).toContainText(en('hint.try', { kg: '67.5 kg · 149 lb' }));
+    await expect(page.getByTestId('tile-1-hint')).toHaveText(en('hint.stay', { kg: '24 kg · 53 lb' }));
     await expect(page.getByTestId('session-done-count')).toHaveText(en('session.doneCount', { n: 0, total: 4 }));
     await shot(page, 'workout');
   });
@@ -278,7 +287,7 @@ test.describe('Workout (spec 001 update 2)', () => {
     await expect(page.getByTestId('session-done-count')).toHaveText(en('session.doneCount', { n: 1, total: 4 }));
   });
 
-  test('Finish workout: Summary with the new record and the next loop day, then Done on Today and the Calendar', async ({ page }) => {
+  test('Finish workout: Summary with the new record and the next loop day, then Done on Today and in Progress', async ({ page }) => {
     await openPush(page);
     await openTile(page, 0);
     await page.getByTestId('hint-use').click();
@@ -290,7 +299,7 @@ test.describe('Workout (spec 001 update 2)', () => {
     await tapUntil(page, 'finish-workout', () => expect(page.getByTestId('summary')).toBeVisible({ timeout: 2000 }));
     await expect(page.getByTestId('summary-records')).toContainText('1');
     await expect(page.getByTestId('summary-volume')).toContainText(en('summary.volume'));
-    await expect(page.getByTestId('record-e1')).toContainText(en('summary.recordBody', { kg: '67.5 kg', reps: 6, over: '2.5 kg' }));
+    await expect(page.getByTestId('record-e1')).toContainText(en('summary.recordBody', { kg: '67.5 kg · 149 lb', reps: 6, over: '2.5 kg · 5.5 lb' }));
     await expect(page.getByTestId('summary-next-day')).toHaveText(en('summary.nextLoop', { plan: 'Pull', when: en('summary.tomorrow') }));
     await shot(page, 'summary');
     await page.getByTestId('summary-done').click();
@@ -298,8 +307,8 @@ test.describe('Workout (spec 001 update 2)', () => {
     await expect(page.getByTestId('lets-go')).toHaveCount(0);
     await shot(page, 'today-done');
     // In-app navigation: a new page load would reset Lena's demo data.
-    await page.getByRole('tab', { name: en('tab.calendar') }).click();
-    await expect(page.getByTestId('day-2026-11-05')).toHaveAttribute('aria-label', /Done/);
+    await page.getByRole('tab', { name: en('tab.progress') }).click();
+    await expect(page.getByTestId('gym-year-2026')).toHaveAttribute('aria-label', en('progress.yearA11y', { year: 2026, n: 29 }));
     await page.getByRole('tab', { name: en('tab.exercises') }).click();
     await page.getByTestId('exercise-e3').click();
     // Overhead Press: one ticked set of three is kept.
@@ -332,7 +341,7 @@ test.describe('Exercise screen (spec 001)', () => {
     await page.goto(`/session?start=w1&state=comeback&${DAY}`);
     await tapUntil(page, 'tile-0', () => expect(page.getByTestId('session-exercise')).toBeVisible({ timeout: 2000 }));
     await expect(page.getByTestId('hint-comeback')).toContainText(en('hint.comebackTitle'));
-    await expect(page.getByTestId('hint-use')).toHaveText(en('hint.use', { kg: '57.5 kg' }));
+    await expect(page.getByTestId('hint-use')).toHaveText(en('hint.use', { kg: '57.5 kg · 127 lb' }));
     await shot(page, 'exercise-comeback');
   });
 
@@ -351,7 +360,7 @@ test.describe('Exercise screen (spec 001)', () => {
     await page.getByTestId('past-2026-11-02-set-0-kg').fill('67,5');
     await page.getByTestId('past-2026-11-02-done').click();
     await expect(page.getByTestId('past-2026-11-02')).toContainText('4 × 6 · 67.5 kg');
-    await expect(page.getByTestId('chart')).toHaveAttribute('aria-label', /to 67.5\skg on 2 Nov/);
+    await expect(page.getByTestId('chart')).toHaveAttribute('aria-label', /to 67.5\skg · 149\slb on 2 Nov/);
 
     await page.getByTestId('past-2026-11-02-more').click();
     await page.getByRole('menuitem', { name: en('exercise.deleteSession') }).click();
@@ -369,8 +378,9 @@ test.describe('German (German text is longer: check it wraps well)', () => {
   const pages = [
     ['today-de', `/?${LENA}`, 'Donnerstag, 5. Nov.'],
     ['change-day-sheet-de', `/change-day?day=2026-11-05&${LENA}`, 'Loop nach hinten schieben'],
-    ['calendar-de', `/calendar?${LENA}`, 'November'],
-    ['rotation-editor-de', `/calendar/loop?${LENA}`, 'Dein Loop'],
+    ['rotation-editor-de', `/loop?${LENA}`, 'Dein Loop'],
+    ['today-skipped-de', `/?state=skipped&${DAY}`, 'Als Pause eingetragen'],
+    ['settings-de', `/settings?${LENA}`, 'Standard-Wiederholungen'],
     ['workout-editor-de', `/workouts/w1?${LENA}`, 'Bankdrücken'],
     ['exercises-de', `/exercises?${LENA}`, 'Bankdrücken'],
     ['workout-de', `/session?start=w1&${LENA}`, 'Bankdrücken'],
@@ -566,6 +576,24 @@ test.describe('Settings', () => {
     await shot(page, 'settings');
   });
 
+  test('pounds with both units: weights read in lb then kg, typing 135 lb fills 61.2 kg, hints round to 5 lb', async ({ page }) => {
+    await page.goto(`/settings?${LENA}`);
+    await expect(page.getByTestId('setting-reps-value')).toHaveText(en('settings.repsValue', { n: 8 }));
+    await page.getByText(en('settings.unitLb'), { exact: true }).click();
+    // Show both units is on by default, so it is not touched here.
+    await page.getByTestId('setting-reps-minus').click();
+    await expect(page.getByTestId('setting-reps-value')).toHaveText(en('settings.repsValue', { n: 7 }));
+    await shot(page, 'settings-weights');
+    // Settings are not demo data: they stay while Lena's data loads again.
+    await page.goto(`/?${LENA}`);
+    await tapUntil(page, 'lets-go', () => expect(page.getByTestId('session')).toBeVisible({ timeout: 2000 }));
+    await expect(page.getByTestId('tile-0-hint')).toContainText(en('hint.try', { kg: '150 lb · 68 kg' }));
+    await tapUntil(page, 'tile-0', () => expect(page.getByTestId('session-exercise')).toBeVisible({ timeout: 2000 }));
+    await page.getByLabel(en('session.lbA11y', { n: 1 })).fill('135');
+    await expect(page.getByLabel(en('session.kgA11y', { n: 1 }))).toHaveValue('61.2');
+    await shot(page, 'exercise-lb');
+  });
+
   test('rest timer off: ticking a set starts no rest, and it stays off after a restart', async ({ page }) => {
     await page.goto('/settings');
     await tapUntil(page, 'setting-rest', () => expect(page.getByTestId('setting-rest-length-plus')).toHaveCount(0, { timeout: 2000 }));
@@ -617,18 +645,12 @@ test.describe('Settings', () => {
 });
 
 test.describe('Progress', () => {
-  test('gym days: a box per day, trained days ticked, months page back', async ({ page }) => {
+  test('gym days: one row per year, only years with a workout', async ({ page }) => {
     await page.goto(`/progress?${LENA}`);
-    await expect(page.getByTestId('gym-month')).toBeVisible();
-    await expect(page.getByTestId('day-2026-11-02')).toHaveAttribute('aria-label', /trained/);
-    await expect(page.getByTestId('day-2026-11-04')).toHaveAttribute('aria-label', /rest day/);
-    await expect(page.getByTestId('month-count')).toHaveText(en('progress.monthCount', { n: 2, planned: 2 }));
+    await expect(page.locator('[data-testid^="gym-year-"]')).toHaveCount(1);
+    await expect(page.getByTestId('gym-year-2026')).toHaveAttribute('aria-label', en('progress.yearA11y', { year: 2026, n: 28 }));
     await expect(page.getByTestId('stat-streak')).toContainText(en('progress.streak', { n: 7 }));
     await shot(page, 'progress');
-    await page.getByTestId('month-prev').click();
-    await expect(page.getByTestId('month-title')).toHaveText(/October/);
-    await expect(page.getByTestId('day-2026-10-03')).toHaveAttribute('aria-label', /trained/);
-    await expect(page.getByTestId('month-count')).toHaveText(en('progress.monthCountFree', { n: 21 }));
   });
 
   test('strength balance: now against start, no fake 0 kg for groups without data, the period changes it', async ({ page }) => {
@@ -675,9 +697,10 @@ test.describe('Progress', () => {
     await expect(page.getByTestId('strength-change')).toHaveCount(0);
   });
 
-  test('first launch: a friendly note, no strength chart', async ({ page }) => {
+  test('first launch: Strength balance is there with a friendly note, no chart, no gym days', async ({ page }) => {
     await page.goto('/progress?state=empty');
-    await expect(page.getByTestId('progress-empty')).toBeVisible();
+    await expect(page.getByTestId('progress-empty')).toContainText(en('progress.strength'));
+    await expect(page.getByTestId('gym-years')).toHaveCount(0);
     await expect(page.getByTestId('strength')).toHaveCount(0);
     await shot(page, 'progress-empty');
   });
@@ -685,7 +708,7 @@ test.describe('Progress', () => {
   test('dark', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.goto(`/progress?${LENA}`);
-    await expect(page.getByTestId('gym-month')).toBeVisible();
+    await expect(page.getByTestId('gym-years')).toBeVisible();
     await shot(page, 'progress-dark');
   });
 

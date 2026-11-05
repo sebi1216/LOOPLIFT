@@ -2,11 +2,11 @@ import { DEFAULT_SETTINGS, parseSettings, schemeFor, serializeSettings, withRest
 
 test('nothing saved gives the defaults: rest timer on, 90 s, system look, haptics on, no alert', () => {
   expect(parseSettings(null)).toEqual(DEFAULT_SETTINGS);
-  expect(DEFAULT_SETTINGS).toEqual({ restTimer: true, restSeconds: 90, theme: 'system', haptics: true, restAlert: false });
+  expect(DEFAULT_SETTINGS).toEqual({ restTimer: true, restSeconds: 90, theme: 'system', haptics: true, restAlert: false, unit: 'kg', showBoth: true, defaultReps: 8 });
 });
 
 test('saved settings come back as they were', () => {
-  const s = { restTimer: false, restSeconds: 120, theme: 'dark' as const, haptics: false, restAlert: true };
+  const s = { restTimer: false, restSeconds: 120, theme: 'dark' as const, haptics: false, restAlert: true, unit: 'lb' as const, showBoth: true, defaultReps: 5 };
   expect(parseSettings(serializeSettings(s))).toEqual(s);
 });
 
@@ -36,4 +36,13 @@ test('the look: system follows the phone, light and dark override it', () => {
   expect(schemeFor('system', null)).toBe('light');
   expect(schemeFor('light', 'dark')).toBe('light');
   expect(schemeFor('dark', 'light')).toBe('dark');
+});
+
+test('weight unit and default reps: kg, one unit shown, 8 reps; a bad value falls back alone', () => {
+  expect(DEFAULT_SETTINGS).toMatchObject({ unit: 'kg', showBoth: true, defaultReps: 8 });
+  const at = (data: object) => parseSettings(JSON.stringify({ v: 1, data }));
+  expect(at({ unit: 'lb', showBoth: true, defaultReps: 12 })).toMatchObject({ unit: 'lb', showBoth: true, defaultReps: 12 });
+  expect(at({ unit: 'stone', showBoth: 1, defaultReps: 'x' })).toMatchObject({ unit: 'kg', showBoth: true, defaultReps: 8 });
+  expect(at({ defaultReps: 500 }).defaultReps).toBe(99);
+  expect(at({ defaultReps: 0 }).defaultReps).toBe(1);
 });

@@ -3,6 +3,8 @@ import { useState, useSyncExternalStore } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
 
+import { useSettings } from '@/data/settings';
+import { inUnit } from '@/data/units';
 import { hintFor, type Hint } from '@/data/hints';
 import { restTimer } from '@/data/rest';
 import { actions, useAppData, useToday } from '@/data/store';
@@ -60,6 +62,7 @@ type Props = {
 // graph of the heaviest set with the past workouts below (edit, or delete with Undo).
 export function ExerciseScreen({ exerciseId, inSession }: Props) {
   const c = useColors();
+  const { unit } = useSettings();
   const d = useAppData();
   const today = useToday();
   const exercise = d.exercises.find((e) => e.id === exerciseId);
@@ -84,7 +87,7 @@ export function ExerciseScreen({ exerciseId, inSession }: Props) {
 
   const h = history(d.sessions, exercise.id);
   const last = h.at(-1);
-  const hint = hintFor(h, exercise.muscleGroup, today);
+  const hint = hintFor(h, exercise.muscleGroup, today, unit);
   const cueKey = `cue.${exercise.id}`;
   const cues = hasString(cueKey) ? t(cueKey).split('|') : [];
   const sx = session && exIndex >= 0 ? session.exercises[exIndex] : null;
@@ -155,7 +158,7 @@ export function ExerciseScreen({ exerciseId, inSession }: Props) {
           </View>
           {!hasDemo(exercise.id) ? (
             <View style={[styles.art, { backgroundColor: c.heroChip }]}>
-              <LiftArt id={exercise.id} color={c.onHero} width={size.touch * 1.5} />
+              <LiftArt id={exercise.art ?? exercise.id} color={c.onHero} width={size.touch * 1.5} />
             </View>
           ) : inSession ? (
             // While you train the demo stays small so the sets stay in view; tap for the big one.
@@ -267,7 +270,7 @@ export function ExerciseScreen({ exerciseId, inSession }: Props) {
             <View style={[styles.list, { backgroundColor: c.bgRaised }]}>
               {[...h].reverse().map((x, i) => {
                 const open = editing === x.session.id;
-                const summary = x.sets.map((s) => t('exercise.kgReps', { kg: formatKg(s.kg ?? 0), reps: s.reps })).join(' · ');
+                const summary = x.sets.map((s) => t('exercise.kgReps', { kg: formatKg(inUnit(s.kg ?? 0, unit)), reps: s.reps })).join(' · ');
                 return (
                   <View
                     key={x.session.id}

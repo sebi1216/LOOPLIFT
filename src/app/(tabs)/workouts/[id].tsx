@@ -9,7 +9,7 @@ import { Button } from '@/ui/button';
 import { CardRow } from '@/ui/card-row';
 import { confirmDelete } from '@/ui/confirm';
 import { HeaderButton } from '@/ui/header-button';
-import { LiftArt } from '@/ui/lift-art';
+import { exerciseArtId, LiftArt } from '@/ui/lift-art';
 import { SortableList } from '@/ui/sortable-list';
 import { Stepper } from '@/ui/stepper';
 import { SwipeAction } from '@/ui/swipe-action';
@@ -17,7 +17,8 @@ import { font, radius, size, space } from '@/ui/tokens';
 import { useColors } from '@/ui/use-colors';
 
 // Workout editor (direction S1): name, exercises in order (drag), each with its drawing, muscle
-// group and target pill ("4 × 6"); tapping the pill opens its sets and reps steppers. Changes
+// group and target pill ("4 × 6"); tapping the pill opens its sets and reps steppers and
+// Remove from workout. Changes
 // save as you go; Done goes back. Swipe a row left to remove it; Delete workout at the bottom.
 export default function WorkoutEditor() {
   const c = useColors();
@@ -121,7 +122,7 @@ export default function WorkoutEditor() {
                       <View style={styles.leading}>
                         {handle}
                         <View style={[styles.art, { backgroundColor: c.artTint }]}>
-                          <LiftArt id={e.exerciseId} color={c.accent} width={size.touch * 0.75} />
+                          <LiftArt id={exerciseArtId(d.exercises, e.exerciseId)} color={c.accent} width={size.touch * 0.75} />
                         </View>
                       </View>
                     }
@@ -156,6 +157,17 @@ export default function WorkoutEditor() {
                         onMinus={() => actions.setTarget(workout.id, i, { targetReps: e.targetReps - 1 })}
                         onPlus={() => actions.setTarget(workout.id, i, { targetReps: e.targetReps + 1 })}
                         testID={`reps-${i}`}
+                      />
+                      <Button
+                        label={t('editor.removeButton')}
+                        variant="soft"
+                        icon="remove"
+                        accessibilityLabel={t('editor.removeA11y', { name })}
+                        onPress={() => {
+                          setOpen(null);
+                          remove();
+                        }}
+                        testID={`remove-${i}`}
                       />
                     </View>
                     ) : null}

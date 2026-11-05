@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Change-a-day sheet: "Replace this day only" and "Push the loop back", equal weight, no default.
 // Each shows the next 4 days after the change; changed days get an accent outline (S1).
-// Opens from Today (that day) and from the Calendar (any day): /change-day?day=2026-11-05
+// Opens from Today: the hero (today) and the strip (the next 6 days): /change-day?day=2026-11-05
 export default function ChangeDay() {
   const c = useColors();
   const insets = useSafeAreaInsets();

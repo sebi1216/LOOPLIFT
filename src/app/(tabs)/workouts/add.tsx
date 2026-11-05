@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { muscleGroups } from '@/data/demo';
+import { useSettings } from '@/data/settings';
 import { actions, ops, useAppData } from '@/data/store';
 import { t, type StringKey } from '@/i18n';
+import { ArtPicker } from '@/ui/art-picker';
 import { Chip } from '@/ui/chip';
 import { Icon } from '@/ui/icon';
 import { SearchField } from '@/ui/search-field';
@@ -12,7 +14,8 @@ import { font, radius, size, space } from '@/ui/tokens';
 import { useColors } from '@/ui/use-colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Exercise picker sheet: search the library, tap one to add it (3 x 10, change it after).
+// Exercise picker sheet: search the library, tap one to add it (3 sets of the standard reps from
+// Settings, 8 unless changed; change it after). A new lift picks its picture before its group.
 // /workouts/add?id=w1
 export default function AddExercise() {
   const c = useColors();
@@ -21,6 +24,8 @@ export default function AddExercise() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const workout = d.workouts.find((w) => w.id === id);
   const [q, setQ] = useState('');
+  const [art, setArt] = useState<string | undefined>();
+  const { defaultReps } = useSettings();
   const inWorkout = new Set(workout?.exercises.map((e) => e.exerciseId));
   // Not in the library yet? Create it right here: pick its muscle group and it is added.
   const newName = q.trim();
@@ -29,7 +34,7 @@ export default function AddExercise() {
   const add = (exerciseId: string) => {
     if (!workout) return;
     actions.updateWorkout(workout.id, {
-      exercises: [...workout.exercises, { exerciseId, targetSets: 3, targetReps: 10 }],
+      exercises: [...workout.exercises, { exerciseId, targetSets: 3, targetReps: defaultReps }],
     });
     router.back();
   };
@@ -49,6 +54,7 @@ export default function AddExercise() {
             <Icon name="plus" size={17} color={c.accent} />
             <Text style={[styles.headline, styles.flex, { color: c.text }]}>{t('pick.create', { name: newName })}</Text>
           </View>
+          <ArtPicker value={art} onChange={setArt} testID="pick-art" />
           <Text style={[styles.caption, { color: c.textMuted }]}>{t('pick.createHint')}</Text>
           <View style={styles.chips}>
             {muscleGroups.map((g) => {
@@ -59,7 +65,7 @@ export default function AddExercise() {
                   label={label}
                   accessibilityLabel={t('pick.createAs', { name: newName, group: label })}
                   onPress={() => {
-                    const newId = actions.addExercise(newName, g);
+                    const newId = actions.addExercise(newName, g, art);
                     if (newId) add(newId);
                   }}
                   testID={`create-${g}`}

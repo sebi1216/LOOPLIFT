@@ -3,6 +3,8 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown, Keyframe, useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useSettings } from '@/data/settings';
+import { inUnit } from '@/data/units';
 import { hintFor, newRecords, type Hint } from '@/data/hints';
 import { addDays, resolveRange } from '@/data/schedule';
 import { useAppData } from '@/data/store';
@@ -35,6 +37,7 @@ const rise = (order: number, reduced: boolean) => (reduced ? undefined : FadeInD
 // on /session?start=w1&state=filled&date=2026-11-05.
 export default function Summary() {
   const c = useColors();
+  const { unit } = useSettings();
   const insets = useSafeAreaInsets();
   const reduced = useReducedMotion();
   const d = useAppData();
@@ -57,7 +60,7 @@ export default function Summary() {
   const records = newRecords(d.sessions, s.id);
   const next = s.exercises.flatMap((e) => {
     const ex = d.exercises.find((x) => x.id === e.exerciseId);
-    const h = ex ? hintFor(history(d.sessions, e.exerciseId), ex.muscleGroup, s.date) : null;
+    const h = ex ? hintFor(history(d.sessions, e.exerciseId), ex.muscleGroup, s.date, unit) : null;
     return h && (h.kind === 'up' || h.kind === 'stay') ? [{ exerciseId: e.exerciseId, hint: h }] : [];
   });
   const nextDay = resolveRange(d.schedule, s.date, 8)
@@ -80,7 +83,7 @@ export default function Summary() {
           <Animated.View entering={rise(3, reduced)} style={styles.stats}>
             <Stat n={s.exercises.length} label={t('summary.lifts')} />
             <Stat n={sets} label={t('summary.sets')} />
-            <Stat n={formatKg(volume)} label={t('summary.volume')} testID="summary-volume" />
+            <Stat n={formatKg(Math.round(inUnit(volume, unit)))} label={t(unit === 'kg' ? 'summary.volume' : 'summary.volumeLb')} testID="summary-volume" />
             <Stat n={records.length} label={t(records.length === 1 ? 'summary.recordOne' : 'summary.recordMany')} bright={records.length > 0} testID="summary-records" />
           </Animated.View>
         </View>

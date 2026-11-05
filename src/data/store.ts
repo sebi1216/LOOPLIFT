@@ -8,9 +8,9 @@ import { useSyncExternalStore } from 'react';
 
 import { getLocale, t, type Locale, type StringKey } from '@/i18n';
 
-import { cast, comebackSessions, demoSchedule, demoSessions, demoToday, demoWorkouts, LIBRARY_VERSION, muscleGroups, starterLifts, type Exercise, type MuscleGroup, type Workout, type WorkoutExercise } from './demo';
+import { cast, comebackSessions, demoSchedule, demoSessions, demoToday, demoWorkouts, LIBRARY_VERSION, muscleGroups, skippedSessions, starterLifts, type Exercise, type MuscleGroup, type Workout, type WorkoutExercise } from './demo';
 import { loadRaw, saveRaw } from './persist';
-import { clearDay, isIsoDate, pushBack, replaceDay, toIsoDate, type Plan, type Rotation, type Schedule } from './schedule';
+import { applySkips, clearDay, isIsoDate, pushBack, replaceDay, toIsoDate, type Plan, type Rotation, type Schedule } from './schedule';
 import * as tracker from './tracker';
 import type { LoggedSet, Removed, Session } from './tracker';
 
@@ -164,17 +164,22 @@ export const ops = {
     return ops.updateWorkout(d, workoutId, { exercises });
   },
 
-  addExercise(d: AppData, name: string, muscleGroup: MuscleGroup): [AppData, string | null] {
+  addExercise(d: AppData, name: string, muscleGroup: MuscleGroup, art?: string): [AppData, string | null] {
     const clean = name.trim();
     if (!clean) return [d, null];
     const id = newId('e');
-    return [{ ...d, exercises: [...d.exercises, { id, name: clean, muscleGroup }] }, id];
+    return [{ ...d, exercises: [...d.exercises, { id, name: clean, muscleGroup, ...(art ? { art } : {}) }] }, id];
   },
 
-  updateExercise(d: AppData, id: string, name: string, muscleGroup: MuscleGroup): AppData {
+  updateExercise(d: AppData, id: string, name: string, muscleGroup: MuscleGroup, art?: string): AppData {
     const clean = name.trim();
     if (!clean) return d;
-    return { ...d, exercises: d.exercises.map((e) => (e.id === id ? { ...e, name: clean, muscleGroup } : e)) };
+    // No art: back to the plain dumbbell.
+    const edited = (e: Exercise): Exercise => {
+      const { art: _old, ...rest } = e;
+      return { ...rest, name: clean, muscleGroup, ...(art ? { art } : {}) };
+    };
+    return { ...d, exercises: d.exercises.map((e) => (e.id === id ? edited(e) : e)) };
   },
 
   deleteExercise(d: AppData, id: string): AppData {
@@ -207,8 +212,13 @@ export const ops = {
   pushBack(d: AppData, date: string): AppData {
     return { ...d, schedule: pushBack(d.schedule, date) };
   },
-  setRotation(d: AppData, rotation: Rotation): AppData {
-    return { ...d, schedule: { ...d.schedule, rotation } };
+  // Saving a loop counts skips from today on: its start date may lie in the past on purpose.
+  setRotation(d: AppData, rotation: Rotation, today: string): AppData {
+    return { ...d, schedule: { ...d.schedule, rotation, checkedUntil: today } };
+  },
+  applySkips(d: AppData, today: string): AppData {
+    const schedule = applySkips(d.schedule, new Set(d.sessions.map((s) => s.date)), today);
+    return schedule === d.schedule ? d : { ...d, schedule };
   },
 
   // ---- Workout log (rules in tracker.ts) ----
@@ -247,15 +257,16 @@ export const ops = {
 
 // ---- Runtime store (one per app run) ----
 
-type StateParam = 'empty' | 'filled' | 'comeback';
+type StateParam = 'empty' | 'filled' | 'comeback' | 'skipped';
 type Snapshot = { data: AppData; today: string | null };
 
 function loadData(): AppData {
   const saved = parseSaved(loadRaw(SAVE_KEY));
   if (!saved) return firstLaunchData(getLocale());
   const updated = migrateLibrary(saved, getLocale());
-  if (updated !== saved) saveRaw(SAVE_KEY, serialize(updated));
-  return updated;
+  const checked = ops.applySkips(updated, toIsoDate(new Date()));
+  if (checked !== saved) saveRaw(SAVE_KEY, serialize(checked));
+  return checked;
 }
 
 let snapshot: Snapshot = { data: loadData(), today: null };
@@ -266,8 +277,10 @@ let demo = false;
 const listeners = new Set<() => void>();
 
 function set(next: Partial<Snapshot>) {
-  snapshot = { ...snapshot, ...next };
-  if (next.data && !demo) saveRaw(SAVE_KEY, serialize(next.data));
+  const merged = { ...snapshot, ...next };
+  // New data or another day can make past days skipped.
+  snapshot = { ...merged, data: ops.applySkips(merged.data, merged.today ?? toIsoDate(new Date())) };
+  if (next.data && !demo) saveRaw(SAVE_KEY, serialize(snapshot.data));
   listeners.forEach((l) => l());
 }
 
@@ -277,12 +290,12 @@ function subscribe(listener: () => void) {
 }
 
 // URL switches, so every state has a URL: ?state=empty (Mia), ?state=filled (Lena),
-// ?state=comeback (Lena back after 2 to 4 weeks off),
+// ?state=comeback (Lena back after 2 to 4 weeks off), ?state=skipped (Lena missed three days),
 // ?date=2026-11-05 (pretend today is that day; the designs show Thursday 5 Nov).
 export function applyUrlParams(params: { state?: string; date?: string }) {
   const next: Partial<Snapshot> = {};
   const state = params.state;
-  if ((state === 'empty' || state === 'filled' || state === 'comeback') && state !== lastState) {
+  if ((state === 'empty' || state === 'filled' || state === 'comeback' || state === 'skipped') && state !== lastState) {
     lastState = state;
     demo = true;
     next.data =
@@ -290,7 +303,9 @@ export function applyUrlParams(params: { state?: string; date?: string }) {
         ? emptyData(getLocale())
         : state === 'comeback'
           ? { ...lenaData(getLocale()), sessions: comebackSessions() }
-          : lenaData(getLocale());
+          : state === 'skipped'
+            ? { ...lenaData(getLocale()), sessions: skippedSessions() }
+            : lenaData(getLocale());
   }
   // A pretend "today" is demo mode too: changes made against a fake date are not saved.
   if (params.date === 'demo') {
@@ -314,9 +329,12 @@ export function useAppData(): AppData {
 }
 
 // The real date is read on every store change and whenever the app comes back to the
-// foreground, so Today moves on after midnight.
+// foreground, so Today moves on after midnight and yesterday's skip shows.
 AppState.addEventListener('change', (s) => {
-  if (s === 'active') listeners.forEach((l) => l());
+  if (s !== 'active') return;
+  const checked = ops.applySkips(snapshot.data, snapshot.today ?? toIsoDate(new Date()));
+  if (checked !== snapshot.data) set({ data: checked });
+  else listeners.forEach((l) => l());
 });
 
 export function useToday(): string {
@@ -340,13 +358,13 @@ export const actions = {
   deleteWorkout: (id: string) => update((d) => ops.deleteWorkout(d, id)),
   setTarget: (workoutId: string, index: number, change: Partial<Omit<WorkoutExercise, 'exerciseId'>>) =>
     update((d) => ops.setTarget(d, workoutId, index, change)),
-  addExercise: (name: string, group: MuscleGroup) => updateWithId((d) => ops.addExercise(d, name, group)),
-  updateExercise: (id: string, name: string, group: MuscleGroup) => update((d) => ops.updateExercise(d, id, name, group)),
+  addExercise: (name: string, group: MuscleGroup, art?: string) => updateWithId((d) => ops.addExercise(d, name, group, art)),
+  updateExercise: (id: string, name: string, group: MuscleGroup, art?: string) => update((d) => ops.updateExercise(d, id, name, group, art)),
   deleteExercise: (id: string) => update((d) => ops.deleteExercise(d, id)),
   setDay: (date: string, plan: Plan) => update((d) => ops.setDay(d, date, plan)),
   clearDay: (date: string) => update((d) => ops.clearDay(d, date)),
   pushBack: (date: string) => update((d) => ops.pushBack(d, date)),
-  setRotation: (rotation: Rotation) => update((d) => ops.setRotation(d, rotation)),
+  setRotation: (rotation: Rotation) => update((d) => ops.setRotation(d, rotation, snapshot.today ?? toIsoDate(new Date()))),
   startSession: (workoutId: string, date: string) => updateWithId((d) => ops.startSession(d, workoutId, date)),
   setSet: (sessionId: string, exIndex: number, setIndex: number, change: Partial<LoggedSet>) =>
     update((d) => ops.setSet(d, sessionId, exIndex, setIndex, change)),

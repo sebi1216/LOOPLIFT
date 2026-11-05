@@ -12,18 +12,20 @@ type Props = {
   variant?: 'primary' | 'soft' | 'dashed';
   icon?: IconName;
   style?: StyleProp<ViewStyle>;
+  // When the label alone is not enough for a screen reader ("Put back" which day?).
+  accessibilityLabel?: string;
   testID?: string;
 };
 
 // Pill button from direction C. Text may wrap (German, 200% text): no fixed height.
-export function Button({ label, onPress, variant = 'primary', icon, style, testID }: Props) {
+export function Button({ label, onPress, variant = 'primary', icon, style, accessibilityLabel, testID }: Props) {
   const c = useColors();
   const bg = variant === 'primary' ? c.accent : variant === 'soft' ? c.accentSoft : 'transparent';
   const fg = variant === 'primary' ? c.onAccent : c.accent;
   return (
     <PressScale
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       onPress={onPress}
       testID={testID}
       style={[

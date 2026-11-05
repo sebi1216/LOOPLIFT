@@ -58,7 +58,7 @@ export default function Workouts() {
                   testID={`workout-${w.id}`}
                   leading={
                     <View style={[styles.art, { backgroundColor: c.artTint }]}>
-                      <LiftArt id={workoutArtId(w)} color={c.accent} width={size.touch * 1.5} />
+                      <LiftArt id={workoutArtId(w, d.exercises)} color={c.accent} width={size.touch * 1.5} />
                     </View>
                   }
                   subtitle={
