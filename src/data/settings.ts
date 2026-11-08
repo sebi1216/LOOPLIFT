@@ -26,7 +26,7 @@ export type Settings = {
   defaultReps: number;
 };
 
-export const DEFAULT_SETTINGS: Settings = { restTimer: true, restSeconds: 90, theme: 'system', haptics: true, restAlert: false, unit: 'kg', showBoth: false, defaultReps: 8 };
+export const DEFAULT_SETTINGS: Settings = { restTimer: true, restSeconds: 90, theme: 'system', haptics: true, restAlert: false, unit: 'kg', showBoth: true, defaultReps: 8 };
 
 export const MIN_REST = 15;
 export const MAX_REST = 600;

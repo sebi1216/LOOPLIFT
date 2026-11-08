@@ -5,13 +5,18 @@ import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { muscleGroups, type MuscleGroup } from '@/data/demo';
 import { actions, useAppData } from '@/data/store';
 import { t, type StringKey } from '@/i18n';
+import { ArtPicker } from '@/ui/art-picker';
 import { Button } from '@/ui/button';
 import { Chip } from '@/ui/chip';
 import { font, radius, size, space } from '@/ui/tokens';
+import { artChoices } from '@/ui/lift-art';
 import { useColors } from '@/ui/use-colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Add or rename an exercise: /exercises/edit (new) or /exercises/edit?id=e1 (rename).
+const hasOwnArt = (id: string) => artChoices.includes(id);
+
+// Add or rename an exercise: /exercises/edit (new) or /exercises/edit?id=e1 (rename). A lift you
+// add also picks its picture from the starter lifts' drawings.
 export default function EditExercise() {
   const c = useColors();
   const insets = useSafeAreaInsets();
@@ -20,11 +25,14 @@ export default function EditExercise() {
   const existing = d.exercises.find((e) => e.id === id);
   const [name, setName] = useState(existing?.name ?? '');
   const [group, setGroup] = useState<MuscleGroup>(existing?.muscleGroup ?? 'chest');
+  const [art, setArt] = useState<string | undefined>(existing?.art);
+  // A starter lift has its own drawing; only lifts you added pick one.
+  const ownArt = !existing || !hasOwnArt(existing.id);
 
   const save = () => {
     if (!name.trim()) return;
-    if (existing) actions.updateExercise(existing.id, name, group);
-    else actions.addExercise(name, group);
+    if (existing) actions.updateExercise(existing.id, name, group, art);
+    else actions.addExercise(name, group, art);
     router.back();
   };
 
@@ -63,6 +71,7 @@ export default function EditExercise() {
           );
         })}
       </View>
+      {ownArt ? <ArtPicker value={art} onChange={setArt} testID="art-picker" /> : null}
       <Button label={t('common.save')} onPress={save} testID="exercise-save" />
     </ScrollView>
   );

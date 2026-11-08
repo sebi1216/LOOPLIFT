@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
+import { useSettings } from '@/data/settings';
 import { hintFor } from '@/data/hints';
 import { actions, ops, useAppData, useToday } from '@/data/store';
 import { history } from '@/data/tracker';
@@ -23,6 +24,7 @@ import { useColors } from '@/ui/use-colors';
 // list is never empty.
 export default function Exercises() {
   const c = useColors();
+  const { unit } = useSettings();
   const d = useAppData();
   const today = useToday();
   const [q, setQ] = useState('');
@@ -68,7 +70,7 @@ export default function Exercises() {
                 const used = ops.usedIn(d, e.id);
                 const h = history(d.sessions, e.id);
                 const last = h.at(-1);
-                const hint = hintFor(h, e.muscleGroup, today);
+                const hint = hintFor(h, e.muscleGroup, today, unit);
                 const lastText = last
                   ? t('exercises.last', {
                       kg: last.top.kg ? kgText(last.top.kg) : t('exercises.bodyweight'),
@@ -106,7 +108,7 @@ export default function Exercises() {
                       ]}
                       testID={`exercise-${e.id}`}>
                       <View style={[styles.art, { backgroundColor: c.artTint }]}>
-                        <LiftArt id={e.id} color={c.accent} width={size.touch * 0.75} />
+                        <LiftArt id={e.art ?? e.id} color={c.accent} width={size.touch * 0.75} />
                       </View>
                       <View style={styles.flex}>
                         <Text style={[styles.headline, { color: c.text }]}>{e.name}</Text>

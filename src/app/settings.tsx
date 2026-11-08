@@ -6,6 +6,7 @@ import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { restTimer } from '@/data/rest';
 import { allowRestAlert, cancelRestAlert, openPhoneSettings, restAlertAllowed, restAlertAvailable } from '@/data/rest-alert';
 import { getSettings, REST_STEP, updateSettings, useSettings, type Theme } from '@/data/settings';
+import { otherUnit, type Unit } from '@/data/units';
 import { t } from '@/i18n';
 import { Button } from '@/ui/button';
 import { Stepper } from '@/ui/stepper';
@@ -13,10 +14,12 @@ import { font, radius, size, space } from '@/ui/tokens';
 import { useColors, useScheme } from '@/ui/use-colors';
 
 const THEMES: Theme[] = ['system', 'light', 'dark'];
+const UNITS: Unit[] = ['kg', 'lb'];
 const clock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
 // Settings (from the gear on Today): rest timer on or off, its length, the lock screen alert,
-// haptics, and the look (System, Light, Dark). Saved on the phone (src/data/settings.ts).
+// haptics, the standard reps of a new lift, the weight unit (kg or lb, optionally both), and the
+// look (System, Light, Dark). Saved on the phone (src/data/settings.ts).
 // States: /settings, and /settings?state=denied shows the note for notifications turned off.
 // No design frame: built from the S1 tokens and the platform's own controls (Suggestion).
 export default function Settings() {
@@ -99,6 +102,38 @@ export default function Settings() {
         <Divider />
         <Row title={t('settings.haptics')} sub={t('settings.hapticsSub')}>
           <Toggle label={t('settings.haptics')} value={s.haptics} onChange={(v) => updateSettings({ haptics: v })} testID="setting-haptics" />
+        </Row>
+      </View>
+
+      <Text accessibilityRole="header" style={[styles.section, { color: c.textMuted }]}>
+        {t('settings.weights')}
+      </Text>
+      <View style={[styles.card, { backgroundColor: c.bgRaised }]}>
+        <View style={styles.pad}>
+          <SegmentedControl
+            values={UNITS.map((u) => t(u === 'kg' ? 'settings.unitKg' : 'settings.unitLb'))}
+            selectedIndex={UNITS.indexOf(s.unit)}
+            onChange={(e) => updateSettings({ unit: UNITS[e.nativeEvent.selectedSegmentIndex] ?? 'kg' })}
+            appearance={scheme}
+            accessibilityLabel={t('settings.unitA11y')}
+            style={styles.segments}
+            testID="setting-unit"
+          />
+        </View>
+        <Divider />
+        <Row title={t('settings.showBoth')} sub={t('settings.showBothSub', { other: otherUnit(s.unit) })}>
+          <Toggle label={t('settings.showBoth')} value={s.showBoth} onChange={(v) => updateSettings({ showBoth: v })} testID="setting-both" />
+        </Row>
+        <Divider />
+        <Row title={t('settings.defaultReps')} sub={t('settings.defaultRepsSub')}>
+          <Stepper
+            value={t('settings.repsValue', { n: s.defaultReps })}
+            onMinus={() => updateSettings({ defaultReps: s.defaultReps - 1 })}
+            onPlus={() => updateSettings({ defaultReps: s.defaultReps + 1 })}
+            minusLabel={t('settings.fewerReps')}
+            plusLabel={t('settings.moreReps')}
+            testID="setting-reps"
+          />
         </Row>
       </View>
 

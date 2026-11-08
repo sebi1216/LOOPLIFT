@@ -196,3 +196,12 @@ test('URL switches (?state=, ?date=) are demo mode: nothing is saved after them'
   actions.addWorkout('Arms');
   expect(mockSaveRaw).toHaveBeenCalledTimes(1);
 });
+
+test('a lift you add keeps the picture you picked; editing can change it or go back to the dumbbell', () => {
+  const [d, id] = ops.addExercise(lena(), 'Hip Thrust', 'legs', 'e9');
+  expect(d.exercises.find((e) => e.id === id)).toMatchObject({ name: 'Hip Thrust', art: 'e9' });
+  const changed = ops.updateExercise(d, id!, 'Hip Thrust', 'legs', 'e10');
+  expect(changed.exercises.find((e) => e.id === id)!.art).toBe('e10');
+  const plain = ops.updateExercise(changed, id!, 'Hip Thrust', 'legs', undefined);
+  expect(plain.exercises.find((e) => e.id === id)).not.toHaveProperty('art');
+});

@@ -174,7 +174,12 @@ export const ops = {
   updateExercise(d: AppData, id: string, name: string, muscleGroup: MuscleGroup, art?: string): AppData {
     const clean = name.trim();
     if (!clean) return d;
-    return { ...d, exercises: d.exercises.map((e) => (e.id === id ? { ...e, name: clean, muscleGroup, ...(art ? { art } : {}) } : e)) };
+    // No art: back to the plain dumbbell.
+    const edited = (e: Exercise): Exercise => {
+      const { art: _old, ...rest } = e;
+      return { ...rest, name: clean, muscleGroup, ...(art ? { art } : {}) };
+    };
+    return { ...d, exercises: d.exercises.map((e) => (e.id === id ? edited(e) : e)) };
   },
 
   deleteExercise(d: AppData, id: string): AppData {

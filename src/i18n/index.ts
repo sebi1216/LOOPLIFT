@@ -2,10 +2,12 @@
 // German is often about 30% longer (E): check each new screen once in German.
 import { formDe, formEn } from './form-strings';
 import { progressDe, progressEn } from './progress-strings';
+import { batchDe, batchEn } from './settings-strings';
 
 const en = {
   ...formEn,
   ...progressEn,
+  ...batchEn,
   'tab.today': 'Today',
   'tab.calendar': 'Calendar',
   'tab.workouts': 'Workouts',
@@ -338,6 +340,7 @@ export type StringKey = keyof typeof en;
 const de: Record<StringKey, string> = {
   ...formDe,
   ...progressDe,
+  ...batchDe,
   'tab.today': 'Heute',
   'tab.calendar': 'Kalender',
   'tab.workouts': 'Workouts',

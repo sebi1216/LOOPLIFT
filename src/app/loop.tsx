@@ -24,7 +24,7 @@ let keyCount = 0;
 const draftSlot = (slot: string): DraftSlot => ({ key: `s${keyCount++}`, slot });
 
 // Rotation editor (direction S1): the loop as a hero ring, its days in order (workouts and Rest)
-// and its start date. Changes stay a draft until Save. Pushed from the Calendar (Edit loop, loop
+// and its start date. Changes stay a draft until Save. Pushed from Today (Edit loop, the loop
 // card). Empty: ?state=empty.
 export default function RotationEditor() {
   const c = useColors();

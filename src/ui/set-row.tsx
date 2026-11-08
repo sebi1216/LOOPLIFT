@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { useReducedMotion, type CSSAnimationProperties } from 'react-native-reanimated';
 
-import { parseKg, parseReps, type LoggedSet } from '@/data/tracker';
+import { useSettings } from '@/data/settings';
+import { parseReps, type LoggedSet } from '@/data/tracker';
+import { inUnit, otherUnit, parseWeight, type Unit } from '@/data/units';
 import { formatKg, t } from '@/i18n';
 
 import { Icon } from './icon';
@@ -18,12 +20,20 @@ type Props = {
   testID: string;
 };
 
-// One set: number, kg, reps, tick. A field keeps what you type; a valid value is saved at once,
+// The weight fields, in the unit from Settings; with Show both units the other one comes second.
+// Weights are saved in kg either way, so typing in one field updates the other.
+function useUnits(): Unit[] {
+  const s = useSettings();
+  return s.showBoth ? [s.unit, otherUnit(s.unit)] : [s.unit];
+}
+
+// One set: number, weight, reps, tick. A field keeps what you type; a valid value is saved at once,
 // anything else (62.3, 1000, letters) is not, and the field shows the last saved value on blur.
 export function SetRow({ n, set, onChange, tickable = true, testID }: Props) {
   const c = useColors();
   const reduced = useReducedMotion();
   const [justTicked, setJustTicked] = useState(false);
+  const units = useUnits();
   return (
     <Animated.View
       style={[
@@ -35,15 +45,18 @@ export function SetRow({ n, set, onChange, tickable = true, testID }: Props) {
       <Text style={[styles.n, { color: set.done && tickable ? c.accent : c.textMuted }]} importantForAccessibility="no" accessibilityElementsHidden>
         {n}
       </Text>
-      <NumberField
-        value={set.kg === null ? '' : formatKg(set.kg)}
-        parse={(s) => (s.trim() === '' ? { ok: true, v: null } : wrap(parseKg(s)))}
-        onValue={(kg) => onChange({ kg })}
-        keyboardType="decimal-pad"
-        placeholder={t('session.kg')}
-        accessibilityLabel={t('session.kgA11y', { n })}
-        testID={`${testID}-kg`}
-      />
+      {units.map((unit) => (
+        <NumberField
+          key={unit}
+          value={set.kg === null ? '' : formatKg(inUnit(set.kg, unit))}
+          parse={(s) => (s.trim() === '' ? { ok: true, v: null } : wrap(parseWeight(s, unit)))}
+          onValue={(kg) => onChange({ kg })}
+          keyboardType="decimal-pad"
+          placeholder={t(unit === 'kg' ? 'session.kg' : 'session.lb')}
+          accessibilityLabel={t(unit === 'kg' ? 'session.kgA11y' : 'session.lbA11y', { n })}
+          testID={unit === 'kg' ? `${testID}-kg` : `${testID}-lb`}
+        />
+      ))}
       <NumberField
         value={String(set.reps)}
         parse={(s) => wrap(parseReps(s))}
@@ -129,10 +142,13 @@ function NumberField({ value, parse, onValue, keyboardType, placeholder, accessi
 // The column titles above the set rows, aligned with SetRow.
 export function SetHeader({ tickable = true }: { tickable?: boolean }) {
   const c = useColors();
+  const units = useUnits();
   return (
     <View style={[styles.row, styles.headRow]} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
       <Text style={[styles.n, styles.head, { color: c.textMuted }]}>{t('session.set')}</Text>
-      <Text style={[styles.flex, styles.head, { color: c.textMuted }]}>{t('session.kg')}</Text>
+      {units.map((u) => (
+        <Text key={u} style={[styles.flex, styles.head, { color: c.textMuted }]}>{t(u === 'kg' ? 'session.kg' : 'session.lb')}</Text>
+      ))}
       <Text style={[styles.flex, styles.head, { color: c.textMuted }]}>{t('session.reps')}</Text>
       {tickable ? <View style={styles.tickSpace} /> : null}
     </View>

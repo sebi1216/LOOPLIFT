@@ -15,10 +15,6 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>{t('tab.today')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'sun.max', selected: 'sun.max.fill' }} md="today" />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="calendar">
-        <NativeTabs.Trigger.Label>{t('tab.calendar')}</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="calendar" md="calendar_month" />
-      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="progress">
         <NativeTabs.Trigger.Label>{t('tab.progress')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="chart.bar.xaxis" md="bar_chart" />
